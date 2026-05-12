@@ -130,3 +130,9 @@ def check_round(pattern,tup):
     left = check(pattern,tup[0],tup[1]-1)
     rigth = check(pattern,tup[0],tup[1]+1)
     return up,down,left,rigth
+
+def reverse(seq):
+    for char in seq:
+        rev += base_pairs_table[char][0]
+        rev = rev[::-1]
+    return rev
