@@ -1,6 +1,10 @@
+import getopt,sys,os
+SCRIPT_DIR = os.path.abspath(__file__)
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 import numpy as np
 import rope_def as rd
-import getopt,sys
+
+
 
 
 def base_pair_id(pattern,tup):
@@ -97,6 +101,7 @@ def trace_pattern_out(file):
        output.write(base_pair)
        output.write("\n")
        output.write(seq)
+
 
 
 if __name__ == "__main__":
