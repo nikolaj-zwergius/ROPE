@@ -470,7 +470,7 @@ def revolver(file:str,dragon:bool = False):
 
     global kls
     kls = []
-    with open("kl_list.txt","r") as f:
+    with open("kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
             line_list[0] = float(line_list[0])
