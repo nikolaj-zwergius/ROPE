@@ -54,6 +54,7 @@ class dir_up(dirction):
                     "╮":dir_left,
                     "/":dir_rigth,
                     chr(92):dir_left,}
+        self.replace_list = {"/":"╭",chr(92):"╮","-":"─"}
         
     def __repr__(self):
         return "dir_up"
@@ -66,6 +67,7 @@ class dir_down(dirction):
                     "╯":dir_left,"╰":dir_rigth,
                     "/":dir_left,
                     chr(92):dir_rigth,}
+        self.replace_list = {"/":"╯",chr(92):"╰","-":"─"}
     def __repr__(self):
         return "dir_down"
 class dir_left(dirction):
@@ -76,6 +78,7 @@ class dir_left(dirction):
                     "╰":dir_up,
                     "/":dir_down,
                     chr(92):dir_up,}
+        self.replace_list = {"/":"╭",chr(92):"╰","-":"─"}
     def __repr__(self):
         return "dir_left"
 class dir_rigth(dirction):
@@ -87,6 +90,7 @@ class dir_rigth(dirction):
                     "/":dir_up,
                     "╯":dir_up,
                     chr(92):dir_down,}
+        self.replace_list = {"/":"╮",chr(92):"╯","-":"─"}
     def __repr__(self):
         return "dir_rigth"
 
