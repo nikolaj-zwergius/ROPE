@@ -3,6 +3,7 @@ SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import numpy as np
 import rope_def as rd
+from trace_utils import get_backbone_start, get_pattern_char, normalize_base_name
 
 
 
@@ -18,24 +19,7 @@ def base_pair_id(pattern,tup):
     return None,None
 
 def trace_backbone(pattern):
-    p5 = rd.find_5_prime(pattern)
-    up,down,left,rigth = rd.check_round(pattern,p5)
-    next = rd.dirction
-    #print(p5,up,down,left,rigth)
-    if up.isalpha():
-        first = (p5[0]-1,p5[1])
-        dir = rd.dir_up()
-    elif down.isalpha():
-        first = (p5[0]+1,p5[1])
-        dir = rd.dir_down()
-    elif left.isalpha():
-        first = (p5[0],p5[1]-1)
-        dir=rd.dir_left()
-    elif rigth.isalpha():
-        first = (p5[0],p5[1]+1)
-        dir=rd.dir_rigth()
-    else:
-        raise Exception("No vaild frist base")
+    p5, first, dir = get_backbone_start(pattern)
 
     seq = ""
     base_pair =""
@@ -44,15 +28,9 @@ def trace_backbone(pattern):
     bracket1 =[]
     bracket2 =[]
 
-    while pattern[next_base[0]][next_base[1]] != "3":
-        next_base_name = pattern[next_base[0]][next_base[1]]
-        #print(next_base_name)
-        if next_base_name.isalpha() and next_base_name not in rd.one_letter_code.keys():
-            if next_base_name == "T":
-                next_base_name = "U"
-            else:
-                next_base_name ="N"
-        #print(next_base_name)
+    while get_pattern_char(pattern, next_base[0], next_base[1]) != "3":
+        next_base_name = get_pattern_char(pattern, next_base[0], next_base[1])
+        next_base_name = normalize_base_name(next_base_name)
         match_id,match_type = base_pair_id(pattern,next_base)
         match match_type:
             case "*":
@@ -102,6 +80,23 @@ def trace_pattern_out(file):
        output.write("\n")
        output.write(seq)
 
+
+def trace_seq_into_backbone(seq:str,file: str):
+    new_pattern = rd.generate_np_pattern(file)
+    _, first, dir = get_backbone_start(new_pattern)
+    index = 0
+    next_base = first
+    while get_pattern_char(new_pattern, next_base[0], next_base[1]) != "3":
+        next_base_name = get_pattern_char(new_pattern, next_base[0], next_base[1])
+        if next_base_name.isalpha():
+            new_pattern[next_base[0]][next_base[1]] = seq[index]
+            index+=1
+        if next_base_name in dir.replace_list.keys():
+            new_pattern[next_base[0]][next_base[1]] = dir.replace_list[next_base_name]
+        if next_base_name in dir.move_list.keys():
+            dir=dir.move_list[next_base_name]()
+        next_base = dir.move(next_base)
+    return new_pattern
 
 
 if __name__ == "__main__":
