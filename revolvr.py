@@ -1,6 +1,7 @@
 import numpy as np
 import rope_def as rd
 import trace_pattern as tp
+import trace_utils as tu
 import getopt,sys
 import RNA
 import random
@@ -193,62 +194,9 @@ def base_pair_mapper(clean_struc:str) -> dict:
             base_pair_map[i] = mate
     return base_pair_map
 
-def penalty_score(seq:str) -> tuple[list,int]:
-    ws_window = 8
-    N_window = 4
-    comp_window = 10
-    dup_window = 10
-    restrict = ["AUCUGUU"]
-    new_seq = ["-"]*len(seq)
-    dups_target = []
-    for i in range(len(seq)):
-        target = seq[i:i+dup_window]
-        if len(target) == dup_window:
-            dups_target.append(target)
-    comp_target = []
-    comp_target_id = []
-    for i in range(len(seq)):
-        target = seq[i:i+comp_window]
-        revs_comp = ""
-        if len(target) == comp_window:
-            for char in target:
-                if char == "G":
-                    revs_comp += "C"
-                elif char == "A":
-                    revs_comp += "U"
-                elif char == "C":
-                    revs_comp += "G"
-                elif char == "U":
-                    revs_comp += "A"
-            revs_comp = revs_comp[::-1]
-            comp_target.append((revs_comp))
-    for i in range(len(seq)):
-        if seq[i:i+dup_window] in dups_target[i+1:]:
-            new_seq[i:i+dup_window] = "D"*dup_window
-        elif seq[i:i+comp_window] in comp_target:
-            try:
-                if bp_map[i+comp_window-1] != comp_target.index(seq[i:i+comp_window]):
-                    new_seq[i:i+comp_window] = "P"*comp_window
-            except KeyError:
-                new_seq[i:i+comp_window] = "P"*comp_window
-        elif set(seq[i:i+ws_window]) == {'G', 'C'} and len(seq[i:i+ws_window]) == ws_window:
-            new_seq[i:i+ws_window] = "S"*ws_window
-            ##print(len(new_seq),len(seq),"S")
-        elif set(seq[i:i+ws_window]) == {'A', 'U'} and len(seq[i:i+ws_window]) == ws_window:
-            new_seq[i:i+ws_window] = "W"*ws_window
-            ##print(len(new_seq),len(seq),"W")
-        elif set(seq[i:i+N_window]) == {'A'} and new_seq[i] not in ["P","D","W","S"] and len(seq[i:i+N_window]) == N_window:
-            new_seq[i:i+N_window] = "A"*N_window
-            ##print(len(new_seq),len(seq),"A")
-        elif set(seq[i:i+N_window]) == {'G'} and new_seq[i] not in ["P","D","W","S"] and len(seq[i:i+N_window]) == N_window:
-            new_seq[i:i+N_window] = "G"*N_window
-            ##print(len(new_seq),len(seq),"G")
-        elif set(seq[i:i+N_window]) == {'C'} and new_seq[i] not in ["P","D","W","S"] and len(seq[i:i+N_window]) == N_window:
-            new_seq[i:i+N_window] = "C"*N_window
-            ##print(len(new_seq),len(seq),"C")
-        elif set(seq[i:i+N_window]) == {'U'} and new_seq[i] not in ["P","D","W","S"] and len(seq[i:i+N_window]) == N_window:
-            new_seq[i:i+N_window] = "U"*N_window
-            ##print(len(new_seq),len(seq),"U")
+def penalty_score(seq:str,struc:str) -> tuple[list,int]:
+    _, scrubbed_sequence = tu.map_structure(struc, seq)
+    new_seq = tu.count_repeats(scrubbed_sequence)[0]
     PS = new_seq.count("D") + new_seq.count("P") +new_seq.count("S") +new_seq.count("W") + new_seq.count("X") + new_seq.count("A") + new_seq.count("A")+ new_seq.count("G")+ new_seq.count("C")+ new_seq.count("U")
     ##print(new_seq)
     return new_seq, PS
@@ -266,7 +214,7 @@ def gc_ratio_calculator(seq:str) -> int:
     return GC_ration
 
 def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
-    ps_matix, ps = penalty_score(seq)
+    ps_matix, ps = penalty_score(seq,clean_struc)
     n_switch = False
     n_id = 0
     mutate_matix = ["-"]*len(seq)
@@ -338,7 +286,7 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
                 if rd.base_pairs_table[mask[i]] in rd.one_letter_code[init_seq[i]]:
                     seq_list[bp_map[i]] = rd.base_pairs_table[mask[i]]
     seq_string = "".join(seq_list)
-    dump,ps2 = penalty_score(seq_string)
+    dump,ps2 = penalty_score(seq_string,clean_struc)
     if seq_string in tested_seq.keys():
         new_struc = tested_seq[seq_string]
     else:
@@ -394,7 +342,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
         mask,ps = mutation_matix_ps(clean_struc,seq,fav_rad_level)
         
         struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
-        test_mask,test_ps =penalty_score(seq)
+        test_mask,test_ps =penalty_score(seq,clean_struc)
         print(gc_ratio_calculator(seq),set(mask),test_ps)
     stack = []
     kl_id = []
@@ -441,7 +389,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
                     if energy > kl_off and j == i+1:
                         kl_rejected = True
         seq = "".join(string_list)
-        dump,ps = penalty_score(seq)
+        dump,ps = penalty_score(seq,clean_struc)
         if ps == 0:
             di = RNA.hamming_distance(clean_struc,RNA.fold(seq)[0])
             print("di = ",di,"PS = ",0)
@@ -480,22 +428,6 @@ def revolver(file:str,dragon:bool = False):
 
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)
 
-    while dragon:
-        print("new dragon run")
-        test_seq =[None]*len(seq)
-        for i in range(len(seq)):
-            test_seq[i] = random.choices([seq[i],mutate((25,25,25,25))],(99,1))[0]
-            if test_seq[i] != seq[i] and i in bp_map.keys():
-                test_seq[bp_map[i]] = rd.base_pairs_table[test_seq[i]]
-        test_seq = "".join(test_seq)
-        test_struc = RNA.fold(test_seq)[0]
-        new_seq,new_struc,new_mfe,new_feq,new_ed = mini_revolvr(clean_struc,test_seq,init_seq,init_struc,test_struc)
-        if new_ed < min_ed:
-            seq =  new_seq
-            struc =  new_struc
-            mfe =  new_mfe
-            feq = new_feq
-            min_ed = new_ed
     return seq, struc,mfe,feq,min_ed
 
 def dragon(file):
