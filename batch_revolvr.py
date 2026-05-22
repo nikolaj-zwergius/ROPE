@@ -3,6 +3,9 @@ import concurrent.futures
 from typing import Optional
 
 import revolvr
+import trace_pattern
+import trace_analysis as ta
+import trace_utils as tu
 import rope_def as rd
 
 
@@ -10,15 +13,20 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq:
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
     output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
+    new_pattern = trace_pattern.trace_seq_into_backbone(seq, input_file)
+    grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir = ta.trace_analysis_out(None, None, out=False, input_grid=new_pattern)
     with output_path.open("w", encoding="utf-8") as out_file:
         out_file.write(f"input_file: {input_file}\n")
         out_file.write(f"run_index: {run_index}\n")
         out_file.write(f"sequence: {seq}\n")
         out_file.write(f"structure: {struc}\n")
-        out_file.write(f"mfe: {mfe}\n")
-        out_file.write(f"feq: {feq}\n")
-        out_file.write(f"ed: {ed}\n")
-
+        out_file.write(f"mfe: {mfe:.2f}\n")
+        out_file.write(f"feq: {feq:.2f}\n")
+        out_file.write(f"ed: {ed:.2f}\n")
+        out_file.write("\n\n\n")
+        tu.structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
+)
+        
 
 def _run_revolver_task(task: tuple[str, int, str]) -> None:
     file_path, run_index, output_root = task
