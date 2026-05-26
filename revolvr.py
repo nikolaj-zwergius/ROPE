@@ -196,8 +196,8 @@ def base_pair_mapper(clean_struc:str) -> dict:
 
 def penalty_score(seq:str,struc:str) -> tuple[list,int]:
     _, scrubbed_sequence = tu.map_structure(struc, seq)
-    new_seq = tu.count_repeats(scrubbed_sequence)[0]
-    PS = new_seq.count("D") + new_seq.count("P") +new_seq.count("S") +new_seq.count("W") + new_seq.count("X") + new_seq.count("A") + new_seq.count("A")+ new_seq.count("G")+ new_seq.count("C")+ new_seq.count("U")
+    new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(scrubbed_sequence)
+    PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
     return new_seq, PS
 
@@ -261,7 +261,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
     for i in range(len(seq)):
         if mutate_matix[i] != "-":
             ids.append(i)
-    while len(ids) > fav_rad_level:
+    while len(ids) > FAV_RAD_LEVEL:
         pick = random.choice(ids)
         ids.remove(pick)
         mutate_matix[pick] = "-"
@@ -308,7 +308,7 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     return struc,seq
 
 def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,float,float]:    
-    rad_level = fav_rad_level
+    rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     print("setup done")
     struc,seq = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
@@ -336,10 +336,10 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
 
 
 def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
-    rad_level = fav_rad_level
+    rad_level = FAV_RAD_LEVEL
     mask = []
     while (set(mask) != {"-","K"} and set(mask) != {"-","K","G","C"} and set(mask) != {"-","K","G"} and set(mask) != {"-","K","C"})  or gc_ratio_calculator(seq)>55.1 or ps>0:
-        mask,ps = mutation_matix_ps(clean_struc,seq,fav_rad_level)
+        mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL)
         
         struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
         test_mask,test_ps =penalty_score(seq,clean_struc)
@@ -386,7 +386,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
             for i in range(len(kl_used)):
                 for j in range(len(kl_used[i:])):
                     energy = RNA.duplexfold(kl_used[i],kl_used[j]).energy
-                    if energy > kl_off and j == i+1:
+                    if energy > KL_OFF and j == i+1:
                         kl_rejected = True
         seq = "".join(string_list)
         dump,ps = penalty_score(seq,clean_struc)
@@ -405,14 +405,14 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
 def revolver(file:str,dragon:bool = False):
     global bp_map
     global tested_seq
-    global fav_rad_level
-    global kl_off
+    global FAV_RAD_LEVEL
+    global KL_OFF
     name,init_seq,init_struc,seq,clean_struc= initlize_structure(file)
-    fav_rad_level = 15
+    FAV_RAD_LEVEL = 15
     bp_map = base_pair_mapper(clean_struc) 
-    kl_min = -7.2
-    kl_max = -10.8
-    kl_off = -6.0
+    KL_MIN = -7.2
+    KL_MAX = -10.8
+    KL_OFF = -6.0
     
     tested_seq = {}
 
@@ -423,7 +423,7 @@ def revolver(file:str,dragon:bool = False):
             line_list = line.split(",")
             line_list[0] = float(line_list[0])
             line_list[2] = line_list[2].strip("\n")
-            if line_list[0] >= kl_max and line_list[0] <= kl_min:
+            if line_list[0] >= KL_MAX and line_list[0] <= KL_MIN:
                 kls.append(line_list)
 
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)

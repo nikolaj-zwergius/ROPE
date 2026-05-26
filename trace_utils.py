@@ -22,13 +22,6 @@ def get_backbone_start(pattern):
         return p5, (p5[0], p5[1] + 1), rd.dir_rigth()
     raise ValueError("No valid first base")
 
-
-def normalize_base_name(base_name):
-    if base_name.isalpha() and base_name not in rd.one_letter_code.keys():
-        return "U" if base_name == "T" else "N"
-    return base_name
-
-
 def get_pattern_char(grid, r, c):
     if r < 0 or r >= grid.shape[0] or c < 0 or c >= grid.shape[1]:
         return ""
