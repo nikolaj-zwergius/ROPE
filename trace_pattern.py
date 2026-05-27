@@ -3,7 +3,7 @@ SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import numpy as np
 import rope_def as rd
-from trace_utils import get_backbone_start, get_pattern_char, normalize_base_name
+from trace_utils import get_backbone_start, get_pattern_char
 
 
 
@@ -30,7 +30,6 @@ def trace_backbone(pattern):
 
     while get_pattern_char(pattern, next_base[0], next_base[1]) != "3":
         next_base_name = get_pattern_char(pattern, next_base[0], next_base[1])
-        next_base_name = normalize_base_name(next_base_name)
         match_id,match_type = base_pair_id(pattern,next_base)
         match match_type:
             case "*":
