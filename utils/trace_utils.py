@@ -1,5 +1,5 @@
 import random
-import rope_def as rd
+import utils.rope_def as rd
 
 COMPLEMENT_WINDOW = 10
 DUPLICATE_WINDOW = 10
