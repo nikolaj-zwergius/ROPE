@@ -3,4 +3,6 @@
 *.pyc
 *.pl
 *.bak
+*.pdb
+!./RNA_lib
 test.py

@@ -1,4 +1,4 @@
-from RNA_lib.def_class import Module
+from utils.def_class import Module, segmented_module
 
 ### Basic Modules
 Helix = Module(name = 'Helix', file = 'helix_backbone.pdb', symbol = 'H')
@@ -9,12 +9,12 @@ Crossover = Module(name = 'Crossover', file = 'crossover_backbone.pdb', symbol =
 TetraLoop = Module(name = 'TetraLoop', file = 'Tetraloop.pdb', symbol = 'T',sequence = ("UUCG"))
 KissingLoop = Module(name = 'KissingLoop', file = 'Kissingloop_backbone.pdb', symbol = 'K',sequence = ("AANNNNNNA"))
 ### Fluorescent Modules
-Broccoli = Module(name = 'Broccoli', file = 'broccoli.pdb', symbol = 'B',sequence = ("part1","part2"))
-Mango = Module(name = 'Mango', file = 'mango.pdb', symbol = 'M',sequence = ("part1","part2"))
-Pepper = Module(name = 'Pepper', file = 'pepper.pdb', symbol = 'P',sequence = ("part1","part2"))
-Cilivia = Module(name = 'Cilivia', file = 'cilivia.pdb', symbol = 'C',sequence = ("part1","part2"))
-Squash = Module(name = 'Squash', file = 'squash.pdb', symbol = 'sQ',sequence = ("part1","part2"))
-Spinach = Module(name = 'Spinach', file = 'spinach.pdb', symbol = 'sP',sequence = ("part1","part2"))
+Broccoli = segmented_module(name = 'Broccoli', file = 'broccoli.pdb', symbol = 'B',sequence = ["part1","part2"],spacer = ["UUCG"])
+Mango = segmented_module(name = 'Mango', file = 'mango.pdb', symbol = 'M',sequence = ["part1","part2"],spacer = ["UUCG"])
+Pepper = segmented_module(name = 'Pepper', file = 'pepper.pdb', symbol = 'P',sequence = ["part1","part2"],spacer =["UUCG"])
+Cilivia = segmented_module(name = 'Cilivia', file = 'cilivia.pdb', symbol = 'C',sequence = ["part1","part2"],spacer =["UUCG"])
+Squash = Module(name = 'Squash', file = 'squash.pdb', symbol = 'sQ',)
+Spinach = segmented_module(name = 'Spinach', file = 'spinach.pdb', symbol = 'sP',sequence = ["part1","part2"],spacer = ["UUCG"])
 
 module_libary = {
     Helix.symbol: Helix,

@@ -6,7 +6,7 @@ SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
 class Module():
-    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:tuple[str,...] = None):
+    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None):
         self.name = name
         self.file = file
         self.start_cord = None
@@ -67,8 +67,8 @@ class Module():
     def __repr__(self): 
         return f"Module: {self.name}"
 class nucleotide(Module):
-    def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N',sequence:tuple[str,...] = None):
-        super().__init__(name, file, symbol, sequence)
+    def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N'):
+        super().__init__(name, file, symbol)
 
     def _generate_cords(self):
         start_res_id = None
@@ -100,7 +100,23 @@ class nucleotide(Module):
             print(f"File {self.file} not found. Please check the file path.")
             return None, None, None,None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
-    
+class segmented_module(Module):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = None):
+        try:
+            assert type(sequence) == list
+            assert type(spacer) == list
+            assert len(spacer) == len(sequence)-1
+        except:
+            print(type(sequence),type(spacer),len(spacer),len(sequence)-1)
+            raise AssertionError
+        spaced_sequnces = []
+        for i in range(len(sequence)):
+            spaced_sequnces.append(sequence[i])
+            if i != len(sequence)-1:
+                spaced_sequnces.append(spacer[i])
+        super().__init__(name, file, symbol, spaced_sequnces)
+        self.spacer = spacer
+
 def get_sugar_cords(coords):
     sugar_coord = {}
     sugar_corrd_list=[]

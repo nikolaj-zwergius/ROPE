@@ -1,7 +1,7 @@
 import numpy as np
-import rope_def as rd
+import utils.rope_def as rd
 import trace_pattern as tp
-import trace_utils as tu
+import utils.trace_utils as tu
 import getopt,sys
 import RNA
 import random
@@ -418,7 +418,7 @@ def revolver(file:str,dragon:bool = False):
 
     global kls
     kls = []
-    with open("kl_list","r") as f:
+    with open("utils/kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
             line_list[0] = float(line_list[0])

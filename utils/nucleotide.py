@@ -1,5 +1,5 @@
 import numpy as np
-from RNA_lib.def_class import nucleotide
+from utils.def_class import nucleotide
 
 ### Nucleotides
 A=nucleotide(name = 'A', file = 'A.pdb', symbol = 'A')
