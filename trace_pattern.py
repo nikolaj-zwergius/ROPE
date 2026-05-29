@@ -2,8 +2,8 @@ import getopt,sys,os
 SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import numpy as np
-import rope_def as rd
-from trace_utils import get_backbone_start, get_pattern_char
+import utils.rope_def as rd
+from utils.trace_utils import get_backbone_start, get_pattern_char
 
 
 

@@ -1,11 +1,11 @@
-﻿#!/usr/bin/env python
+﻿﻿#!/usr/bin/env python
 
 import random
 import sys
 import numpy as np
-import rope_def as rd
+import utils.rope_def as rd
 import trace_pattern as tp
-from trace_utils import (
+from utils.trace_utils import (
     COMPLEMENT_WINDOW,
     DUPLICATE_WINDOW,
     NUCLEOTIDE_CHARS,

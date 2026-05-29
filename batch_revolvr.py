@@ -5,8 +5,8 @@ from typing import Optional
 import revolvr
 import trace_pattern
 import trace_analysis as ta
-import trace_utils as tu
-import rope_def as rd
+import utils.trace_utils as tu
+import utils.rope_def as rd
 
 
 def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float) -> None:

@@ -1,5 +1,5 @@
 import numpy as np
-import rope_def as rd
+import utils.rope_def as rd
 import getopt,sys
 
 
