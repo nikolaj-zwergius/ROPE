@@ -1,11 +1,13 @@
-from utils.def_class import Module, segmented_module
-
+if __name__ != "__main__":
+    from utils.def_class import Module, segmented_module
+else:
+    from def_class import Module, segmented_module
 ### Basic Modules
 Helix = Module(name = 'Helix', file = 'helix_backbone.pdb', symbol = 'H')
 tetraHelix = Module(name = 'tetraHelix', file = 'aTetraloop.pdb', symbol = 'aT')
 ptetraHelix = Module(name = 'ptetraHelix', file = 'pTetraloop.pdb', symbol = 'pT')
 ltetraHelix = Module(name = 'ltetraHelix', file = 'lTetraloop.pdb', symbol = 'lT',sequence = ("NNUUCGNN"))
-Crossover = Module(name = 'Crossover', file = 'crossover_backbone.pdb', symbol = 'X')
+Crossover = Module(name = 'Crossover', file = 'crossover.pdb', symbol = 'X')
 TetraLoop = Module(name = 'TetraLoop', file = 'Tetraloop.pdb', symbol = 'T',sequence = ("UUCG"))
 KissingLoop = Module(name = 'KissingLoop', file = 'Kissingloop_backbone.pdb', symbol = 'K',sequence = ("AANNNNNNA"))
 ### Fluorescent Modules
@@ -31,6 +33,3 @@ module_libary = {
     Spinach.symbol: Spinach,
     Squash.symbol: Squash,
 }
-
-for module in module_libary.values():
-    module.generate_cords()

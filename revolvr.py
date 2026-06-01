@@ -43,12 +43,11 @@ def mutate(mutation_rate:tuple[int,int,int,int])->str:
 def initlize_structure(file:str)->tuple[str,str,str,str]:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
-        pattern= rd.generate_np_pattern(file)
+        pattern= tu.generate_np_pattern(file)
     init_seq,init_struc = tp.trace_backbone(pattern)
     
     stack = []
     stack1 = []
-    stack2 = []
     seq = ""
     for i in range(len(init_seq)):
         if init_struc[i] in ["("]:
@@ -429,9 +428,6 @@ def revolver(file:str,dragon:bool = False):
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)
 
     return seq, struc,mfe,feq,min_ed
-
-def dragon(file):
-    return revolver(file,True)
 
 
 if __name__ == "__main__":

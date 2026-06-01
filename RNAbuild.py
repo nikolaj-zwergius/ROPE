@@ -3,6 +3,8 @@ from utils.dim3_utils import align_vectors, umeyama
 from utils.def_class import get_sugar_cords, Module
 from utils.modules import module_libary
 from utils.nucleotide import nucleotide_libary
+from trace_pattern import trace_backbone
+from utils.rope_def import generate_np_pattern
 def output_pdb(line,seq,index,line_index,align_residue):
     line_string = list(line)
     line_string[6:11] = f"{atom_count:5d}"
@@ -23,9 +25,11 @@ def align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count):
         atom_count+=1 
     return atom_count
 
-Structure = ["S","H","H","H","H","H","H","H","H","H","lT","H","H","H","H","H","H","H","H","H","H","H"]
-seq = "AAGCGCGCAAGGUUCGGGGGGCGCGCGCC"
-module = Module()
+pattern=generate_np_pattern("build_test.txt")
+seq,_ = trace_backbone(pattern)
+Structure = module_mapper(pattern)
+
+module = Module
 try:
     Structure_len = 1
     for i in range(1,len(Structure)):

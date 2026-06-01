@@ -1,5 +1,8 @@
 import numpy as np
-from utils.def_class import nucleotide
+if __name__ != "__main__":
+    from utils.def_class import  nucleotide
+else:
+    from def_class import nucleotide
 
 ### Nucleotides
 A=nucleotide(name = 'A', file = 'A.pdb', symbol = 'A')

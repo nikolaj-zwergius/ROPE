@@ -1,4 +1,4 @@
-import numpy as np
+
 one_letter_code = {"A":("A"),
                    "C":"C",
                    "G":"G",
@@ -15,128 +15,45 @@ one_letter_code = {"A":("A"),
                    "H":{"A","C","U"},
                    "D":{"A","G","U"},
                    "B":{"C","G","U"}}
-
 k_table = {"G":"U","U":"G"}
 base_pairs_table = {"A":"U","U":"A","G":"C","C":"G"}
 
-###(A,C,G,U)
-mutation_rate = {"A":(100,0,0,0),
-                   "C":(0,100,0,0),
-                   "G":(0,0,100,0),
-                   "U":(0,0,0,100),
-                   "T":(0,0,0,100),
-                   "W":(50,0,0,50),
-                   "S":(0,50,50,0),
-                   "K":(0,0,50,50),
-                   "N":(25,25,25,25),
-                   "Y":(50,0,50,0),
-                   "R":(0,50,0,50),
-                   "M":(50,50,0,0),
-                   "V":(33,33,33,0),
-                   "H":(33,33,0,33),
-                   "D":(33,0,33,33),
-                   "B":(0,33,33,33)}
+VALID_BASES = set(base_pairs_table.keys())
+NUCLEOTIDE_CHARS = set(one_letter_code.keys())
 
-class dirction():
-    row = 0
-    colum = 0
-    move_list ={}
-    def __int__(self,move_list):
-        move_list = self.move_list
-    def move(self,last_id):
-        return (last_id[0]+self.row,last_id[1]+self.colum)
-        
-class dir_up(dirction):
-    row = -1
-    def __init__(self):
-        super().__init__()
-        self.move_list = {"╭":dir_rigth,
-                    "╮":dir_left,
-                    "/":dir_rigth,
-                    chr(92):dir_left,}
-        self.replace_list = {"/":"╭",chr(92):"╮","-":"─"}
-        
-    def __repr__(self):
-        return "dir_up"
-    
-class dir_down(dirction):
-    row = 1
-    def __init__(self):
-        super().__init__()
-        self.move_list = {
-                    "╯":dir_left,"╰":dir_rigth,
-                    "/":dir_left,
-                    chr(92):dir_rigth,}
-        self.replace_list = {"/":"╯",chr(92):"╰","-":"─"}
-    def __repr__(self):
-        return "dir_down"
-class dir_left(dirction):
-    colum = -1
-    def __init__(self):
-        super().__init__()
-        self.move_list = {"╭":dir_down,
-                    "╰":dir_up,
-                    "/":dir_down,
-                    chr(92):dir_up,}
-        self.replace_list = {"/":"╭",chr(92):"╰","-":"─"}
-    def __repr__(self):
-        return "dir_left"
-class dir_rigth(dirction):
-    colum = 1
-    def __init__(self):
-        super().__init__()
-        self.move_list = {
-                    "╮":dir_down,
-                    "/":dir_up,
-                    "╯":dir_up,
-                    chr(92):dir_down,}
-        self.replace_list = {"/":"╮",chr(92):"╯","-":"─"}
-    def __repr__(self):
-        return "dir_rigth"
 
-def generate_np_pattern(file):
-    with open(file, encoding="utf-8") as input_file:
-        rows = 0
-        colum = 0
-        for line in input_file:
-            if  not line.isspace():
-                rows +=1
-            line=line.rstrip()
-            if len(line) >= colum:
-                colum = len(line)
-        rows -=1 
-        pattern = np.full((rows,colum)," ")
-        input_file.seek(0)
-        line_index = 0
-        for line in input_file:
-            if line.startswith(">") or line.isspace():
-                continue
-            line = line.rstrip()
-            for char_index,char in enumerate(line):
-                pattern[line_index][char_index]=char
-            line_index += 1
-    return pattern
 
-def find_5_prime(pattern:np.ndarray):
-    p5 = np.where(pattern=="5")
-    p5 = (p5[0][0],p5[1][0])
-    return p5
+mutation_rate = {   "A":(100,0,0,0),
+                    "C":(0,100,0,0),
+                    "G":(0,0,100,0),
+                    "U":(0,0,0,100),
+                    "T":(0,0,0,100),
+                    "W":(50,0,0,50),
+                    "S":(0,50,50,0),
+                    "K":(0,0,50,50),
+                    "N":(25,25,25,25),
+                    "Y":(50,0,50,0),
+                    "R":(0,50,0,50),
+                    "M":(50,50,0,0),
+                    "V":(33,33,33,0),
+                    "H":(33,33,0,33),
+                    "D":(33,0,33,33),
+                    "B":(0,33,33,33)
+                    }
 
-def check(pattern,id1,id2):
-    try:
-        return pattern[id1][id2]
-    except IndexError:
-        return ""
+restriction_motifs = [
+        "GGUCUC",
+        "GAGACC",
+        "GAAGAC",
+        "GUCUUC",
+        "CGUCUC",
+        "GAGACG",
+        "GCUCUUC",
+        "GAAGAGC",
+        "AUCUGUU",
+    ]
 
-def check_round(pattern,tup):
-    up= check(pattern,tup[0]-1,tup[1])
-    down= check(pattern,tup[0]+1,tup[1])
-    left = check(pattern,tup[0],tup[1]-1)
-    rigth = check(pattern,tup[0],tup[1]+1)
-    return up,down,left,rigth
 
-def reverse(seq):
-    for char in seq:
-        rev += base_pairs_table[char][0]
-        rev = rev[::-1]
-    return rev
+
+
+

@@ -3,18 +3,18 @@ SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import numpy as np
 import utils.rope_def as rd
-from utils.trace_utils import get_backbone_start, get_pattern_char
+from utils.trace_utils import get_backbone_start, generate_np_pattern, check_round
 
 
 
 
 def base_pair_id(pattern,tup):
-    up,down,left,rigth = rd.check_round(pattern,tup)
+    up,down,left,rigth = check_round(pattern,tup)
     if up in ["┊","!","*"]:
         return (tup[0]-2,tup[1]),up
     if down in ["┊","!","*"]:
         return (tup[0]+2,tup[1]),down
-    if pattern[tup[0]][tup[1]] in rd.one_letter_code.keys():
+    if pattern[tup[0]][tup[1]] in rd.NUCLEOTIDE_CHARS:
         return None,"."
     return None,None
 
@@ -27,9 +27,14 @@ def trace_backbone(pattern):
     bracket0 =[]
     bracket1 =[]
     bracket2 =[]
-
-    while get_pattern_char(pattern, next_base[0], next_base[1]) != "3":
-        next_base_name = get_pattern_char(pattern, next_base[0], next_base[1])
+    n_map = {}
+    strand_dir = {}
+    while pattern[next_base[0]][next_base[1]] != "3":
+        n_map[next_base] = 0
+        strand_dir[next_base] = dir
+        next_base_name = pattern[next_base[0]][next_base[1]]
+        if next_base_name == " ":
+            raise Exception
         match_id,match_type = base_pair_id(pattern,next_base)
         match match_type:
             case "*":
@@ -56,19 +61,21 @@ def trace_backbone(pattern):
             case ".":
                 base_pair+="."
             case _:
+        
                 pass
+        
 
-        if next_base_name in rd.one_letter_code.keys():
+        if next_base_name in rd.NUCLEOTIDE_CHARS:
             seq+=next_base_name
         if next_base_name in dir.move_list.keys():
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
-    return seq,base_pair
+    return seq,base_pair,n_map,strand_dir
 
 
 def trace_pattern_out(file):
-    pattern = rd.generate_np_pattern(file)
-    seq,base_pair= trace_backbone(pattern)
+    pattern = generate_np_pattern(file)
+    seq,base_pair,_,_= trace_backbone(pattern)
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
 
@@ -81,12 +88,12 @@ def trace_pattern_out(file):
 
 
 def trace_seq_into_backbone(seq:str,file: str):
-    new_pattern = rd.generate_np_pattern(file)
+    new_pattern = generate_np_pattern(file)
     _, first, dir = get_backbone_start(new_pattern)
     index = 0
     next_base = first
-    while get_pattern_char(new_pattern, next_base[0], next_base[1]) != "3":
-        next_base_name = get_pattern_char(new_pattern, next_base[0], next_base[1])
+    while new_pattern[next_base[0]][next_base[1]] != "3":
+        next_base_name = new_pattern[next_base[0]][next_base[1]]
         if next_base_name.isalpha():
             new_pattern[next_base[0]][next_base[1]] = seq[index]
             index+=1
@@ -107,6 +114,7 @@ if __name__ == "__main__":
             sys.exit()
     try:
         trace_pattern_out(opts[1])
+        print("done")
     except IndexError:
         print("no file given")
     

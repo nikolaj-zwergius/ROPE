@@ -17,12 +17,15 @@ class Module():
         self.symbol = symbol
         self.sequence = sequence
         self.have_seq = False
+        self.generate_cords()
+        self.set_len()
         
+    def set_len(self):
         if self.sequence is not None:
             self.have_seq = True
-            self.len = len(sequence)
+            self.len = len(self.sequence)
         elif self.build_cords is not None:
-            self.len = 1+len(self.build_cords)
+            self.len = len(self.build_cords)
         else:
             self.len = 1
     
