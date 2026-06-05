@@ -4,5 +4,5 @@
 *.pl
 *.bak
 *.pdb
-!**/RNA_lib/**/*
+!**/RNA_lib/**/*.pdb
 test.py
