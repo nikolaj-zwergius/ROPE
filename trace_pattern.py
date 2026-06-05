@@ -18,7 +18,7 @@ def base_pair_id(pattern,tup):
         return None,"."
     return None,None
 
-def trace_backbone(pattern):
+def trace_backbone(pattern,crossover = False):
     p5, first, dir = get_backbone_start(pattern)
 
     seq = ""
@@ -63,8 +63,8 @@ def trace_backbone(pattern):
             case _:
         
                 pass
-        
-
+        if crossover and next_base_name == "^":
+            seq+="^"
         if next_base_name in rd.NUCLEOTIDE_CHARS:
             seq+=next_base_name
         if next_base_name in dir.move_list.keys():

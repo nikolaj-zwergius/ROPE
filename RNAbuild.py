@@ -4,7 +4,8 @@ from utils.def_class import get_sugar_cords, Module
 from utils.modules import module_libary
 from utils.nucleotide import nucleotide_libary
 from trace_pattern import trace_backbone
-from utils.rope_def import generate_np_pattern
+from utils.trace_utils import generate_np_pattern
+from utils.module_mapper import module_mapper
 def output_pdb(line,seq,index,line_index,align_residue):
     line_string = list(line)
     line_string[6:11] = f"{atom_count:5d}"
@@ -26,13 +27,15 @@ def align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count):
     return atom_count
 
 pattern=generate_np_pattern("build_test.txt")
-seq,_ = trace_backbone(pattern)
+seq,_,_,_ = trace_backbone(pattern)
 Structure = module_mapper(pattern)
-
 module = Module
 try:
     Structure_len = 1
     for i in range(1,len(Structure)):
+        if Structure[i][0].isnumeric():
+            Structure_len += len(module_libary[Structure[i][1:]].segments[int(Structure[i][0])])
+            continue
         Structure_len += module_libary[Structure[i]].len
     assert Structure_len == len(seq)
 except AssertionError:
@@ -53,8 +56,8 @@ with open("target.pdb", "w") as f:
             residue_count+=1
             seq_index += 1
 
-        elif Structure[i][0].isdigit():
-            pass
+        elif Structure[i][0].isnumeric():
+            raise NotImplementedError("Segmented modules are not yet implemented in the building function.")
         else:
             mod = module_libary[Structure[i]]
             c,R,t = umeyama(module_libary[Structure[i]].start_cord,last_build)

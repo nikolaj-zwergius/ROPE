@@ -6,7 +6,7 @@ SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
 class Module():
-    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None):
+    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None,priority=0,len = None):
         self.name = name
         self.file = file
         self.start_cord = None
@@ -18,7 +18,11 @@ class Module():
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
-        self.set_len()
+        if len is None:
+            self.set_len()
+        else:
+            self.len = len
+        self.priority = priority
         
     def set_len(self):
         if self.sequence is not None:
@@ -64,7 +68,22 @@ class Module():
             return None, None, None, None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
     
-
+    def __lt__(self, other):
+        if self.priority < other.priority:
+            return True
+        elif self.priority == other.priority:
+            return self.len < other.len
+        else:
+            return False
+    def __gt__(self, other):
+        if self.priority > other.priority:
+            return True
+        elif self.priority == other.priority:
+            return self.len > other.len
+        else:
+            return False
+    def __eq__(self, other):
+        return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
     def __repr__(self): 
@@ -104,7 +123,7 @@ class nucleotide(Module):
             return None, None, None,None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
 class segmented_module(Module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = None):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0):
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -113,12 +132,16 @@ class segmented_module(Module):
             print(type(sequence),type(spacer),len(spacer),len(sequence)-1)
             raise AssertionError
         spaced_sequnces = []
+        self.segments = sequence
+        self.segments_len = len(sequence)
         for i in range(len(sequence)):
             spaced_sequnces.append(sequence[i])
             if i != len(sequence)-1:
                 spaced_sequnces.append(spacer[i])
-        super().__init__(name, file, symbol, spaced_sequnces)
+        spaced_sequnces = "".join(spaced_sequnces)
+        super().__init__(name, file, symbol, spaced_sequnces,priority=priority)
         self.spacer = spacer
+        
 
 def get_sugar_cords(coords):
     sugar_coord = {}
@@ -131,3 +154,39 @@ def get_sugar_cords(coords):
         sugar_corrd_list.append(sugar_coord[sc_sorted[i]])
     sugar_coord = np.array(sugar_corrd_list, dtype=np.float32)
     return sugar_coord
+
+
+class RangeDict(dict):
+
+    def __setitem__(self, key, value):
+        if key in self:
+            raise KeyError(f"Key {key} overlaps with existing key(s) in RangeDict.")
+        if not isinstance(key, range):
+            super().__setitem__(range(key,key+1), value)
+        else:
+            super().__setitem__(key, value)
+
+    def __contains__(self, item):
+        if not isinstance(item, range): # or xrange in Python 2
+            for key in self:
+                if item in key:
+                    return True
+            return False
+        else:
+            return super().__contains__(item)
+
+    def __getitem__(self, item):
+        if not isinstance(item, range): # or xrange in Python 2
+            for key in self:
+                if item in key:
+                    return self[key]
+            raise KeyError(item)
+        else:
+            return super().__getitem__(item)
+    def override(self, key, value):
+        if key not in self:
+            self.__setitem__(key, value)
+        if not isinstance(key, range):
+            super().__setitem__(range(key,key+1), value)
+        else:
+            super().__setitem__(key, value)
