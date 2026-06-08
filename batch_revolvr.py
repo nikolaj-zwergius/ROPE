@@ -6,6 +6,7 @@ import revolvr
 import trace_pattern
 import trace_analysis as ta
 import utils.trace_utils as tu
+from utils.render_utils import structure_printer
 import utils.rope_def as rd
 
 
@@ -24,8 +25,7 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq:
         out_file.write(f"feq: {feq:.2f}\n")
         out_file.write(f"ed: {ed:.2f}\n")
         out_file.write("\n\n\n")
-        tu.structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
-)
+        structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
         
 
 def _run_revolver_task(task: tuple[str, int, str]) -> None:

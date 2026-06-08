@@ -1,4 +1,4 @@
-
+import random
 one_letter_code = {"A":("A"),
                    "C":"C",
                    "G":"G",
@@ -16,7 +16,7 @@ one_letter_code = {"A":("A"),
                    "D":{"A","G","U"},
                    "B":{"C","G","U"}}
 k_table = {"G":"U","U":"G"}
-base_pairs_table = {"A":"U","U":"A","G":"C","C":"G"}
+base_pairs_table = {"A":"U","U":"A","G":"C","C":"G","N":"N"}
 
 VALID_BASES = set(base_pairs_table.keys())
 NUCLEOTIDE_CHARS = set(one_letter_code.keys())
@@ -56,4 +56,6 @@ restriction_motifs = [
 
 
 
-
+def mutate(mutation_rate:tuple[int,int,int,int])->str:
+    new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
+    return new_base[0]

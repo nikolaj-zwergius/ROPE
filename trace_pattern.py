@@ -28,9 +28,9 @@ def trace_backbone(pattern,crossover = False):
     bracket1 =[]
     bracket2 =[]
     n_map = {}
+    index = 0
     strand_dir = {}
     while pattern[next_base[0]][next_base[1]] != "3":
-        n_map[next_base] = 0
         strand_dir[next_base] = dir
         next_base_name = pattern[next_base[0]][next_base[1]]
         if next_base_name == " ":
@@ -65,11 +65,15 @@ def trace_backbone(pattern,crossover = False):
                 pass
         if crossover and next_base_name == "^":
             seq+="^"
+            base_pair+="^"
         if next_base_name in rd.NUCLEOTIDE_CHARS:
             seq+=next_base_name
+            n_map[next_base] = index
+            index +=1
         if next_base_name in dir.move_list.keys():
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
+        
     return seq,base_pair,n_map,strand_dir
 
 

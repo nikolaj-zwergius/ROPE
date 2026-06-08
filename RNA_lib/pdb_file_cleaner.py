@@ -53,7 +53,7 @@ def _format_pdb_atom_line(line: str) -> str:
     atom_name = _slice_field(line, 12, 16)
     alt_loc = _slice_field(line, 16, 17)
     res_name = _slice_field(line, 17, 20).strip()
-    chain_id = _slice_field(line, 21, 22)
+    chain_id = "A"
     res_seq = _slice_field(line, 22, 26).strip()
     i_code = _slice_field(line, 26, 27)
     x = _slice_field(line, 30, 38).strip()

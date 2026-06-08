@@ -47,21 +47,21 @@ def structure_printer(output, grid, seq_output:str, repeat_map:list, wobbles_seq
         for i in range(grid.shape[0]):
             row_chars = [render_strand_cell(grid[i][j], i, j, strand_dir) for j in range(grid.shape[1])]
             output.write("".join(row_chars) + "\n")
-
-        output.write("\n")
-        sequence_array = list(seq_output)
-        sequence_check = all(ch in VALID_BASES for ch in sequence_array)
-        if not sequence_check:
-            message ="\nSequence not suitable for pattern search.  Must only contain A, U C and G. \n"
-        else:
-            message= f"""\n\nHighlighting Repeat Sequences \n
-            WC complement region (P) {COMPLEMENT_WINDOW} or longer: {complement_zones} nts
-            Duplicated region (D) {DUPLICATE_WINDOW} or longer: {duplicate_zones} nts
-            Strong/Weak region (S/W) 8 or longer: {pattern_repeats} nts
-            5 or more in a row of the same nucleotide (A,U,C,G): {poly_repeats} nts
-            Common restriction site (X): {restriction_sites} nts
-            \n"""
-        render_pattern(output,message,repeat_map,n_map,grid)
-        render_pattern(output,"\n\nHighlighting GU Pairs\n",wobbles_seq,n_map,grid)
+        if seq_output.count("N") == 0:
+            output.write("\n")
+            sequence_array = list(seq_output)
+            sequence_check = all(ch in VALID_BASES for ch in sequence_array)
+            if not sequence_check:
+                message ="\nSequence not suitable for pattern search.  Must only contain A, U C and G. \n"
+            else:
+                message= f"""\n\nHighlighting Repeat Sequences \n
+                WC complement region (P) {COMPLEMENT_WINDOW} or longer: {complement_zones} nts
+                Duplicated region (D) {DUPLICATE_WINDOW} or longer: {duplicate_zones} nts
+                Strong/Weak region (S/W) 8 or longer: {pattern_repeats} nts
+                5 or more in a row of the same nucleotide (A,U,C,G): {poly_repeats} nts
+                Common restriction site (X): {restriction_sites} nts
+                \n"""
+            render_pattern(output,message,repeat_map,n_map,grid)
+            render_pattern(output,"\n\nHighlighting GU Pairs\n",wobbles_seq,n_map,grid)
         render_pattern(output,"\n\nHighlighting Structural Barriers\n\n",barriers,n_map,grid)
 

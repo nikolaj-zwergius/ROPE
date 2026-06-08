@@ -36,22 +36,20 @@ def compute_ED(seq:str) -> tuple[float,float,float]:
     # #print everything like RNAfold -p --MEA
     return mfe, fc.pr_structure(mfe_struct), fc.mean_bp_distance()
 
-def mutate(mutation_rate:tuple[int,int,int,int])->str:
-    new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
-    return new_base[0]
+
 
 def initlize_structure(file:str)->tuple[str,str,str,str]:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
         pattern= tu.generate_np_pattern(file)
-    init_seq,init_struc = tp.trace_backbone(pattern)
+    init_seq,init_struc,_,_ = tp.trace_backbone(pattern)
     
     stack = []
     stack1 = []
     seq = ""
     for i in range(len(init_seq)):
         if init_struc[i] in ["("]:
-            new_base=mutate(rd.mutation_rate[init_seq[i]])
+            new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
             seq += new_base
             if init_seq[i] == "K":
                 stack.append(rd.k_table[new_base])
@@ -62,10 +60,10 @@ def initlize_structure(file:str)->tuple[str,str,str,str]:
             if test_base in rd.one_letter_code[init_seq[i]]:
                 seq += test_base
             else:
-                new_base=mutate(rd.mutation_rate[init_seq[i]])
+                new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
                 seq += new_base
         elif init_struc[i] in ["["]:
-            new_base=mutate(rd.mutation_rate[init_seq[i]])
+            new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
             seq += new_base
             if init_seq[i] == "K":
                 stack1.append(rd.k_table[new_base])
@@ -76,13 +74,13 @@ def initlize_structure(file:str)->tuple[str,str,str,str]:
             if test_base in rd.one_letter_code[init_seq[i]]:
                 seq += test_base
             else:
-                new_base=mutate(rd.mutation_rate[init_seq[i]])
+                new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
                 seq += new_base
         elif init_struc[i] in ["{"]:
             if init_seq[i] == "N":
-                new_base=mutate((0,50,50,0))
+                new_base=rd.mutate((0,50,50,0))
             else:
-                new_base=mutate(rd.mutation_rate[init_seq[i]])
+                new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
             seq += new_base
             if init_seq[i] == "K":
                 stack1.append(rd.k_table[new_base])
@@ -93,10 +91,10 @@ def initlize_structure(file:str)->tuple[str,str,str,str]:
             if test_base in rd.one_letter_code[init_seq[i]]:
                 seq += test_base
             else:
-                new_base=mutate(rd.mutation_rate[init_seq[i]])
+                new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
                 seq += new_base
         else:
-            new_base=mutate(rd.mutation_rate[init_seq[i]])
+            new_base=rd.mutate(rd.mutation_rate[init_seq[i]])
             seq += new_base
     clean_struc=init_struc.replace("[",".").replace("{",".").replace("}",".").replace("]",".")
     return name,init_seq,init_struc,seq,clean_struc
@@ -110,13 +108,13 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
         for i in range(len(mutate_mask)):
             if mutate_mask[i] == "X" and i in bp_map.keys():
                 if init_seq[i] == "N":
-                    new_base=mutate(mutate_weitg)
+                    new_base=rd.mutate(mutate_weitg)
                     new_seq[i]=new_base
                 else:
                     new_seq[i]=seq[i]
                 new_seq[bp_map[i]] = random.choice(rd.base_pairs_table[new_seq[i]])
             elif mutate_mask[i] == "X" and clean_struc[i] == ".":
-                new_base=mutate(mutate_weitg)
+                new_base=rd.mutate(mutate_weitg)
                 new_seq[i]=new_base
             else:
                 new_seq[i]=seq[i]
@@ -194,8 +192,8 @@ def base_pair_mapper(clean_struc:str) -> dict:
     return base_pair_map
 
 def penalty_score(seq:str,struc:str) -> tuple[list,int]:
-    _, scrubbed_sequence = tu.map_structure(struc, seq)
-    new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(scrubbed_sequence)
+    
+    new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq)
     PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
     return new_seq, PS
@@ -222,23 +220,23 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
 
     for i in range(len(seq)):
         if ps_matix[i] in ["S","W","X","D"]:
-            mutate_matix[i] = mutate((25,25,25,25))
+            mutate_matix[i] = rd.mutate((25,25,25,25))
         elif ps_matix[i] in ["G","U","C","A"]:
             match ps_matix[i]:
                 case "G":
-                    mutate_matix[i] = random.choice([mutate((25,25,25,25)),"G"])
+                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"G"])
                 case "U":
-                    mutate_matix[i] = random.choice([mutate((25,25,25,25)),"U"])
+                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"U"])
                 case "C":
-                    mutate_matix[i] = random.choice([mutate((25,25,25,25)),"C"])
+                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"C"])
                 case "A":
-                    mutate_matix[i] = random.choice([mutate((25,25,25,25)),"A"])
+                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"A"])
         elif ps_matix[i] == "P":
             mutate_matix[i] = random.choices(["K","-"],(1,14),k=1)[0]
             if mutate_matix[i] == "-":
                 mutate_matix[i] = random.choices(["M","-"],(1,4),k=1)[0]
             if mutate_matix[i] == "M":
-                mutate_matix[i] = mutate((25,25,25,25))
+                mutate_matix[i] = rd.mutate((25,25,25,25))
         if seq[i] in ["G","U"] and i in bp_map.keys() and mutate_matix[i] in "-":
             if seq[bp_map[i]] in ["G","U"]:
                 mutate_matix[i] = random.choices(["K","A"],(9,1),k=1)[0]
