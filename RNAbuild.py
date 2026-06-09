@@ -4,7 +4,7 @@ from utils.def_class import get_sugar_cords, Module
 from utils.modules import module_libary
 from utils.nucleotide import nucleotide_libary
 from trace_pattern import trace_backbone
-from utils.trace_utils import generate_np_pattern
+from utils.trace_utils import generate_np_pattern, map_structure
 from utils.module_mapper import module_mapper
 def output_pdb(line,seq,index,line_index,align_residue):
     line_string = list(line)
@@ -23,12 +23,21 @@ def align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count):
     align_residue = nucleotide_libary[seq[seq_index]].build_cords[0].dot(c2*R2)+t2
     for line_index,line in enumerate(nucleotide_libary[seq[seq_index]].build_lines[0]):
         f.write(output_pdb(line,seq,seq_index,line_index,align_residue))
-        atom_count+=1 
-    return atom_count
+        atom_count += 1
+    return atom_count, align_sugar
 
 pattern=generate_np_pattern("build_test.txt")
-seq,_,_,_ = trace_backbone(pattern)
-Structure = module_mapper(pattern)
+seq,base_pairs,_,_ = trace_backbone(pattern)
+mapping = map_structure(base_pairs)
+
+Structure:str = module_mapper(pattern)
+build = [None]*(len(seq)+1)
+print(Structure)
+print("K:",Structure.count("K"))
+print("T:",Structure.count("T"))
+print("X:",Structure.count("X"))
+print("B:",Structure.count("B"))
+print("H:",Structure.count("H"))
 module = Module
 try:
     Structure_len = 1
@@ -43,6 +52,8 @@ except AssertionError:
     print(f"Length of structure: {Structure_len}, Length of sequence: {len(seq)}")
     exit(1)
 
+
+
 with open("target.pdb", "w") as f:
     atom_count = 1
     residue_count = 1
@@ -53,31 +64,51 @@ with open("target.pdb", "w") as f:
                 f.write("".join(line))
                 atom_count+=1
             last_build = nucleotide_libary[seq[i]].start_cord
+            build[residue_count-1]=(last_build)
             residue_count+=1
             seq_index += 1
 
         elif Structure[i][0].isnumeric():
             raise NotImplementedError("Segmented modules are not yet implemented in the building function.")
+        elif Structure[i] == "H":
+            mod = module_libary[Structure[i]]
+            try:
+                print(module_libary[Structure[i]].start_cord.shape,build[mapping[residue_count-1]].shape,residue_count)
+                print(seq[residue_count-1])
+            except:
+                print(residue_count,build[mapping[residue_count-1]])
+            c,R,t = umeyama(module_libary[Structure[i]].start_cord,build[mapping[residue_count-1]])
+            for res_index,residue in enumerate(mod.build_cords):
+                atom_count, aligned_sugar = align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count)
+                build[residue_count-1] = aligned_sugar
+                last_build = aligned_sugar
+                seq_index += 1
+                residue_count += 1
         else:
             mod = module_libary[Structure[i]]
             c,R,t = umeyama(module_libary[Structure[i]].start_cord,last_build)
             if mod.have_seq:
                 for res_index,residue in enumerate(mod.build_cords):
+                    aligned_sugar = get_sugar_cords(mod.coord_dict[res_index]).dot(c*R)+t
                     align_residue = residue.dot(c*R)+t
                     if mod.sequence[res_index] == "N":
-                        atom_count = align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count)
+                        atom_count, aligned_sugar = align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count)
                     else:    
                         for line_index,line in enumerate(mod.build_lines[res_index]):
                             f.write(output_pdb(line,mod.sequence,res_index,line_index,align_residue))
-                            atom_count+=1
-                    residue_count+=1
+                            atom_count += 1
+                    build[residue_count-1] = aligned_sugar
+                    last_build = aligned_sugar
+                    residue_count += 1
                     seq_index += 1
-            elif mod.have_seq and mod.sequence.count("N") > 0:
-                pass
             else:
-                 for res_index,residue in enumerate(mod.build_cords):
-                    atom_count = align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count)
-                    residue_count+=1
-                    seq_index+=1
-            last_build = mod.last_coord.dot(c*R)+t
+                for res_index,residue in enumerate(mod.build_cords):
+                    atom_count, aligned_sugar = align_base_to_backbonde(f,mod,res_index,seq_index,seq,atom_count)
+                    build[residue_count-1] = aligned_sugar
+                    last_build = aligned_sugar
+                    residue_count += 1
+                    seq_index += 1
+            # keep the module end point for later alignment too
+            build[residue_count-1] = last_build
 
+            

@@ -32,9 +32,12 @@ class Module():
             self.len = len(self.build_cords)
         else:
             self.len = 1
+        if len(self.build_cords) != self.len:
+            raise Exception(f"Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
     
     def generate_cords(self):
         self.start_cord,self.build_cords,self.build_lines,self.last_coord,self.coord_dict = self._generate_cords()
+        
 
     def _generate_cords(self):
         start_res_id = None
