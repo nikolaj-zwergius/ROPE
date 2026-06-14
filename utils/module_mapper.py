@@ -1,7 +1,7 @@
 ﻿
 from revolvr import base_pair_mapper
 from utils.trace_utils import generate_np_pattern, map_structure
-from utils.modules import module_libary
+from utils.modules import module_libary, Helix, base
 from trace_pattern import trace_backbone
 from utils.rope_def import one_letter_code
 from utils.def_class import segmented_module, RangeDict
@@ -56,7 +56,6 @@ def module_mapper(pattern):
                 continue
             if module == module_libary["K"]:
                 if seq_index in kls:
-                    print(seq[seq_index-4:seq_index+9])
                     covered[range(seq_index-4,seq_index+9)] = "K"
                 continue
             
@@ -71,10 +70,10 @@ def module_mapper(pattern):
                     if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
     for i in range(length):
-        if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]=="B":
-            covered[i] = "H"
+        if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
+            covered[i] = Helix.symbol
         elif i not in covered:
-            covered[i] = "B"
+            covered[i] = base.symbol
     stack = []
     range_stack = []
     for key in covered:
@@ -87,13 +86,13 @@ def module_mapper(pattern):
             stack.append(covered[key][1:])
             range_stack.append(key)
     for i in range_stack:
-        covered.override(i, "B")
+        covered.override(i, base.symbol)
     map_list = []
     covered_list = sorted(covered.items(), key=lambda x: x[0].start if isinstance(x[0], range) else x[0])
     for i in covered_list:
-        if covered[i[0]] == "B":
+        if covered[i[0]] == base.symbol:
             for j in i[0]:
-                map_list.append("B")
+                map_list.append(base.symbol)
             continue
         map_list.append(covered[i[0]])
     map_list[0]="S"

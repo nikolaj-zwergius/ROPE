@@ -125,6 +125,8 @@ class nucleotide(Module):
             print(f"File {self.file} not found. Please check the file path.")
             return None, None, None,None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
+
+
 class segmented_module(Module):
     def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0):
         try:
@@ -144,9 +146,86 @@ class segmented_module(Module):
         spaced_sequnces = "".join(spaced_sequnces)
         super().__init__(name, file, symbol, spaced_sequnces,priority=priority)
         self.spacer = spacer
+        self.generate_segment_cords()
+    def generate_segment_cords(self) -> None:
+        self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords()
+        return
+    def _generate_segment_cords(self)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
+        segment_sugar_coord = []
+        segment_other_res_coord = []
+        segment_other_res_lines = []
+        segment_last_coord = []
+        segment_other_res_coord_dict = []
+        start_res_coord = []
+        segment_other_res_coord_list = []
+
+        segment_range = RangeDict()
+        current = 1
+        element = 0
+        for seg in self.segments:
+            segment_range[range(current,current+len(seg)+1)] = element
+            if element >= len(self.spacer):
+                break
+            current += len(seg)
+            current += len(self.spacer[element])
+            element += 1
+        
+        
+        try:
+            segment_coords = [[] for i in range(len(segment_range))]
+            line_count = 0
+            with open(FOLDER + self.file, 'r') as f:
+                for line in f:
+                    if not line.startswith('ATOM'):
+                        continue
+                    if int(line[22:26]) in segment_range:
+                        segment_coords[segment_range[int(line[22:26])]].append(line)
+        
+        except FileNotFoundError:
+            print(f"File {self.file} not found. Please check the file path.")
+            raise
+        seq_index = 0
+
+        for seg in segment_coords:
+            start_res_id = None
+            segment_sugar_coord.append([])
+            segment_other_res_coord.append([])
+            segment_other_res_lines.append([])
+            segment_last_coord.append([])
+            segment_other_res_coord_dict.append([])
+            segment_other_res_coord_list.append([])
+            start_res_coord.append([])
+            current_res_id = None
+            
+            for line in seg:
+                
+                if start_res_id is None:
+                    start_res_id = int(line[22:26])
+                    start_res_coord[seq_index].append({})
+                elif int(line[22:26]) != start_res_id:
+                    if int(line[22:26]) != current_res_id:
+                        segment_other_res_coord[seq_index].append({})
+                        segment_other_res_lines[seq_index].append([])
+                        current_res_id = int(line[22:26])
+                    segment_other_res_coord[seq_index][-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
+                    segment_other_res_lines[seq_index][-1].append(line)
+                if int(line[22:26]) == start_res_id and seq_index == 0:
+                    start_res_coord[seq_index][-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
+            if seq_index != 0:
+                segment_sugar_coord[seq_index] = segment_last_coord[seq_index-1]
+                print(segment_sugar_coord[seq_index])
+            if seq_index == 0:
+                segment_sugar_coord[seq_index] = get_sugar_cords(start_res_coord[seq_index][-1])
+            segment_last_coord[seq_index] = get_sugar_cords(segment_other_res_coord[seq_index][-1])
+            segment_other_res_coord_dict[seq_index] = segment_other_res_coord[seq_index]
+            for i in range(len(segment_other_res_coord[seq_index])):
+                segment_other_res_coord_list[seq_index].append(np.array(list(segment_other_res_coord[seq_index][i].values()), dtype=np.float32))
+            print(segment_other_res_coord_list[seq_index][0])
+            seq_index += 1
+        return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
         
 
-def get_sugar_cords(coords):
+def get_sugar_cords(coords) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]
     for atom in coords.keys():
