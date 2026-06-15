@@ -41,12 +41,18 @@ def module_mapper(pattern):
 
     kl_detect = False
     kls = []
+    soft_kls = []
     for i in range(len(clean_struc)):
         if (clean_struc[i] == "[" or clean_struc[i] == "]") and not kl_detect:
             kl_detect = True
             kls.append(i)
         if kl_detect and (clean_struc[i] != "[" and clean_struc[i] != "]"):
             kl_detect = False
+    for i in range(len(seq)-9):
+        if seq[i:i+2] != "AA" and seq[i+9] !="A":
+            continue
+        if clean_struc[i:i+9] == ".........":
+            soft_kls.append(i)
 
     modules = sorted(module_libary.values(), reverse=True)
     for module in modules:
@@ -57,6 +63,8 @@ def module_mapper(pattern):
             if module == module_libary["K"]:
                 if seq_index in kls:
                     covered[range(seq_index-4,seq_index+9)] = "K"
+                if seq_index in soft_kls:
+                    covered[range(seq_index-2,seq_index+11)] = "K"
                 continue
             
             if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
