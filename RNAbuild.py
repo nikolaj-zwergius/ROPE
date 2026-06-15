@@ -52,7 +52,7 @@ except AssertionError:
     print(f"Length of structure: {Structure_len}, Length of sequence: {len(seq)}")
     exit(1)
 
-
+segment_stack={}
 
 with open("target.pdb", "w") as f:
     atom_count = 1
@@ -69,9 +69,16 @@ with open("target.pdb", "w") as f:
             seq_index += 1
 
         elif Structure[i][0].isnumeric():
+            if Structure[i][0] == "0":
+                last = last_build
+                if Structure[i][1:] not in segment_stack:
+                    segment_stack[Structure[i][1:]] = []
+            else:
+                last = segment_stack[Structure[i][1:]].pop(-1)
+                
             seg_index = int(Structure[i][0])
             mod:segmented_module = module_libary[Structure[i][1:]]
-            c,R,t = umeyama(mod.segment_start_cord[seg_index],last_build)
+            c,R,t = umeyama(mod.segment_start_cord[seg_index],last)
             for res_index,residue in enumerate(mod.segment_build_cords[seg_index]):
                 aligned_sugar = get_sugar_cords(mod.segment_coord_dict[seg_index][res_index]).dot(c*R)+t
                 align_residue = residue.dot(c*R)+t
@@ -86,6 +93,8 @@ with open("target.pdb", "w") as f:
                 last_build = aligned_sugar
                 residue_count += 1
                 seq_index += 1
+            if Structure[i][0] == "0":
+                segment_stack[Structure[i][1:]].append(last_build)
         elif Structure[i] == Helix.symbol:
             mod = module_libary[Structure[i]]
             c,R,t = umeyama(module_libary[Structure[i]].start_cord,build[mapping[residue_count-1]])
