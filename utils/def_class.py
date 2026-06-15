@@ -6,7 +6,7 @@ SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
 class Module():
-    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None,priority=0,len = None):
+    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None,priority=0,len = None,ligand:str|None=None):
         self.name = name
         self.file = file
         self.start_cord = None
@@ -18,6 +18,9 @@ class Module():
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
+        self.ligand = ligand
+        if ligand is not None:
+            self.ligand_coords,self.ligand_lines = self.get_ligand_coords()
         if len is None:
             self.set_len()
         else:
@@ -70,7 +73,30 @@ class Module():
             print(f"File {self.file} not found. Please check the file path.")
             return None, None, None, None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
-    
+    def get_ligand_coords(self):
+        other_res_coord = []
+        other_res_lines = []
+        current_res_id = None
+        try:
+            with open(FOLDER + self.file, 'r') as f:
+                for line in f:
+                    if not line.startswith('ATOM') and not line.startswith("HETATM"):
+                        continue
+                    if line[17:20] == self.ligand:
+                        if int(line[22:26]) != current_res_id:
+                            other_res_coord.append({})
+                            other_res_lines.append([])
+                            current_res_id = int(line[22:26])
+                        other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54])) 
+                        other_res_lines[-1].append(line)
+            other_res_coord_dict = other_res_coord.copy()
+
+            for i in range(len(other_res_coord)):
+                other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
+            print(len(other_res_lines[0]))
+            return other_res_coord,other_res_lines
+        except FileNotFoundError:
+            print(f"File {self.file} not found. Please check the file path.")
     def __lt__(self, other):
         if self.priority < other.priority:
             return True
@@ -128,7 +154,7 @@ class nucleotide(Module):
 
 
 class segmented_module(Module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0,ligand:str|None=None):
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -144,7 +170,7 @@ class segmented_module(Module):
             if i != len(sequence)-1:
                 spaced_sequnces.append(spacer[i])
         spaced_sequnces = "".join(spaced_sequnces)
-        super().__init__(name, file, symbol, spaced_sequnces,priority=priority)
+        super().__init__(name, file, symbol, spaced_sequnces,priority=priority,ligand=ligand)
         self.spacer = spacer
         self.generate_segment_cords()
     def generate_segment_cords(self) -> None:
@@ -213,14 +239,14 @@ class segmented_module(Module):
                     start_res_coord[seq_index][-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
             if seq_index != 0:
                 segment_sugar_coord[seq_index] = segment_last_coord[seq_index-1]
-                print(segment_sugar_coord[seq_index])
+                
             if seq_index == 0:
                 segment_sugar_coord[seq_index] = get_sugar_cords(start_res_coord[seq_index][-1])
             segment_last_coord[seq_index] = get_sugar_cords(segment_other_res_coord[seq_index][-1])
             segment_other_res_coord_dict[seq_index] = segment_other_res_coord[seq_index]
             for i in range(len(segment_other_res_coord[seq_index])):
                 segment_other_res_coord_list[seq_index].append(np.array(list(segment_other_res_coord[seq_index][i].values()), dtype=np.float32))
-            print(segment_other_res_coord_list[seq_index][0])
+           
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
         
