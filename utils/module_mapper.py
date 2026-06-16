@@ -49,10 +49,9 @@ def module_mapper(pattern):
         if kl_detect and (clean_struc[i] != "[" and clean_struc[i] != "]"):
             kl_detect = False
     for i in range(len(seq)-9):
-        if seq[i:i+2] != "AA" and seq[i+9] !="A":
-            continue
-        if clean_struc[i:i+9] == ".........":
-            soft_kls.append(i)
+        if seq[i:i+2] == "AA" and seq[i+9] =="A":
+            if clean_struc[i:i+9] == ".........":
+                soft_kls.append(i)
 
     modules = sorted(module_libary.values(), reverse=True)
     for module in modules:
@@ -84,15 +83,25 @@ def module_mapper(pattern):
             covered[i] = base.symbol
     stack = []
     range_stack = []
+    istack = []
+    irange_stack = []
     for key in covered:
         if len(key) == 1:
             continue
-        if covered[key][1:] in stack:
-            stack.pop()
-            range_stack.pop()
         if covered[key][0] == "0":
             stack.append(covered[key][1:])
             range_stack.append(key)
+        if covered[key][0] == "1":
+            istack.append(covered[key][1:])
+            irange_stack.append(key)
+    for key in covered:
+        if covered[key][1:] in stack and covered[key][0] != "0":
+            stack.pop()
+            range_stack.pop()
+        if covered[key][1:] in istack and covered[key][0] != "1":
+            istack.pop()
+            irange_stack.pop()
+    range_stack.extend(irange_stack)
     for i in range_stack:
         covered.override(i, base.symbol)
     map_list = []
@@ -104,4 +113,21 @@ def module_mapper(pattern):
             continue
         map_list.append(covered[i[0]])
     map_list[0]="S"
+
+    pairs = {}
+    for i,element in enumerate(map_list):
+        if element[0] in ["H","S","T","K","X"]:
+            continue
+        if element[0].isnumeric():
+            if element[1:] in pairs:
+                if int(element[0]) < int(pairs[element[1:]][0]):
+                    map_list[pairs[element[1:]][1]] = "i"+element
+                    map_list[i] = "i"+pairs[element[1:]][2]
+                else:
+                    print(">")
+            else:
+                pairs[element[1:]] = (element[0],i,element)
+    print(pairs)
+        
+
     return map_list

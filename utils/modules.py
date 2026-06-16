@@ -12,7 +12,7 @@ KissingLoop = Module(name = 'KissingLoop', file = 'KissingLoop.pdb', symbol = 'K
 ### Fluorescent Modules
 
 
-Broccoli = segmented_module(name = 'Broccoli', file = 'Brocolli_dye.pdb', symbol = 'B',sequence = ["GGACGGUCGGGUCCAG","CUGUCGAGUAGAGUGUGGGCU"],spacer = ["UUCG"],priority=2,ligand="2ZY")
+Broccoli = segmented_module(name = 'Broccoli', file = 'Brocolli_dye.pdb', symbol = 'B',sequence = ["GACGGUCGGGUCCAG","UGUCGAGUAGAGUGUGGGC"],spacer = ["UUCGC"],priority=2,ligand="2ZY")
 #Mango = segmented_module(name = 'Mango', file = 'mango.pdb', symbol = 'M',sequence = ["GUGCGAAGGGACGGUGC","GGAGAGGAGAGCAC"],priority=2)
 #Pepper = segmented_module(name = 'Pepper', file = 'pepper.pdb', symbol = 'P',sequence = ["part1","part2"],spacer =["UUCG"],priority=2)
 #Cilivia = segmented_module(name = 'Cilivia', file = 'cilivia.pdb', symbol = 'C',sequence = ["part1","part2"],spacer =["UUCG"],priority=2)

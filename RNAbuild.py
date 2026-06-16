@@ -55,6 +55,8 @@ def RNAbuild(file,output):
     mapping = map_structure(base_pairs)
 
     Structure:str = module_mapper(pattern)
+    print(Structure)
+    print(Structure.count("B"),Structure.count("0B"),Structure.count("1B"))
     build = [None]*(len(seq)+1)
     ligand_stack = []
     module = Module
@@ -63,6 +65,9 @@ def RNAbuild(file,output):
         for i in range(1,len(Structure)):
             if Structure[i][0].isnumeric():
                 Structure_len += len(module_libary[Structure[i][1:]].segments[int(Structure[i][0])])
+                continue
+            if Structure[i][0] == "i":
+                Structure_len += len(module_libary[Structure[i][2:]].segments[int(Structure[i][1])])
                 continue
             Structure_len += module_libary[Structure[i]].len
         assert Structure_len == len(seq)
@@ -87,16 +92,26 @@ def RNAbuild(file,output):
                 residue_count+=1
                 seq_index += 1
 
-            elif Structure[i][0].isnumeric():
+            elif Structure[i][0].isnumeric() or Structure[i][0]=="i":
                 if Structure[i][0] == "0":
                     last = last_build
                     if Structure[i][1:] not in segment_stack:
                         segment_stack[Structure[i][1:]] = []
+                elif Structure[i][0] == "i" and Structure[i][1] == "0":
+                    last = last_build
+                    if Structure[i][2:] not in segment_stack:
+                        segment_stack[Structure[i][2:]] = []
+                elif Structure[i][0] == "i" and Structure[i][1] == "1":
+                    last = segment_stack[Structure[i][2:]].pop(-1)
                 else:
                     last = segment_stack[Structure[i][1:]].pop(-1)
-
-                seg_index = int(Structure[i][0])
-                mod:segmented_module = module_libary[Structure[i][1:]]
+                
+                if Structure[i][0] == "0":
+                    seg_index = int(Structure[i][0])
+                    mod:segmented_module = module_libary[Structure[i][1:]]
+                else:
+                    seg_index = int(Structure[i][1])
+                    mod:segmented_module = module_libary[Structure[i][2:]].inverted()
                 c,R,t = umeyama(mod.segment_start_cord[seg_index],last)
                 for res_index,residue in enumerate(mod.segment_build_cords[seg_index]):
                     aligned_sugar = get_sugar_cords(mod.segment_coord_dict[seg_index][res_index]).dot(c*R)+t
@@ -105,7 +120,7 @@ def RNAbuild(file,output):
                         atom_count, aligned_sugar = align_base_to_backbonde(f,mod.segment_coord_dict[seg_index],res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
                     else:    
                         for line_index,line in enumerate(mod.segment_build_lines[seg_index][res_index]):
-                            f.write(output_pdb(line,mod.segments[seg_index],res_index,line_index,align_residue))
+                            f.write(output_pdb(line,mod.segments[seg_index],res_index,line_index,align_residue,atom_count,residue_count))
                             atom_count += 1
                     build[residue_count-1] = aligned_sugar
                     last_build = aligned_sugar
@@ -113,6 +128,10 @@ def RNAbuild(file,output):
                     seq_index += 1
                 if Structure[i][0] == "0":
                     segment_stack[Structure[i][1:]].append(last_build)
+                    if mod.ligand:
+                        ligand_addtion(f,(c,R,t),mod,ligand_stack)
+                elif Structure[i][1] =="0":
+                    segment_stack[Structure[i][2:]].append(last_build)
                     if mod.ligand:
                         ligand_addtion(f,(c,R,t),mod,ligand_stack)
             elif Structure[i] == Helix.symbol:

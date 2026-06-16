@@ -173,10 +173,10 @@ class segmented_module(Module):
         super().__init__(name, file, symbol, spaced_sequnces,priority=priority,ligand=ligand)
         self.spacer = spacer
         self.generate_segment_cords()
-    def generate_segment_cords(self) -> None:
-        self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords()
+    def generate_segment_cords(self,invsers = False) -> None:
+        self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
-    def _generate_segment_cords(self)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
+    def _generate_segment_cords(self,invsers)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -187,6 +187,8 @@ class segmented_module(Module):
 
         segment_range = RangeDict()
         current = 1
+        if invsers:
+            current+=1
         element = 0
         for seg in self.segments:
             segment_range[range(current,current+len(seg)+1)] = element
@@ -211,7 +213,9 @@ class segmented_module(Module):
             print(f"File {self.file} not found. Please check the file path.")
             raise
         seq_index = 0
-
+        if invsers:
+            segment_coords = segment_coords[::-1]
+            
         for seg in segment_coords:
             start_res_id = None
             segment_sugar_coord.append([])
@@ -224,7 +228,6 @@ class segmented_module(Module):
             current_res_id = None
             
             for line in seg:
-                
                 if start_res_id is None:
                     start_res_id = int(line[22:26])
                     start_res_coord[seq_index].append({})
@@ -246,11 +249,16 @@ class segmented_module(Module):
             segment_other_res_coord_dict[seq_index] = segment_other_res_coord[seq_index]
             for i in range(len(segment_other_res_coord[seq_index])):
                 segment_other_res_coord_list[seq_index].append(np.array(list(segment_other_res_coord[seq_index][i].values()), dtype=np.float32))
-           
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
-        
-
+    def inverted(self):
+        mod = inv_segmented_module("i"+self.name,self.file,"i"+self.symbol,self.segments,self.spacer,self.priority,self.ligand)
+        return mod
+class inv_segmented_module(segmented_module):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence=None, spacer=[""], priority=0, ligand = None):
+        super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
+        self.generate_segment_cords(True)
+        self.segments = sequence[::-1]
 def get_sugar_cords(coords) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]
