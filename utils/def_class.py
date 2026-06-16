@@ -36,7 +36,7 @@ class Module():
         else:
             self.len = 1
         if len(self.build_cords) != self.len:
-            raise Exception(f"Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
+            raise Exception(f"{self.name}: Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
     
     def generate_cords(self):
         self.start_cord,self.build_cords,self.build_lines,self.last_coord,self.coord_dict = self._generate_cords()
@@ -93,7 +93,7 @@ class Module():
 
             for i in range(len(other_res_coord)):
                 other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
-            print(len(other_res_lines[0]))
+            
             return other_res_coord,other_res_lines
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
@@ -173,6 +173,13 @@ class segmented_module(Module):
         super().__init__(name, file, symbol, spaced_sequnces,priority=priority,ligand=ligand)
         self.spacer = spacer
         self.generate_segment_cords()
+        assert len(self.build_cords) == len(self.sequence)
+        for i in range(len(self.segment_build_cords)):
+            try:
+                assert len(self.segment_build_cords[i])==len(self.segments[i])
+            except AssertionError:
+                print(f"Length of segment seqcencs {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
+                raise
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
@@ -187,10 +194,13 @@ class segmented_module(Module):
 
         segment_range = RangeDict()
         current = 1
-        if invsers:
-            current+=1
         element = 0
+        
+        if invsers:
+            current =1
+        
         for seg in self.segments:
+            
             segment_range[range(current,current+len(seg)+1)] = element
             if element >= len(self.spacer):
                 break
@@ -259,6 +269,13 @@ class inv_segmented_module(segmented_module):
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
         self.generate_segment_cords(True)
         self.segments = sequence[::-1]
+        try:
+            for i in range(len(sequence)):
+                assert len(self.segment_build_cords[i]) == len(self.segments[i])
+        except AssertionError:
+            print(self.name,f"segment = {i}",len(self.build_cords[i]),len(self.segments[i]))
+            raise
+
 def get_sugar_cords(coords) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]

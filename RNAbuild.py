@@ -31,6 +31,7 @@ def align_base_to_backbonde(f,coord_dict,res_index,seq_index,seq,atom_count,alig
     align_sugar = sugar_residue.dot(c*R)+t
     c2,R2,t2 = umeyama(nucleotide_libary[seq[seq_index]].start_cord,align_sugar)
     align_residue = nucleotide_libary[seq[seq_index]].build_cords[0].dot(c2*R2)+t2
+    #print(nucleotide_libary[seq[seq_index]])
     for line_index,line in enumerate(nucleotide_libary[seq[seq_index]].build_lines[0]):
         f.write(output_pdb(line,seq,seq_index,line_index,align_residue,atom_count,residue_count))
         atom_count += 1
@@ -56,7 +57,6 @@ def RNAbuild(file,output):
 
     Structure:str = module_mapper(pattern)
     print(Structure)
-    print(Structure.count("B"),Structure.count("0B"),Structure.count("1B"))
     build = [None]*(len(seq)+1)
     ligand_stack = []
     module = Module
@@ -89,6 +89,7 @@ def RNAbuild(file,output):
                     atom_count+=1
                 last_build = nucleotide_libary[seq[i]].start_cord
                 build[residue_count-1]=(last_build)
+                #print(seq_index,seq[seq_index],residue_count)
                 residue_count+=1
                 seq_index += 1
 
@@ -106,7 +107,7 @@ def RNAbuild(file,output):
                 else:
                     last = segment_stack[Structure[i][1:]].pop(-1)
                 
-                if Structure[i][0] == "0":
+                if Structure[i][0].isnumeric():
                     seg_index = int(Structure[i][0])
                     mod:segmented_module = module_libary[Structure[i][1:]]
                 else:
@@ -118,12 +119,14 @@ def RNAbuild(file,output):
                     align_residue = residue.dot(c*R)+t
                     if mod.segments[seg_index][res_index] == "N":
                         atom_count, aligned_sugar = align_base_to_backbonde(f,mod.segment_coord_dict[seg_index],res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
-                    else:    
+                    else:
+                        #print(mod.segments[seg_index][res_index],seq[seq_index],res_index,residue_count)
                         for line_index,line in enumerate(mod.segment_build_lines[seg_index][res_index]):
                             f.write(output_pdb(line,mod.segments[seg_index],res_index,line_index,align_residue,atom_count,residue_count))
                             atom_count += 1
                     build[residue_count-1] = aligned_sugar
                     last_build = aligned_sugar
+                    #print(seq_index,seq[seq_index],residue_count,mod.sequence[res_index])
                     residue_count += 1
                     seq_index += 1
                 if Structure[i][0] == "0":
@@ -141,8 +144,10 @@ def RNAbuild(file,output):
                     atom_count, aligned_sugar = align_base_to_backbonde(f,mod.coord_dict,res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
                     build[residue_count-1] = aligned_sugar
                     last_build = aligned_sugar
-                    seq_index += 1
+                    #print(seq_index,seq[seq_index],residue_count)
                     residue_count += 1
+                    seq_index += 1
+                    
             else:
                 mod = module_libary[Structure[i]]
                 c,R,t = umeyama(module_libary[Structure[i]].start_cord,last_build)
@@ -166,6 +171,7 @@ def RNAbuild(file,output):
                         atom_count, aligned_sugar = align_base_to_backbonde(f,mod.coord_dict,res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
                         build[residue_count-1] = aligned_sugar
                         last_build = aligned_sugar
+                        #print(seq_index,seq[seq_index],residue_count)
                         residue_count += 1
                         seq_index += 1
                 if mod.ligand:
@@ -177,3 +183,5 @@ def RNAbuild(file,output):
 
             
 RNAbuild("build_test.txt","target.pdb")
+#RNAbuild("build_test2.txt","target2.pdb")
+#RNAbuild("build_test3.txt","target3.pdb")

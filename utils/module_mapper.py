@@ -49,7 +49,7 @@ def module_mapper(pattern):
         if kl_detect and (clean_struc[i] != "[" and clean_struc[i] != "]"):
             kl_detect = False
     for i in range(len(seq)-9):
-        if seq[i:i+2] == "AA" and seq[i+9] =="A":
+        if seq[i:i+2] == "AA" and seq[i+8]=="A":
             if clean_struc[i:i+9] == ".........":
                 soft_kls.append(i)
 
@@ -65,7 +65,6 @@ def module_mapper(pattern):
                 if seq_index in soft_kls:
                     covered[range(seq_index-2,seq_index+11)] = "K"
                 continue
-            
             if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
                 if module == module_libary["T"]:
                     if clean_struc[seq_index:seq_index + len(module.sequence)] == "(....)":
@@ -76,11 +75,13 @@ def module_mapper(pattern):
                 for segment in module.segments:
                     if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
+                           
     for i in range(length):
         if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
             covered[i] = Helix.symbol
         elif i not in covered:
             covered[i] = base.symbol
+    print(covered[10],covered[115])
     stack = []
     range_stack = []
     istack = []
@@ -94,12 +95,13 @@ def module_mapper(pattern):
         if covered[key][0] == "1":
             istack.append(covered[key][1:])
             irange_stack.append(key)
+    
     for key in covered:
         if covered[key][1:] in stack and covered[key][0] != "0":
-            stack.pop()
+            stack.pop(stack.index(covered[key][1:]))
             range_stack.pop()
         if covered[key][1:] in istack and covered[key][0] != "1":
-            istack.pop()
+            istack.pop(istack.index(covered[key][1:]))
             irange_stack.pop()
     range_stack.extend(irange_stack)
     for i in range_stack:
@@ -124,10 +126,10 @@ def module_mapper(pattern):
                     map_list[pairs[element[1:]][1]] = "i"+element
                     map_list[i] = "i"+pairs[element[1:]][2]
                 else:
-                    print(">")
+                    pass
             else:
                 pairs[element[1:]] = (element[0],i,element)
-    print(pairs)
+    
         
 
     return map_list

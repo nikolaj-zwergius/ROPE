@@ -12,9 +12,9 @@ KissingLoop = Module(name = 'KissingLoop', file = 'KissingLoop.pdb', symbol = 'K
 ### Fluorescent Modules
 
 
-Broccoli = segmented_module(name = 'Broccoli', file = 'Brocolli_dye.pdb', symbol = 'B',sequence = ["GACGGUCGGGUCCAG","UGUCGAGUAGAGUGUGGGC"],spacer = ["UUCGC"],priority=2,ligand="2ZY")
+Broccoli = segmented_module(name = 'Broccoli', file = 'Brocolli_dye.pdb', symbol = 'B',sequence = ["GACGGUCGGGUCCAG","UGUCGAGUAGAGUGUGGGC"],spacer = ["CUUCG"],priority=2,ligand="2ZY")
 #Mango = segmented_module(name = 'Mango', file = 'mango.pdb', symbol = 'M',sequence = ["GUGCGAAGGGACGGUGC","GGAGAGGAGAGCAC"],priority=2)
-#Pepper = segmented_module(name = 'Pepper', file = 'pepper.pdb', symbol = 'P',sequence = ["part1","part2"],spacer =["UUCG"],priority=2)
+Pepper = segmented_module(name = 'Pepper', file = 'Pepper.pdb', symbol = 'P',sequence = ["NNNACUGGCGCCNNN","NNNCAAUCGUGGCGUGUCGNNN"],spacer =["CCUUCGGG"],priority=2,ligand="J8L")
 #Cilivia = segmented_module(name = 'Cilivia', file = 'cilivia.pdb', symbol = 'C',sequence = ["part1","part2"],spacer =["UUCG"],priority=2)
 #Squash = Module(name = 'Squash', file = 'squash.pdb', symbol = 'sQ',priority=2)
 #Spinach = segmented_module(name = 'Spinach', file = 'spinach.pdb', symbol = 'sP',sequence = ["GUGAGGGUCGGGUCCAG","CUGUUGAGUAGAGUGUGGGCUC"],spacer = ["UUCG"],priority=2)
@@ -27,7 +27,7 @@ module_libary = {
     KissingLoop.symbol: KissingLoop,
     Broccoli.symbol: Broccoli,
     #Mango.symbol: Mango,
-    #Pepper.symbol: Pepper,
+    Pepper.symbol: Pepper,
     #Cilivia.symbol: Cilivia,
     #Spinach.symbol: Spinach,
     #Squash.symbol: Squash,

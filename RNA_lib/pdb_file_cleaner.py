@@ -47,7 +47,7 @@ def _slice_field(line: str, start: int, end: int) -> str:
     return line[start:end] if len(line) >= end else line[start:].ljust(end - start)
 
 
-def _format_pdb_atom_line(line: str) -> str:
+def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> str:
     record_name = _slice_field(line, 0, 6).strip()
     serial = _slice_field(line, 6, 11).strip()
     atom_name = _slice_field(line, 12, 16)
@@ -55,6 +55,10 @@ def _format_pdb_atom_line(line: str) -> str:
     res_name = _slice_field(line, 17, 20).strip()
     chain_id = "A"
     res_seq = _slice_field(line, 22, 26).strip()
+    if current_res != int(res_seq):
+        res_index += 1
+        current_res = int(res_seq)
+    res_seq = res_index
     i_code = _slice_field(line, 26, 27)
     x = _slice_field(line, 30, 38).strip()
     y = _slice_field(line, 38, 46).strip()
@@ -79,19 +83,21 @@ def _format_pdb_atom_line(line: str) -> str:
         f"{occupancy:>6}"
         f"{temp_factor:>6}"
         f"          {element:>2}{charge:>2}\n"
-    )
+    ),current_res,res_index
 
 
 def clean_pdb_file(file_path: str) -> None:
     """Clean a single PDB file in place."""
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as reader:
         original_lines = reader.readlines()
-
+    current_res = 0
+    res_index = 0
     cleaned_lines = []
     for line in original_lines:
         if not _is_pdb_atom_line(line):
             continue
-        cleaned_lines.append(_format_pdb_atom_line(line))
+        line, current_res, res_index = _format_pdb_atom_line(line,current_res,res_index)
+        cleaned_lines.append(line)
 
     if cleaned_lines != original_lines:
         with open(file_path, 'w', encoding='utf-8') as writer:
