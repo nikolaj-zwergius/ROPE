@@ -16,7 +16,7 @@ from trace_pattern import trace_backbone
 
 
 
-def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None):
+def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None,outfile=None):
     primary_sequence = None
     if out:
         name, kl_pattern = parse_header(pattern_file)
@@ -58,7 +58,7 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
             wobbles_seq[i] = left
             wobbles_seq[partner] = right
     if out :
-        with open("trace.txt", "w", encoding="utf-8") as output:
+        with open(f"{outfile}", "w", encoding="utf-8") as output:
             output.write(f"{name}\n")
             output.write(f"{structure_map}\n")
             output.write(f"{seq_output}\n\n")
@@ -70,9 +70,35 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python trace_analysis.py pattern.txt [sequence.txt]")
+    import sys
+    import os
+    from io import TextIOWrapper
+    dir_path = os.path.dirname(os.path.realpath(__file__))  
+    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+    wd = os.getcwd()
+
+    if len(sys.argv) < 1:
+        print("Usage for specific files: batch_revolvr <file1> [<file2> ...]")
+        print("Usage for all in folder: batch_revolvr")
         sys.exit(1)
-    pattern_file = sys.argv[1]
-    sequence_file = sys.argv[2] if len(sys.argv) > 2 else None
-    trace_analysis_out(pattern_file, sequence_file)
+    folder = f"{wd}/Trace_analysis"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    args = sys.argv[1:]
+    if len(args) == 0:
+        for file in os.listdir():
+            if not file.endswith(".txt"):
+                continue
+            else:
+                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
+    else:
+        for file in args:
+            if not file.endswith(".txt"):
+                print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
+                continue
+            if file in os.listdir():
+                print(file)
+                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
+            else:
+                print(f"{file} not found in folder")

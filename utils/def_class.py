@@ -1,7 +1,9 @@
 import numpy as np
-
-FOLDER = "RNA_lib/modules/"
-NT_FOLDER = "RNA_lib/nucleotides/"
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+FOLDER = f"{parent_dir_path}/RNA_lib/modules/"
+NT_FOLDER = f"{parent_dir_path}/RNA_lib/nucleotides/"
 SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 

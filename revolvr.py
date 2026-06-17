@@ -6,6 +6,11 @@ import getopt,sys
 import RNA
 import random
 from types import FunctionType
+import os
+from io import TextIOWrapper
+dir_path = os.path.dirname(os.path.realpath(__file__))
+parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+
 #random.seed(85639)
 #random.seed(9)
 def compute_ED(seq:str) -> tuple[float,float,float]:
@@ -363,11 +368,10 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
     ps = 1
     di = 1
     x = 0
-    while ps > 0 and di > 0:
+    while ps > 0 and di > 0 and len(kl_id)>0:
         print("starting KL round:",x)
         kl_rejected = True
         while kl_rejected:
-
             kl_rejected = False
             kl_used = []
             for i in kl_id:
@@ -395,6 +399,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
         x += 1
         if x > 4068:
             raise Exception
+        print("Done KL round:",x)
     mfe,feq,ed =compute_ED(seq)
     return seq,struc,mfe, feq, ed
 
@@ -415,7 +420,11 @@ def revolver(file:str,dragon:bool = False):
 
     global kls
     kls = []
-    with open("utils/kl_list","r") as f:
+    
+    print()
+    print(parent_dir_path)
+    
+    with open(f"{dir_path}/utils/kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
             line_list[0] = float(line_list[0])
@@ -424,6 +433,7 @@ def revolver(file:str,dragon:bool = False):
                 kls.append(line_list)
 
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)
+    print("revolver done")
 
     return seq, struc,mfe,feq,min_ed
 

@@ -4,6 +4,8 @@
 *.pl
 *.bak
 *.pdb
+**/
 !**/RNA_lib/**/*.pdb
-test.py
+!**/utils/*
+test*
 **/linecounter*

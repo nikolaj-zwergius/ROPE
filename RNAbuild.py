@@ -6,6 +6,7 @@ from utils.nucleotide import nucleotide_libary
 from trace_pattern import trace_backbone
 from utils.trace_utils import generate_np_pattern, map_structure
 from utils.module_mapper import module_mapper
+import os
 def output_pdb(line,seq,index,line_index,align_residue,atom_count,residue_count):
     line_string = list(line)
     line_string[6:11] = f"{atom_count:5d}"
@@ -180,8 +181,37 @@ def RNAbuild(file,output):
                 # keep the module end point for later alignment too
                 build[residue_count-1] = last_build
         ligand_printer(f,ligand_stack,atom_count,seq)
-
             
-RNAbuild("build_test.txt","target.pdb")
-#RNAbuild("build_test2.txt","target2.pdb")
-#RNAbuild("build_test3.txt","target3.pdb")
+if __name__ == "__main__":
+    import sys
+    import os
+    from io import TextIOWrapper
+    dir_path = os.path.dirname(os.path.realpath(__file__))  
+    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+    wd = os.getcwd()
+
+    if len(sys.argv) < 1:
+        print("Usage for specific files: batch_revolvr <file1> [<file2> ...]")
+        print("Usage for all in folder: batch_revolvr")
+        sys.exit(1)
+    folder = f"{wd}/RNAbuild"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    args = sys.argv[1:]
+    if len(args) == 0:
+        for file in os.listdir():
+            if not file.endswith(".txt"):
+                continue
+            else:
+                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
+    else:
+        for file in args:
+            if not file.endswith(".txt"):
+                print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
+                continue
+            if file in os.listdir():
+                print(file)
+                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
+            else:
+                print(f"{file} not found in folder")
