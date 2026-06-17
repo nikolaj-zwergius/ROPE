@@ -81,7 +81,6 @@ def module_mapper(pattern):
             covered[i] = Helix.symbol
         elif i not in covered:
             covered[i] = base.symbol
-    print(covered[10],covered[115])
     stack = []
     range_stack = []
     istack = []
