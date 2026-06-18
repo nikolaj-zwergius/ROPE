@@ -96,7 +96,7 @@ def map_structure(structure:str):
     return mapping
 
 
-def count_repeats(sequence, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW):
+def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap=None):
     strand_length = len(sequence)
     repeat_map = ["-"] * strand_length
     pattern_repeats = 0
@@ -110,10 +110,14 @@ def count_repeats(sequence, complement_window=COMPLEMENT_WINDOW, duplicate_windo
             for base in reversed(block)
         )
         j = sequence.find(antisense, i)
+       
         while j != -1:
             for k in range(complement_window):
+                if j+complement_window in bpmap:
+                    #print(bpmap[j+complement_window-1-k]==i, bpmap[i+k] == j+complement_window-1)
+                    continue
                 repeat_map[i + k] = "P"
-                repeat_map[j + k] = "P"
+                repeat_map[j - k] = "P"
             j = sequence.find(antisense, j + 1)
 
     complement_zones = sum(1 for value in repeat_map if value == "P")

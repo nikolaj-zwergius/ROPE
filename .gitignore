@@ -6,6 +6,7 @@
 *.pdb
 **/
 !**/RNA_lib/**/*.pdb
+!**/utils/
 !**/utils/*
 test*
 **/linecounter*

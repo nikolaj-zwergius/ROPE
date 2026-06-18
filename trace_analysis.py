@@ -45,7 +45,7 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
     p5, _, _ = get_backbone_start(grid)
     scrubbed_sequence, structure_map,n_map, strand_dir = tp.trace_backbone(grid)
     map_array = map_structure(structure_map)
-    repeat_map, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = count_repeats(scrubbed_sequence)
+    repeat_map, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = count_repeats(scrubbed_sequence,bpmap=map_array)
     barriers = build_barriers(structure_map, map_array, len(scrubbed_sequence))
     wobbles_seq = ["·"] * len(scrubbed_sequence)
     for i in range(len(scrubbed_sequence)):
@@ -64,7 +64,6 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
             output.write(f"{seq_output}\n\n")
             output.write("My Structure map:  \n")
             output.write(f"{structure_map} \n\n")
-            output.write("2D diagram with sequence\n")
             structure_printer(output, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
     else:
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir

@@ -16,7 +16,7 @@ one_letter_code = {"A":("A"),
                    "D":{"A","G","U"},
                    "B":{"C","G","U"}}
 k_table = {"G":"U","U":"G"}
-base_pairs_table = {"A":"U","U":"A","G":"C","C":"G","N":"N"}
+base_pairs_table = {"A":"U","U":"A","G":"CU","C":"G"}
 
 VALID_BASES = set(base_pairs_table.keys())
 NUCLEOTIDE_CHARS = set(one_letter_code.keys())
@@ -40,6 +40,13 @@ mutation_rate = {   "A":(100,0,0,0),
                     "D":(33,0,33,33),
                     "B":(0,33,33,33)
                     }
+change_base= {
+    "A":(0,33,33,33),
+    "C":(33,0,33,33),
+    "G":(33,33,0,33),
+    "U":(33,33,33,0),
+
+}
 
 restriction_motifs = [
         "GGUCUC",

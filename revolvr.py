@@ -198,7 +198,7 @@ def base_pair_mapper(clean_struc:str) -> dict:
 
 def penalty_score(seq:str,struc:str) -> tuple[list,int]:
     
-    new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq)
+    new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq,bpmap=bp_map)
     PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
     return new_seq, PS
@@ -215,8 +215,9 @@ def gc_ratio_calculator(seq:str) -> int:
     GC_ration = GC/(AU+GC)*100
     return GC_ration
 
-def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
+def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tuple[list,int]:
     ps_matix, ps = penalty_score(seq,clean_struc)
+
     n_switch = False
     n_id = 0
     mutate_matix = ["-"]*len(seq)
@@ -224,26 +225,48 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
     ##print(GC_ration)
 
     for i in range(len(seq)):
+        if init_seq[i] in rd.VALID_BASES:
+            continue
         if ps_matix[i] in ["S","W","X","D"]:
-            mutate_matix[i] = rd.mutate((25,25,25,25))
+            mutate_matix[i] = rd.mutate(rd.mutation_rate[init_seq[i]])
+            if i in bp_map:
+                if init_seq[bp_map[i]] == "N":
+                    pass
+                elif init_seq[bp_map[i]] == "K" or init_seq[i] == "K":
+                    pass
+                elif mutate_matix[i] not in rd.base_pairs_table[init_seq[bp_map[i]]]:
+                            mutate_matix[i] = "-"
         elif ps_matix[i] in ["G","U","C","A"]:
             match ps_matix[i]:
                 case "G":
-                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"G"])
+                    mutate_matix[i] = random.choice([rd.mutate(rd.change_base["G"]),"-"])
                 case "U":
-                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"U"])
+                    mutate_matix[i] = random.choice([rd.mutate(rd.change_base["U"]),"-"])
                 case "C":
-                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"C"])
+                    mutate_matix[i] = random.choice([rd.mutate(rd.change_base["C"]),"-"])
                 case "A":
-                    mutate_matix[i] = random.choice([rd.mutate((25,25,25,25)),"A"])
+                    mutate_matix[i] = random.choice([rd.mutate(rd.change_base["A"]),"-"])
+            try:
+                print(mutate_matix[i],rd.base_pairs_table[bp_map[i]])
+                if mutate_matix[i] not in rd.base_pairs_table[bp_map[i]]:
+                            mutate_matix[i] = "-"
+            except:
+                pass
         elif ps_matix[i] == "P":
             mutate_matix[i] = random.choices(["K","-"],(1,14),k=1)[0]
             if mutate_matix[i] == "-":
                 mutate_matix[i] = random.choices(["M","-"],(1,4),k=1)[0]
             if mutate_matix[i] == "M":
                 mutate_matix[i] = rd.mutate((25,25,25,25))
+            if mutate_matix[i] == "K":
+                if i in bp_map:
+                    if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
+                        mutate_matix[i] = "-"
         if seq[i] in ["G","U"] and i in bp_map.keys() and mutate_matix[i] in "-":
-            if seq[bp_map[i]] in ["G","U"]:
+            if i in bp_map:
+                if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
+                    mutate_matix[i] = "-"
+            elif seq[bp_map[i]] in ["G","U"]:
                 mutate_matix[i] = random.choices(["K","A"],(9,1),k=1)[0]
                 if mutate_matix[i] == "K":
                     mutate_matix[bp_map[i]] = "K"
@@ -253,13 +276,21 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
                 mutate_matix[bp_map[i]] = random.choices(["-","B"],(99,1),k=1)[0]
             elif seq[bp_map[i]] == "C":
                 mutate_matix[bp_map[i]] = random.choices(["-","D"],(99,1),k=1)[0]
-        
+
         if GC_ration > 55 and seq[i] in ["G","C"] and mutate_matix[i] == "i":
             mutate_matix[i] = random.choices(["-","A","U"],(100-abs(GC_ration-55),abs(55-GC_ration)/2,abs(55-GC_ration)/2))[0]
         elif GC_ration < 55 and seq[i] in ["A","U"] and mutate_matix[i] == "i":
             mutate_matix[i] = random.choices(["-","G","C"],(100-abs(GC_ration-55),abs(55-GC_ration)/2,abs(55-GC_ration)/2))[0]
         ##print(GC_ration,"GC_HIGH",100-abs(GC_ration-55),abs(55-GC_ration)/2,abs(55-GC_ration)/2,"GC_LOW",100-(55-GC_ration),(55-GC_ration)//2,(55-GC_ration)//2)
     ids = []
+    #print(mutate_matix)
+    for i in range(len(seq)):
+        if mutate_matix[i] == "-":
+            continue
+        if mutate_matix[i] == seq[i]:
+            mutate_matix[i] = "-"
+
+
     for i in range(len(seq)):
         if mutate_matix[i] != "-":
             ids.append(i)
@@ -267,7 +298,6 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int) -> tuple[list,int]:
         pick = random.choice(ids)
         ids.remove(pick)
         mutate_matix[pick] = "-"
-
     return mutate_matix,ps
 
 def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> str:
@@ -288,7 +318,7 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
                 if rd.base_pairs_table[mask[i]] in rd.one_letter_code[init_seq[i]]:
                     seq_list[bp_map[i]] = rd.base_pairs_table[mask[i]]
     seq_string = "".join(seq_list)
-    dump,ps2 = penalty_score(seq_string,clean_struc)
+    _,ps2 = penalty_score(seq_string,clean_struc)
     if seq_string in tested_seq.keys():
         new_struc = tested_seq[seq_string]
     else:
@@ -306,15 +336,17 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
         if di2 == 0:
             #if abs(55-new_GC) < abs(55-old_GC):
             return new_struc,seq_string
-    
+    #print(seq)
     return struc,seq
 
 def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,float,float]:    
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
-    print("setup done")
+    #print("setup done")
     struc,seq = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
-    print("mutator 1 done") 
+    
+    
+    #print("mutator 1 done") 
 
     num=0
     mask = dir_mutate_mask_gen(clean_struc,struc,seq)
@@ -328,11 +360,12 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
             struc,seq,rad_level=mutator(clean_struc,struc,seq,init_seq,2,(15,35,35,15),dir_mutate_mask_gen,rad_level)
         struc,seq,rad_level=mutator(clean_struc,struc,seq,init_seq,1,(15,35,35,15),neu_mutate_mask_gen,rad_level)
         mask = dir_mutate_mask_gen(clean_struc,struc,seq)
-        print(mask)
+        #print(mask)
+    
+    
 
 
-
-    print("mutator 2 done")
+    #print("mutator 2 done")
 
     return mini_revolvr(clean_struc,seq,init_seq,init_struc,struc)
 
@@ -340,12 +373,24 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
 def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
     rad_level = FAV_RAD_LEVEL
     mask = []
-    while (set(mask) != {"-","K"} and set(mask) != {"-","K","G","C"} and set(mask) != {"-","K","G"} and set(mask) != {"-","K","C"})  or gc_ratio_calculator(seq)>55.1 or ps>0:
-        mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL)
+    runs = 0
+    same = 0
+    
+    while set(mask) != {"-"}  or gc_ratio_calculator(seq)>55.1 or ps>0:
         
+        mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL,init_seq)
+        #print(ps)
+        pre_seq = seq
         struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
         test_mask,test_ps =penalty_score(seq,clean_struc)
-        print(gc_ratio_calculator(seq),set(mask),test_ps)
+        #print(gc_ratio_calculator(seq),set(mask),test_ps)
+        runs += 1
+        if pre_seq in tested_seq:
+            same += 1
+        if runs%100 == 0:
+            print(runs,same)
+            #print(seq)
+            pass
     stack = []
     kl_id = []
     kl_found = False
@@ -416,13 +461,11 @@ def revolver(file:str,dragon:bool = False):
     KL_MAX = -10.8
     KL_OFF = -6.0
     
+    global tested_seq
     tested_seq = {}
-
     global kls
     kls = []
     
-    print()
-    print(parent_dir_path)
     
     with open(f"{dir_path}/utils/kl_list","r") as f:
         for line in f:
