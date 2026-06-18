@@ -31,7 +31,7 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq:
 def _run_revolver_task(task: tuple[str, int, str]) -> None:
     file_path, run_index, output_root = task
     input_path = Path(file_path)
-    output_dir = Path(output_root) / input_path.stem
+    output_dir = Path(output_root)
 
     seq, struc, mfe, feq, ed = revolvr.revolver(str(input_path))
     save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed)
@@ -41,10 +41,10 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
     """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)
-
     tasks = []
     for file_path in files:
         input_path = Path(file_path)
+        print(input_path)
         if not input_path.is_file():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         for run_index in range(1, runs_per_file + 1):
@@ -57,7 +57,11 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
 
 if __name__ == "__main__":
     import sys
-
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))  
+    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+    wd = os.getcwd()
+    out_folder = Path(wd+"/revolver_outputs")
     if len(sys.argv) < 2:
         print("Usage: python batch_revolvr.py <file1> [<file2> ...] [runs_per_file] [max_workers]")
         sys.exit(1)
@@ -72,4 +76,4 @@ if __name__ == "__main__":
         runs = int(args[-1])
         args = args[:-1]
 
-    run_revolvers(args, runs_per_file=runs, max_workers=max_workers)
+    run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
