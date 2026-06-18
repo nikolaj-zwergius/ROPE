@@ -1,4 +1,3 @@
-import numpy as np
 if __name__ != "__main__":
     from utils.def_class import  nucleotide
 else:

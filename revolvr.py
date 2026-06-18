@@ -1,4 +1,4 @@
-import numpy as np
+import os
 import utils.rope_def as rd
 import trace_pattern as tp
 import utils.trace_utils as tu
@@ -6,8 +6,7 @@ import getopt,sys
 import RNA
 import random
 from types import FunctionType
-import os
-from io import TextIOWrapper
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
 

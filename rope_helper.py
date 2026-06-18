@@ -1,7 +1,6 @@
 if __name__ == "__main__":
     import sys
     import os
-    from io import TextIOWrapper
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()

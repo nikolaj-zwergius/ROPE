@@ -1,4 +1,5 @@
 ﻿import sys
+import os
 from utils.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
 import trace_pattern as tp
 from utils.trace_utils import (
@@ -69,9 +70,7 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
 
 if __name__ == "__main__":
-    import sys
-    import os
-    from io import TextIOWrapper
+
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()

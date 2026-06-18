@@ -1,4 +1,3 @@
-import random
 import utils.rope_def as rd
 import utils.direction as di
 import numpy as np

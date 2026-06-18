@@ -1,13 +1,11 @@
+import sys
+import os
 from pathlib import Path
 import concurrent.futures
-from typing import Optional
-
 import revolvr
 import trace_pattern
 import trace_analysis as ta
-import utils.trace_utils as tu
 from utils.render_utils import structure_printer, render_pattern
-import utils.rope_def as rd
 
 
 def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list,init_seq:str) -> None:
@@ -45,14 +43,13 @@ def _run_revolver_task(task: tuple[str, int, str]) -> None:
     save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq)
 
 
-def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "revolver_outputs", max_workers: Optional[int] = None) -> None:
+def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "revolver_outputs", max_workers: int|None = None) -> None:
     """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
     for file_path in files:
         input_path = Path(file_path)
-        print(input_path)
         if not input_path.is_file():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         for run_index in range(1, runs_per_file + 1):
@@ -64,8 +61,6 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
 
 
 if __name__ == "__main__":
-    import sys
-    import os
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()

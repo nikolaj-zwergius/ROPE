@@ -1,5 +1,4 @@
 ﻿
-from revolvr import base_pair_mapper
 from utils.trace_utils import generate_np_pattern, map_structure
 from utils.modules import module_libary, Helix, base
 from trace_pattern import trace_backbone

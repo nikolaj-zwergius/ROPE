@@ -1,4 +1,5 @@
-import numpy as np
+import sys
+import os
 from utils.dim3_utils import umeyama
 from utils.def_class import get_sugar_cords, Module, segmented_module
 from utils.modules import module_libary, Helix
@@ -6,7 +7,7 @@ from utils.nucleotide import nucleotide_libary
 from trace_pattern import trace_backbone
 from utils.trace_utils import generate_np_pattern, map_structure
 from utils.module_mapper import module_mapper
-import os
+
 def output_pdb(line,seq,index,line_index,align_residue,atom_count,residue_count):
     line_string = list(line)
     line_string[6:11] = f"{atom_count:5d}"
@@ -183,10 +184,7 @@ def RNAbuild(file,output):
         ligand_printer(f,ligand_stack,atom_count,seq)
             
 if __name__ == "__main__":
-    import sys
-    import os
-    from io import TextIOWrapper
-    from pathlib import Path
+    
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -213,7 +211,6 @@ if __name__ == "__main__":
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
             if file in os.listdir():
-                print(file)
                 RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
             else:
                 print(f"{file} not found in folder")
