@@ -111,13 +111,19 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
     di1 =  RNA.hamming_distance(clean_struc,predic_fold)
     for i in range(N):
         for i in range(len(mutate_mask)):
+            if init_seq[i] in rd.VALID_BASES:
+                new_seq[i] = init_seq[i]
+                continue
             if mutate_mask[i] == "X" and i in bp_map.keys():
                 if init_seq[i] == "N":
                     new_base=rd.mutate(mutate_weitg)
                     new_seq[i]=new_base
                 else:
                     new_seq[i]=seq[i]
-                new_seq[bp_map[i]] = random.choice(rd.base_pairs_table[new_seq[i]])
+                if init_seq[i] == "K" or init_seq[bp_map[i]]=="K":
+                    new_seq[bp_map[i]] = random.choice(rd.k_table[new_seq[i]])
+                else:
+                    new_seq[bp_map[i]] = random.choice(rd.base_pairs_table[new_seq[i]])
             elif mutate_mask[i] == "X" and clean_struc[i] == ".":
                 new_base=rd.mutate(mutate_weitg)
                 new_seq[i]=new_base
@@ -247,7 +253,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                 case "A":
                     mutate_matix[i] = random.choice([rd.mutate(rd.change_base["A"]),"-"])
             try:
-                print(mutate_matix[i],rd.base_pairs_table[bp_map[i]])
+                #print(mutate_matix[i],rd.base_pairs_table[bp_map[i]])
                 if mutate_matix[i] not in rd.base_pairs_table[bp_map[i]]:
                             mutate_matix[i] = "-"
             except:
@@ -329,15 +335,33 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     new_GC = gc_ratio_calculator(seq_string)
     old_GC = gc_ratio_calculator(seq)
     if ps1==0 and ps2 == 0:
-        if di2 == 0:
+        if di2 == di1:
             if abs(55-new_GC) < abs(55-old_GC):
                 return new_struc,seq_string
     elif ps2 <= ps1:
-        if di2 == 0:
+        if di2 == di1:
             #if abs(55-new_GC) < abs(55-old_GC):
             return new_struc,seq_string
     #print(seq)
     return struc,seq
+
+def problem_in_loced(problem_mask:list,init_seq:str,control=True)->bool:
+    locked_problem = False
+    problems = 0
+    locked_problems = 0
+    for i in range(len(init_seq)):
+        if problem_mask[i] != "-" and init_seq[i] != "N":
+            locked_problems += 1
+        if problem_mask[i] != "-":
+            problems += 1
+    #print(problem_mask)
+    #print(init_seq)
+    #print(locked_problems,problems)
+    if problems == 0 and not control:
+        return False
+    if locked_problems == problems:
+        locked_problem = True
+    return locked_problem
 
 def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,float,float]:    
     rad_level = FAV_RAD_LEVEL
@@ -350,9 +374,11 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
 
     num=0
     mask = dir_mutate_mask_gen(clean_struc,struc,seq)
-    while RNA.hamming_distance(clean_struc,struc) != 0:
+    same = 0
+    runs = 0
+    locked_probelms = False
+    while RNA.hamming_distance(clean_struc,struc) != 0 and not locked_probelms:
         off = 0
-        
         for i in range(len(mask)):
             if init_seq[i] in ["C","A","U","G"] and mask[i] == "X":
                 off += 1
@@ -360,13 +386,20 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
             struc,seq,rad_level=mutator(clean_struc,struc,seq,init_seq,2,(15,35,35,15),dir_mutate_mask_gen,rad_level)
         struc,seq,rad_level=mutator(clean_struc,struc,seq,init_seq,1,(15,35,35,15),neu_mutate_mask_gen,rad_level)
         mask = dir_mutate_mask_gen(clean_struc,struc,seq)
+        runs+=1
+        problem_in_loced(mask,init_seq)
+        if problem_in_loced(mask,init_seq) and runs>=100:
+            locked_probelms = True
+        #print(seq)
+        #print(init_seq)
         #print(mask)
-    
+        #print(RNA.hamming_distance(clean_struc,struc))
     
 
 
     #print("mutator 2 done")
-
+    #print(seq)
+    #print(init_seq)
     return mini_revolvr(clean_struc,seq,init_seq,init_struc,struc)
 
 
@@ -383,14 +416,19 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
         pre_seq = seq
         struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
         test_mask,test_ps =penalty_score(seq,clean_struc)
+        #print(test_mask)
         #print(gc_ratio_calculator(seq),set(mask),test_ps)
         runs += 1
         if pre_seq in tested_seq:
             same += 1
         if runs%100 == 0:
-            print(runs,same)
+            #print("mutator2:\n")
+            #print(runs,same,ps,gc_ratio_calculator(seq))
             #print(seq)
+            #print(problem_in_loced(test_mask,init_seq))
             pass
+        if runs == same and ps == 0 and set(mask) == {"-"} and runs > 5000 and problem_in_loced(test_mask,init_seq) :
+            break
     stack = []
     kl_id = []
     kl_found = False
@@ -414,7 +452,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
     di = 1
     x = 0
     while ps > 0 and di > 0 and len(kl_id)>0:
-        print("starting KL round:",x)
+        #print("starting KL round:",x)
         kl_rejected = True
         while kl_rejected:
             kl_rejected = False
@@ -438,13 +476,14 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
         dump,ps = penalty_score(seq,clean_struc)
         if ps == 0:
             di = RNA.hamming_distance(clean_struc,RNA.fold(seq)[0])
-            print("di = ",di,"PS = ",0)
+            #print("di = ",di,"PS = ",0)
         else:
-            print("ps != 0",dump)
+            #print("ps != 0",dump)
+            pass
         x += 1
         if x > 4068:
             raise Exception
-        print("Done KL round:",x)
+       #print("Done KL round:",x)
     mfe,feq,ed =compute_ED(seq)
     return seq,struc,mfe, feq, ed
 
@@ -476,9 +515,10 @@ def revolver(file:str,dragon:bool = False):
                 kls.append(line_list)
 
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)
-    print("revolver done")
+    #print("revolver done")
+    problem=dir_mutate_mask_gen(clean_struc,struc,seq)
 
-    return seq, struc,mfe,feq,min_ed
+    return seq, struc,mfe,feq,min_ed,problem,init_seq
 
 
 if __name__ == "__main__":

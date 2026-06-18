@@ -6,11 +6,11 @@ import revolvr
 import trace_pattern
 import trace_analysis as ta
 import utils.trace_utils as tu
-from utils.render_utils import structure_printer
+from utils.render_utils import structure_printer, render_pattern
 import utils.rope_def as rd
 
 
-def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float) -> None:
+def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list,init_seq:str) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
     output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
@@ -24,17 +24,25 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq:
         out_file.write(f"mfe: {mfe:.2f}\n")
         out_file.write(f"feq: {feq:.2f}\n")
         out_file.write(f"ed: {ed:.2f}\n")
+        gc = revolvr.gc_ratio_calculator(seq)
+        if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
+        else:out_file.write(f"GC: {gc:.2f}\n")
         out_file.write("\n\n\n")
-        structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
+        if revolvr.problem_in_loced(problem_mask,init_seq,control=False):
+            out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
+             Sequence design failed for the inputted target structure.\n""")
+            render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)
+            out_file.write("\n")
+        structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
         
 
 def _run_revolver_task(task: tuple[str, int, str]) -> None:
     file_path, run_index, output_root = task
     input_path = Path(file_path)
-    output_dir = Path(output_root)
+    output_dir = Path(output_root) / input_path.stem
 
-    seq, struc, mfe, feq, ed = revolvr.revolver(str(input_path))
-    save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed)
+    seq, struc, mfe, feq, ed, problem,init_seq = revolvr.revolver(str(input_path))
+    save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq)
 
 
 def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "revolver_outputs", max_workers: Optional[int] = None) -> None:

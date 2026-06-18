@@ -32,12 +32,13 @@ def render_strand_cell(ch, i, j, strand_dir):
 def render_cell(ch, type_list, n_map, i, j):
     if ch in NUCLEOTIDE_CHARS:
         idx = n_map.get((i, j), None)
-        if idx is not None and 1 <= idx <= len(type_list):
-            return type_list[idx - 1]
+        if idx is not None and 0 <= idx <= len(type_list):
+            return type_list[idx]
     return ch
 
 
-def structure_printer(output, grid, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict):
+def structure_printer(output, grid, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|None=None):
+        
         output.write("2D diagram with sequence\n")
         for i in range(grid.shape[0]):
             row_chars = [grid[i][j] for j in range(grid.shape[1])]
@@ -47,6 +48,7 @@ def structure_printer(output, grid, seq_output:str, repeat_map:list, wobbles_seq
         for i in range(grid.shape[0]):
             row_chars = [render_strand_cell(grid[i][j], i, j, strand_dir) for j in range(grid.shape[1])]
             output.write("".join(row_chars) + "\n")
+
         if seq_output.count("N") == 0:
             output.write("\n")
             sequence_array = list(seq_output)
