@@ -93,11 +93,11 @@ if __name__ == "__main__":
                 trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
     else:
         for file in args:
+            file = str(file.split(chr(92))[1])
             if not file.endswith(".txt"):
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
             if file in os.listdir():
-                print(file)
                 trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
             else:
                 print(f"{file} not found in folder")

@@ -186,6 +186,7 @@ if __name__ == "__main__":
     import sys
     import os
     from io import TextIOWrapper
+    from pathlib import Path
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -207,6 +208,7 @@ if __name__ == "__main__":
                 RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
     else:
         for file in args:
+            file = str(file.split(chr(92))[1])
             if not file.endswith(".txt"):
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
