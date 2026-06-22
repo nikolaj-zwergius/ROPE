@@ -493,6 +493,7 @@ def revolver(file:str,dragon:bool = False):
     global FAV_RAD_LEVEL
     global KL_OFF
     name,init_seq,init_struc,seq,clean_struc= initlize_structure(file)
+
     FAV_RAD_LEVEL = 15
     bp_map = base_pair_mapper(clean_struc) 
     KL_MIN = -7.2
@@ -503,7 +504,10 @@ def revolver(file:str,dragon:bool = False):
     tested_seq = {}
     global kls
     kls = []
-    
+    if set(init_seq) == set(rd.VALID_BASES):
+        mfe,feq,ed =compute_ED(seq)
+        problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
+        return seq, clean_struc,mfe,feq,ed,problem,init_seq
     
     with open(f"{dir_path}/utils/kl_list","r") as f:
         for line in f:

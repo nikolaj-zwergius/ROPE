@@ -65,9 +65,6 @@ if __name__ == "__main__":
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
     out_folder = Path(wd+"/revolver_outputs")
-    if len(sys.argv) < 2:
-        print("Usage: python batch_revolvr.py <file1> [<file2> ...] [runs_per_file] [max_workers]")
-        sys.exit(1)
 
     args = sys.argv[1:]
     runs = 1
@@ -78,5 +75,13 @@ if __name__ == "__main__":
     if args and args[-1].isdigit():
         runs = int(args[-1])
         args = args[:-1]
+    if not args or args[-1] == "*":
+         file_args = []
+         for file in os.listdir():
+            if not file.endswith(".txt"):
+                continue
+            else:
+                file_args.append(file)
+    args.extend(file_args)
 
     run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)

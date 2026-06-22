@@ -1,6 +1,8 @@
+import getopt
+import sys
 import numpy as np
 import utils.rope_def as rd
-import getopt,sys
+
 
 
 flips =[((0),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92):"/"},"Flipped file:"),

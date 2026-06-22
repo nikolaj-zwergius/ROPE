@@ -3,7 +3,7 @@
 set "local=%~dp0"
 
 if "%~1"=="fold" goto fold_jmp
-if "%~1"=="analysis" goto analysis_jmp
+if "%~1"=="analyse" goto analysis_jmp
 if "%~1"=="build" goto build_jmp
 
 goto error
