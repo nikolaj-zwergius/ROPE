@@ -1,6 +1,8 @@
 @echo off
 
 set "local=%~dp0"
+python %local%\RNA_lib\pdb_file_cleaner.py %rest%
+
 
 if "%~1"=="fold" goto fold_jmp
 if "%~1"=="analyse" goto analysis_jmp
