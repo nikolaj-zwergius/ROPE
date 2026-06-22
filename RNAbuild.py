@@ -3,7 +3,7 @@ import os
 from io import TextIOWrapper
 from numpy import ndarray, float32
 from utils.dim3_utils import umeyama
-from utils.def_class import get_sugar_cords, Module, segmented_module
+from utils.def_class import get_sugar_cords, Module, segmented_module, inv_segmented_module
 from utils.modules import module_libary, Helix
 from utils.nucleotide import nucleotide_libary
 from trace_pattern import trace_backbone
@@ -134,43 +134,32 @@ def RNAbuild(file:str,output:str) -> None:
                 atom_count,last_build,build,residue_count,seq_index = build_start(f,seq[i],atom_count,build,residue_count,seq_index)
 
             elif Structure[i][0].isnumeric() or Structure[i][0]=="i":
-                if Structure[i][0] == "0":
-                    last = last_build
-                    if Structure[i][1:] not in segment_stack:
-                        segment_stack[Structure[i][1:]] = []
-                elif Structure[i][0] == "i" and Structure[i][1] == "0":
-                    last = last_build
-                    if Structure[i][2:] not in segment_stack:
-                        segment_stack[Structure[i][2:]] = []
-                elif Structure[i][0] == "i" and Structure[i][1] == "1":
-                    last = segment_stack[Structure[i][2:]].pop(-1)
-                else:
-                    last = segment_stack[Structure[i][1:]].pop(-1)
-                
                 if Structure[i][0].isnumeric():
-                    seg_index = int(Structure[i][0])
                     mod:segmented_module = module_libary[Structure[i][1:]]
+                    offset = 0
                 else:
-                    seg_index = int(Structure[i][1])
-                    mod:segmented_module = module_libary[Structure[i][2:]].inverted()
-                c,R,t = umeyama(mod.segment_start_cord[seg_index],last)
-                for res_index,residue in enumerate(mod.segment_build_cords[seg_index]):
-                    aligned_sugar = get_sugar_cords(mod.segment_coord_dict[seg_index][res_index]).dot(c*R)+t
-                    align_residue = residue.dot(c*R)+t
-                    if mod.segments[seg_index][res_index] == "N":
-                        atom_count, aligned_sugar = align_base_to_backbonde(f,mod.segment_coord_dict[seg_index],res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
-                    else:
-                        #print(mod.segments[seg_index][res_index],seq[seq_index],res_index,residue_count)
-                        for line_index,line in enumerate(mod.segment_build_lines[seg_index][res_index]):
-                            f.write(output_pdb(line,mod.segments[seg_index],res_index,line_index,align_residue,atom_count,residue_count))
-                            atom_count += 1
-                    build[residue_count-1] = aligned_sugar
-                    last_build = aligned_sugar
-                    #print(seq_index,seq[seq_index],residue_count,mod.sequence[res_index])
-                    residue_count += 1
-                    seq_index += 1
-                if Structure[i][0] == "0":
-                    segment_stack[Structure[i][1:]].append(last_build)
+                    mod:inv_segmented_module = module_libary[Structure[i][2:]].inverted()
+                    offset = 1
+
+                seg_index = int(Structure[i][0+offset])
+
+                if Structure[i][0+offset] == "0":
+                    last = last_build
+                    if Structure[i][1+offset:] not in segment_stack:
+                        segment_stack[Structure[i][1+offset:]] = []
+                elif Structure[i][0+offset] == "1":
+                    last = segment_stack[Structure[i][1+offset:]].pop(-1)
+                
+                
+
+                assert type(mod) == inv_segmented_module or type(mod) == segmented_module
+                mod.change_elements(seg_index)
+                c,R,t = umeyama(mod.start_cord,last)
+                atom_count,last_build,build,residue_count,seq_index = build_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
+                mod.reset_elements()
+                
+                if Structure[i][0+offset] == "0":
+                    segment_stack[Structure[i][1+offset:]].append(last_build)
                     if mod.ligand:
                         ligand_stack = ligand_addtion((c,R,t),mod,ligand_stack)
                 elif Structure[i][1] =="0":
@@ -191,7 +180,6 @@ def RNAbuild(file:str,output:str) -> None:
                 if mod.ligand:
                     ligand_stack =ligand_addtion((c,R,t),mod,ligand_stack)
 
-                # keep the module end point for later alignment too
                 build[residue_count-1] = last_build
         ligand_printer(f,ligand_stack,atom_count,seq)
             

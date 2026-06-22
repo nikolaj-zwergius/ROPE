@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -72,6 +73,7 @@ class Module():
             for i in range(len(other_res_coord)):
                 other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
         except FileNotFoundError:
+
             print(f"File {self.file} not found. Please check the file path.")
             return None, None, None, None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
@@ -99,26 +101,28 @@ class Module():
             return other_res_coord,other_res_lines
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other:Module) -> bool:
         if self.priority < other.priority:
             return True
         elif self.priority == other.priority:
             return self.len < other.len
         else:
             return False
-    def __gt__(self, other) -> bool:
+    def __gt__(self, other:Module) -> bool:
         if self.priority > other.priority:
             return True
         elif self.priority == other.priority:
             return self.len > other.len
         else:
             return False
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other:Module) -> bool:
         return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
     def __repr__(self): 
         return f"Module: {self.name}"
+
+
 class nucleotide(Module):
     def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N'):
         super().__init__(name, file, symbol)
@@ -182,6 +186,13 @@ class segmented_module(Module):
             except AssertionError:
                 print(f"Length of segment seqcencs {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
                 raise
+
+        self.full_start_cord = self.start_cord
+        self.full_build_cords = self.build_cords
+        self.full_build_lines = self.build_lines
+        self.full_last_coord = self.last_coord
+        self.full_coord_dict =  self.coord_dict
+        self.full_sequence = self.sequence
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
@@ -263,9 +274,36 @@ class segmented_module(Module):
                 segment_other_res_coord_list[seq_index].append(np.array(list(segment_other_res_coord[seq_index][i].values()), dtype=np.float32))
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
-    def inverted(self):
+    
+    def change_elements(self,seg_index:int):
+        """
+        Changes which elemets that the segmented module shows, from the full to a segment
+
+        Warning: This function should always be followed by the use of the reset_elements funtion of segmented_module,
+        whe processsing of the current segment is done to ensure that the module can still use the full length in between.
+        
+        There is no check or enforcment of this
+        """
+        self.start_cord  = self.segment_start_cord[seg_index]
+        self.build_cords = self.segment_build_cords[seg_index]
+        self.build_lines = self.segment_build_lines[seg_index]
+        self.last_coord  = self.segment_last_coord[seg_index]
+        self.coord_dict  = self.segment_coord_dict[seg_index]
+        self.sequence =  self.segments[seg_index]
+
+
+    def reset_elements(self):
+        self.start_cord  = self.full_start_cord 
+        self.build_cords = self.full_build_cords
+        self.build_lines = self.full_build_lines
+        self.last_coord  = self.full_last_coord 
+        self.coord_dict  = self.full_coord_dict 
+        self.sequence = self.full_sequence
+    
+    def inverted(self) -> inv_segmented_module:
         mod = inv_segmented_module("i"+self.name,self.file,"i"+self.symbol,self.segments,self.spacer,self.priority,self.ligand)
         return mod
+    
 class inv_segmented_module(segmented_module):
     def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence=None, spacer=[""], priority=0, ligand = None):
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
