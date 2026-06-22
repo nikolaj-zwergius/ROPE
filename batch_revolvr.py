@@ -67,6 +67,7 @@ if __name__ == "__main__":
     out_folder = Path(wd+"/revolver_outputs")
 
     args = sys.argv[1:]
+    file_args = []
     runs = 1
     max_workers = None
     if args and args[-1].isdigit():
@@ -76,7 +77,6 @@ if __name__ == "__main__":
         runs = int(args[-1])
         args = args[:-1]
     if not args or args[-1] == "*":
-         file_args = []
          for file in os.listdir():
             if not file.endswith(".txt"):
                 continue
