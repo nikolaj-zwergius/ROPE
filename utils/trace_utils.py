@@ -6,7 +6,7 @@ COMPLEMENT_WINDOW = 10
 DUPLICATE_WINDOW = 10
 KL_DELAY = 150
 
-def generate_np_pattern(file):
+def generate_np_pattern(file:str) -> np.ndarray:
     with open(file, encoding="utf-8") as input_file:
         rows = 0
         colum = 0
@@ -29,12 +29,12 @@ def generate_np_pattern(file):
             line_index += 1
     return pattern
 
-def find_5_prime(pattern:np.ndarray):
+def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
     p5 = np.where(pattern=="5")
     p5 = (p5[0][0],p5[1][0])
     return p5
 
-def get_backbone_start(pattern) -> tuple[tuple[int,int],di.dirction]:
+def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],di.dirction]:
     p5 = find_5_prime(pattern)
     up, down, left, rigth = check_round(pattern, p5)
     if up.isalpha():
@@ -47,20 +47,20 @@ def get_backbone_start(pattern) -> tuple[tuple[int,int],di.dirction]:
         return p5, (p5[0], p5[1] + 1), di.dir_rigth()
     raise ValueError("No valid first base")
 
-def check(pattern,id1,id2):
+def check(pattern:np.ndarray,id1:int,id2:int):
     try:
         return pattern[id1][id2]
     except IndexError:
         return ""
 
-def check_round(pattern,tup):
+def check_round(pattern:np.ndarray,tup:tuple[int,int])->tuple[str,str,str,str]:
     up= check(pattern,tup[0]-1,tup[1])
     down= check(pattern,tup[0]+1,tup[1])
     left = check(pattern,tup[0],tup[1]-1)
     rigth = check(pattern,tup[0],tup[1]+1)
     return up,down,left,rigth
 
-def reverse(seq):
+def reverse(seq:str) -> str:
     for char in seq:
         rev += rd.base_pairs_table[char][0]
         rev = rev[::-1]
@@ -95,7 +95,7 @@ def map_structure(structure:str):
     return mapping
 
 
-def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap=None):
+def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap:list|None=None):
     strand_length = len(sequence)
     repeat_map = ["-"] * strand_length
     pattern_repeats = 0
@@ -160,7 +160,7 @@ def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_w
     return repeat_map, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites
 
 
-def build_barriers(structure_map, map_array, sequence_length):
+def build_barriers(structure_map:str, map_array:list, sequence_length:int):
     barriers = ["·"] * sequence_length
     topo_count = 0
     for i, ch in enumerate(structure_map):

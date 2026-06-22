@@ -362,7 +362,7 @@ def problem_in_loced(problem_mask:list,init_seq:str,control=True)->bool:
         locked_problem = True
     return locked_problem
 
-def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,float,float]:    
+def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str,float,float,float]:    
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     #print("setup done")
@@ -402,7 +402,7 @@ def full_revolver(clean_struc,seq,init_seq,init_struc) -> tuple[str,str,float,fl
     return mini_revolvr(clean_struc,seq,init_seq,init_struc,struc)
 
 
-def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
+def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->tuple[str,str,float,float,float]:
     rad_level = FAV_RAD_LEVEL
     mask = []
     runs = 0
@@ -487,7 +487,7 @@ def mini_revolvr(clean_struc,seq,init_seq,init_struc,struc):
     return seq,struc,mfe, feq, ed
 
 
-def revolver(file:str,dragon:bool = False):
+def revolver(file:str):
     global bp_map
     global tested_seq
     global FAV_RAD_LEVEL

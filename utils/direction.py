@@ -4,7 +4,7 @@ class dirction():
     move_list ={}
     def __int__(self,move_list):
         move_list = self.move_list
-    def move(self,last_id):
+    def move(self,last_id:tuple[int,int])->tuple[int,int]:
         return (last_id[0]+self.row,last_id[1]+self.colum)
         
 class dir_up(dirction):
@@ -17,7 +17,7 @@ class dir_up(dirction):
                     chr(92):dir_left,}
         self.replace_list = {"/":"╭",chr(92):"╮","-":"─"}
         
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "dir_up"
     
 class dir_down(dirction):
@@ -29,7 +29,7 @@ class dir_down(dirction):
                     "/":dir_left,
                     chr(92):dir_rigth,}
         self.replace_list = {"/":"╯",chr(92):"╰","-":"─"}
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "dir_down"
 class dir_left(dirction):
     colum = -1
@@ -40,7 +40,7 @@ class dir_left(dirction):
                     "/":dir_down,
                     chr(92):dir_up,}
         self.replace_list = {"/":"╭",chr(92):"╰","-":"─"}
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "dir_left"
 class dir_rigth(dirction):
     colum = 1
@@ -52,5 +52,5 @@ class dir_rigth(dirction):
                     "╯":dir_up,
                     chr(92):dir_down,}
         self.replace_list = {"/":"╮",chr(92):"╯","-":"─"}
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "dir_rigth"

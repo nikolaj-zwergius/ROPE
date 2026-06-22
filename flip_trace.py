@@ -9,7 +9,7 @@ flips =[((0),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92
         ((1),{"╯":"╭","╮":"╰","╭":"╯","╰":"╮"},"Reversed file:"),
         ((0,1),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92):"/"},"Reversed and Flipped file:")]
 
-def flip_pattern(file):
+def flip_pattern(file)->None:
      pattern = rd.generate_np_pattern(file)
      with open("flip.txt","w",encoding="utf-8") as f:
         f.write("Input file:")

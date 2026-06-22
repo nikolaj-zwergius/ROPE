@@ -1,9 +1,11 @@
 
 from utils.trace_utils import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW
 from utils.rope_def import VALID_BASES, NUCLEOTIDE_CHARS
+from io import TextIOWrapper
+from numpy import ndarray
 
 
-def render_pattern(out,message,data,n_map,grid):
+def render_pattern(out:TextIOWrapper,message:str,data:list,n_map:list,grid:ndarray):
     out.write(message)
     for i in range(grid.shape[0]):
         row_chars = []
@@ -15,7 +17,8 @@ def render_pattern(out,message,data,n_map,grid):
                 row_chars.append(ch)
         out.write("".join(row_chars) + "\n")
 
-def render_strand_cell(ch, i, j, strand_dir):
+def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
+
     if ch == "p" or ch == "!" or ch == "*":
         direction = strand_dir.get((i, j), "right")
         if direction not in {"rigth", "left"}:
@@ -29,7 +32,7 @@ def render_strand_cell(ch, i, j, strand_dir):
     return ch
 
 
-def render_cell(ch, type_list, n_map, i, j):
+def render_cell(ch:str, type_list:list, n_map:list, i:int, j:int) -> str:
     if ch in NUCLEOTIDE_CHARS:
         idx = n_map.get((i, j), None)
         if idx is not None and 0 <= idx <= len(type_list):
@@ -37,7 +40,7 @@ def render_cell(ch, type_list, n_map, i, j):
     return ch
 
 
-def structure_printer(output, grid, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|None=None):
+def structure_printer(output:TextIOWrapper, grid:ndarray, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|None=None):
         
         output.write("2D diagram with sequence\n")
         for i in range(grid.shape[0]):

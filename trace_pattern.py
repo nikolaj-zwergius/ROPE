@@ -3,11 +3,11 @@ SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import utils.rope_def as rd
 from utils.trace_utils import get_backbone_start, generate_np_pattern, check_round
+from numpy import ndarray,int64
 
 
 
-
-def base_pair_id(pattern,tup):
+def base_pair_id(pattern:ndarray,tup:tuple[int64,int64]) -> tuple[None|tuple,None|str]:
     up,down,left,rigth = check_round(pattern,tup)
     if up in ["┊","!","*"]:
         return (tup[0]-2,tup[1]),up
@@ -17,8 +17,8 @@ def base_pair_id(pattern,tup):
         return None,"."
     return None,None
 
-def trace_backbone(pattern,crossover = False):
-    p5, first, dir = get_backbone_start(pattern)
+def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict,dict]:
+    _, first, dir = get_backbone_start(pattern)
 
     seq = ""
     base_pair =""
@@ -76,7 +76,7 @@ def trace_backbone(pattern,crossover = False):
     return seq,base_pair,n_map,strand_dir
 
 
-def trace_pattern_out(file):
+def trace_pattern_out(file:str) -> None:
     pattern = generate_np_pattern(file)
     seq,base_pair,_,_= trace_backbone(pattern)
     with open(file, "r") as f:
@@ -90,7 +90,7 @@ def trace_pattern_out(file):
        output.write(seq)
 
 
-def trace_seq_into_backbone(seq:str,file: str):
+def trace_seq_into_backbone(seq:str,file: str) -> ndarray:
     new_pattern = generate_np_pattern(file)
     _, first, dir = get_backbone_start(new_pattern)
     index = 0

@@ -1,5 +1,6 @@
 ﻿import sys
 import os
+from numpy import ndarray
 from utils.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
 import trace_pattern as tp
 from utils.trace_utils import (
@@ -17,7 +18,7 @@ from trace_pattern import trace_backbone
 
 
 
-def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None,outfile=None):
+def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
     primary_sequence = None
     if out:
         name, kl_pattern = parse_header(pattern_file)
@@ -66,6 +67,7 @@ def trace_analysis_out(pattern_file, sequence_file=None,out=True,input_grid=None
             output.write("My Structure map:  \n")
             output.write(f"{structure_map} \n\n")
             structure_printer(output, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
+            return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
     else:
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
 

@@ -99,21 +99,21 @@ class Module():
             return other_res_coord,other_res_lines
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         if self.priority < other.priority:
             return True
         elif self.priority == other.priority:
             return self.len < other.len
         else:
             return False
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         if self.priority > other.priority:
             return True
         elif self.priority == other.priority:
             return self.len > other.len
         else:
             return False
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
@@ -185,7 +185,7 @@ class segmented_module(Module):
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
-    def _generate_segment_cords(self,invsers)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
+    def _generate_segment_cords(self,invsers:bool)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -278,7 +278,7 @@ class inv_segmented_module(segmented_module):
             print(self.name,f"segment = {i}",len(self.build_cords[i]),len(self.segments[i]))
             raise
 
-def get_sugar_cords(coords) -> np.ndarray:
+def get_sugar_cords(coords:np.ndarray) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]
     for atom in coords.keys():
