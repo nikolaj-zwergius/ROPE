@@ -18,7 +18,6 @@ def render_pattern(out:TextIOWrapper,message:str,data:list,n_map:list,grid:ndarr
         out.write("".join(row_chars) + "\n")
 
 def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
-
     if ch == "p" or ch == "!" or ch == "*":
         direction = strand_dir.get((i, j), "right")
         if direction not in {"rigth", "left"}:

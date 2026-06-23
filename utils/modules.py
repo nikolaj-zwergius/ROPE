@@ -32,9 +32,3 @@ module_libary = {
     #Spinach.symbol: Spinach,
     Squash.symbol: Squash,
 }
-
-split_modules ={}
-
-for module in module_libary.values():
-    if isinstance(module, segmented_module):
-        split_modules[module.symbol] = module
