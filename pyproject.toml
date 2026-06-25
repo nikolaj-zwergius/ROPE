@@ -3,6 +3,11 @@ name = "rna-rope"
 version = "0.1.0"
 description = "RNA structure analysis toolkit"
 requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "GPL-3.0 license"}
+authors = [
+  { name = "Nikolaj Holck Zwergius" }
+]
 
 dependencies = [
     "numpy>=2.1.0",
@@ -30,3 +35,13 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["rope*"]
+
+[tool.setuptools.package-data]
+rope = ["data/modules/*.pdb","data/nucleotides/*.pdb"]
+
+
+[project.urls]
+Homepage = "https://github.com/nikolaj-zwergius/ROPE.git"
+
+
+
