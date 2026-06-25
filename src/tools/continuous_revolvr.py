@@ -1,39 +1,22 @@
+
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
 import sys
 import os
 from pathlib import Path
 import concurrent.futures
-import revolvr
-import trace_pattern
-import trace_analysis as ta
-from utils.rope_def import VALID_BASES
-import utils.trace_utils as tu
-from utils.render_utils import structure_printer, render_pattern
+import src.core.revolvr as revolvr
+import src.core.trace_logic as trace_logic
+from src.core.analysis_logic import trace_analysis_out
+from src.definitions.rope_def import VALID_BASES
+import src.core.grid_mapping as tu
+from src.io.structure_printers import structure_printer, render_pattern, save_revolver_output
 
-
-def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list,init_seq:str) -> None:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    ed_str = f"{ed:.2f}"
-    output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
-    new_pattern = trace_pattern.trace_seq_into_backbone(seq, input_file)
-    grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir = ta.trace_analysis_out(None, None, out=False, input_grid=new_pattern)
-    with output_path.open("w", encoding="utf-8") as out_file:
-        out_file.write(f"input_file: {input_file}\n")
-        out_file.write(f"run_index: {run_index}\n")
-        out_file.write(f"sequence: {seq}\n")
-        out_file.write(f"structure: {struc}\n")
-        out_file.write(f"mfe: {mfe:.2f}\n")
-        out_file.write(f"feq: {feq:.2f}\n")
-        out_file.write(f"ed: {ed:.2f}\n")
-        gc = revolvr.gc_ratio_calculator(seq)
-        if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
-        else:out_file.write(f"GC: {gc:.2f}\n")
-        out_file.write("\n\n\n")
-        if revolvr.problem_in_loced(problem_mask,init_seq,control=False):
-            out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
-             Sequence design failed for the inputted target structure.\n""")
-            render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)
-            out_file.write("\n")
-        structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
         
 
 def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
@@ -43,17 +26,19 @@ def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
     ed = float("inf")
     output_dir.mkdir(parents=True, exist_ok=True)
     grid = tu.generate_np_pattern(file_path)
-    seq,_,_,_ = trace_pattern.trace_backbone(grid)
+    seq,_,_,_ = trace_logic.trace_backbone(grid)
     one_run = False
     if set(seq) ==  set(VALID_BASES):
         one_run = True
     while ed > target_ed:
         seq, struc, mfe, feq, ed, problem,init_seq = revolvr.revolver(str(input_path))
+        new_pattern = trace_logic.trace_seq_into_backbone(seq, str(input_path))
+        analysis_values = trace_analysis_out(None, None, out=False, input_grid=new_pattern)
         if len(os.listdir(output_dir)) == 0:
-            save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq)
+            save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq,analysis_values)
             continue
         if ed < float(os.listdir(output_dir)[0][:3]):
-            save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq)
+            save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq,analysis_values)
         if one_run:
             return
 
@@ -87,14 +72,14 @@ if __name__ == "__main__":
     max_workers = 1
     target_ed=0
     if args and args[-1].isdigit():
-      target_ed = int(args[-1])
-      args = args[:-1]
-    if args and args[-1].isdigit():
       runs = int(args[-1])
       args = args[:-1]
     if args and args[-1].isdigit():
         max_workers = int(args[-1])
         args = args[:-1]
+    if args and args[-1].isdigit():
+      target_ed = int(args[-1])
+      args = args[:-1]
     if not args or args[-1] == "*":
          for file in os.listdir():
             if not file.endswith(".txt"):

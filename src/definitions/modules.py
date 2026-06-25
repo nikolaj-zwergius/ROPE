@@ -1,7 +1,4 @@
-if __name__ != "__main__":
-    from utils.def_class import Module, segmented_module
-else:
-    from def_class import Module, segmented_module
+from src.model.Module import Module, segmented_module
 
 ### Structual Modules
 base = Module(name = 'base', file = 'helix_backbone.pdb', symbol = 'H1')

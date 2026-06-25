@@ -1,23 +1,14 @@
 from __future__ import annotations
 import numpy as np
 import os
-dir_path = os.path.dirname(os.path.realpath(__file__))
-parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
-FOLDER = f"{parent_dir_path}/RNA_lib/modules/"
-NT_FOLDER = f"{parent_dir_path}/RNA_lib/nucleotides/"
-SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
+from src.model.StructuralElement import StructuralElement
+from src.definitions.rope_def import FOLDER,SUGAR_ATOMS
+from src.utils.get_sugar import get_sugar_cords
 
 
-class Module():
-    def __init__(self,name = 'Module', file = 'Module.pdb', symbol = 'M',sequence:str = None,priority=0,len = None,ligand:str|None=None):
-        self.name = name
-        self.file = file
-        self.start_cord = None
-        self.build_cords = None
-        self.build_lines = None
-        self.last_coord = None
-        self.coord_dic = None
-        self.symbol = symbol
+class Module(StructuralElement):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None, priority=0, len=None, ligand = None):
+        super().__init__(name, file, symbol)
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
@@ -29,7 +20,7 @@ class Module():
         else:
             self.len = len
         self.priority = priority
-        
+
     def set_len(self):
         if self.sequence is not None:
             self.have_seq = True
@@ -40,9 +31,6 @@ class Module():
             self.len = 1
         if len(self.build_cords) != self.len:
             raise Exception(f"{self.name}: Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
-    
-    def generate_cords(self):
-        self.start_cord,self.build_cords,self.build_lines,self.last_coord,self.coord_dict = self._generate_cords()
         
 
     def _generate_cords(self):
@@ -52,7 +40,7 @@ class Module():
         other_res_lines = []
         current_res_id = None
         try:
-            with open(FOLDER + self.file, 'r') as f:
+            with open(FOLDER/self.file, 'r') as f:
                 for line in f:
                     if line.startswith('ATOM'):
                         if start_res_id is None:
@@ -77,12 +65,14 @@ class Module():
             print(f"File {self.file} not found. Please check the file path.")
             return None, None, None, None,None
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
+
+
     def get_ligand_coords(self):
         other_res_coord = []
         other_res_lines = []
         current_res_id = None
         try:
-            with open(FOLDER + self.file, 'r') as f:
+            with open(FOLDER/self.file, 'r') as f:
                 for line in f:
                     if not line.startswith('ATOM') and not line.startswith("HETATM"):
                         continue
@@ -121,42 +111,6 @@ class Module():
         return f"Module: {self.name}"
     def __repr__(self): 
         return f"Module: {self.name}"
-
-
-class nucleotide(Module):
-    def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N'):
-        super().__init__(name, file, symbol)
-
-    def _generate_cords(self):
-        start_res_id = None
-        start_res_coord = {}
-        other_res_coord = []
-        other_res_lines = []
-        current_res_id = None
-        try:
-            with open(NT_FOLDER + self.file, 'r') as f:
-                for line in f:
-                    if line.startswith('ATOM'):
-                        if start_res_id is None:
-                            start_res_id = int(line[22:26])
-                        if int(line[22:26]) != current_res_id:
-                                other_res_coord.append({})
-                                other_res_lines.append([])
-                                current_res_id = int(line[22:26])
-                        other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54])) 
-                        other_res_lines[-1].append(line)
-                        if int(line[22:26]) == start_res_id:
-                            start_res_coord[line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
-            sugar_coord = get_sugar_cords(start_res_coord)
-            last_coord = get_sugar_cords(other_res_coord[-1])
-            other_res_coord_dict = other_res_coord
-            for i in range(len(other_res_coord)):
-                other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
-            
-        except FileNotFoundError:
-            print(f"File {self.file} not found. Please check the file path.")
-            return None, None, None,None,None
-        return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
 
 
 class segmented_module(Module):
@@ -225,7 +179,7 @@ class segmented_module(Module):
         try:
             segment_coords = [[] for i in range(len(segment_range))]
             line_count = 0
-            with open(FOLDER + self.file, 'r') as f:
+            with open(FOLDER/self.file, 'r') as f:
                 for line in f:
                     if not line.startswith('ATOM'):
                         continue

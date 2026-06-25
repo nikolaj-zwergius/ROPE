@@ -1,14 +1,29 @@
+
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
 import sys
 import os
 from io import TextIOWrapper
 from numpy import ndarray, float32
-from utils.dim3_utils import umeyama
-from utils.def_class import get_sugar_cords, Module, segmented_module, inv_segmented_module
-from utils.modules import module_libary, Helix
-from utils.nucleotide import nucleotide_libary
-from trace_pattern import trace_backbone
-from utils.trace_utils import generate_np_pattern, map_structure
-from utils.module_mapper import module_mapper
+from src.utils.dim3_utils import umeyama
+from src.model.Module import get_sugar_cords, Module, segmented_module, inv_segmented_module
+from src.definitions.modules import module_libary, Helix
+from src.definitions.nucleotide import nucleotide_libary
+from src.core.trace_logic import trace_backbone
+from src.core.grid_mapping import generate_np_pattern, map_structure
+from src.core.module_mapper import module_mapper
+
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 
 def output_pdb(line:str,seq:str,index:int,line_index:int,align_residue:ndarray,atom_count:int,residue_count:int) -> str:
     line_string = list(line)

@@ -1,7 +1,7 @@
 @echo off
-
-set "local=%~dp0"
-python %local%\RNA_lib\pdb_file_cleaner.py %rest%
+set SCRIPT_DIR=%~dp0
+set ROOT_DIR=%SCRIPT_DIR%..
+python "%ROOT_DIR%\src\io\pdb_file_cleaner.py
 
 
 if "%~1"=="fold" goto fold_jmp
@@ -55,19 +55,19 @@ goto error_jmp
 
 
 :build_func
-python %local%\RNAbuild.py %rest%
+python "%ROOT_DIR%\src\tools\build.py" %rest%
 goto end
 :fold_func
-python %local%\batch_revolvr.py %rest%
+python "%ROOT_DIR%\src\tools\batch_revolvr.py" %rest%
 goto end
 :analysis_func
-python %local%\trace_analysis.py %rest%
+python "%ROOT_DIR%\src\tools\analysis.py" %rest%
 goto end
 :dragon_func
-python %local%\dragon.py %rest%
+python "%ROOT_DIR%\src\tools\continuous_revolvr.py" %rest%
 goto end
 :error
-python %local%\rope_helper.py %*
+python "%ROOT_DIR%\src\utils\cli_errors.py" %*
 goto end
 
 :error_jmp

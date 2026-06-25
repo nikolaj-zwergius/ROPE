@@ -1,4 +1,4 @@
-import random
+
 one_letter_code = {"A":("A"),
                    "C":"C",
                    "G":"G",
@@ -61,8 +61,16 @@ restriction_motifs = [
     ]
 
 
+flips =[((0),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92):"/"},"Flipped file:"),
+        ((1),{"╯":"╭","╮":"╰","╭":"╯","╰":"╮"},"Reversed file:"),
+        ((0,1),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92):"/"},"Reversed and Flipped file:")]
+
+SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
-def mutate(mutation_rate:tuple[int,int,int,int])->str:
-    new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
-    return new_base[0]
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[2]
+
+
+FOLDER = ROOT/"data"/"RNA_lib"/"modules"
+NT_FOLDER = ROOT/"data"/"RNA_lib"/"nucleotides"

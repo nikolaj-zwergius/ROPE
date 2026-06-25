@@ -1,9 +1,7 @@
-﻿import sys
-import os
 from numpy import ndarray
-from utils.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
-import trace_pattern as tp
-from utils.trace_utils import (
+from src.definitions.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
+import src.core.trace_logic as tp
+from src.core.grid_mapping import (
     COMPLEMENT_WINDOW,
     DUPLICATE_WINDOW,
     map_structure,
@@ -12,10 +10,9 @@ from utils.trace_utils import (
     get_backbone_start,
     generate_np_pattern
 )
-from utils.render_utils import structure_printer
-from utils.file_utils import parse_header, read_sequence_file
-from trace_pattern import trace_backbone
-
+from src.io.blueprint_reader import parse_header, read_sequence_file
+from src.core.trace_logic import trace_backbone
+from src.io.structure_printers import analysis_out
 
 
 def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
@@ -60,45 +57,6 @@ def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=Tr
             wobbles_seq[i] = left
             wobbles_seq[partner] = right
     if out :
-        with open(f"{outfile}", "w", encoding="utf-8") as output:
-            output.write(f"{name}\n")
-            output.write(f"{structure_map}\n")
-            output.write(f"{seq_output}\n\n")
-            output.write("My Structure map:  \n")
-            output.write(f"{structure_map} \n\n")
-            structure_printer(output, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
-            return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
+        analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
     else:
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
-
-if __name__ == "__main__":
-
-    dir_path = os.path.dirname(os.path.realpath(__file__))  
-    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
-    wd = os.getcwd()
-
-    if len(sys.argv) < 1:
-        print("Usage for specific files: batch_revolvr <file1> [<file2> ...]")
-        print("Usage for all in folder: batch_revolvr")
-        sys.exit(1)
-    folder = f"{wd}/Trace_analysis"
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-    args = sys.argv[1:]
-    if len(args) == 0:
-        for file in os.listdir():
-            if not file.endswith(".txt"):
-                continue
-            else:
-                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
-    else:
-        for file in args:
-            file = str(file.split(chr(92))[1])
-            if not file.endswith(".txt"):
-                print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
-                continue
-            if file in os.listdir():
-                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
-            else:
-                print(f"{file} not found in folder")

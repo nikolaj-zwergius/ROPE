@@ -4,9 +4,9 @@
 *.pl
 *.bak
 *.pdb
-**/
 !**/RNA_lib/**/*.pdb
-!**/utils/
-!**/utils/*
+
 test*
 **/linecounter*
+*.tree
+__pycache__/

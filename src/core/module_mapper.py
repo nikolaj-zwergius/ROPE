@@ -1,9 +1,8 @@
-﻿
-from utils.trace_utils import generate_np_pattern, map_structure
-from utils.modules import module_libary, Helix, base
-from trace_pattern import trace_backbone
-from utils.rope_def import one_letter_code
-from utils.def_class import segmented_module, RangeDict
+from src.core.grid_mapping import generate_np_pattern, map_structure
+from src.definitions.modules import module_libary, Helix, base
+from src.core.trace_logic import trace_backbone
+from src.definitions.rope_def import one_letter_code
+from src.model.Module import segmented_module, RangeDict
 from numpy import ndarray
 
 

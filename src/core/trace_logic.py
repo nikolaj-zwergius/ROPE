@@ -1,8 +1,8 @@
-import getopt,sys,os
+import sys,os
 SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-import utils.rope_def as rd
-from utils.trace_utils import get_backbone_start, generate_np_pattern, check_round
+import src.definitions.rope_def as rd
+from src.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
 from numpy import ndarray,int64
 
 
@@ -76,18 +76,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
     return seq,base_pair,n_map,strand_dir
 
 
-def trace_pattern_out(file:str) -> None:
-    pattern = generate_np_pattern(file)
-    seq,base_pair,_,_= trace_backbone(pattern)
-    with open(file, "r") as f:
-        name = f.readline().rstrip().lstrip(">")
 
-    with open("target.txt","w") as output:
-       output.write(name)
-       output.write("\n")
-       output.write(base_pair)
-       output.write("\n")
-       output.write(seq)
 
 
 def trace_seq_into_backbone(seq:str,file: str) -> ndarray:
@@ -106,20 +95,5 @@ def trace_seq_into_backbone(seq:str,file: str) -> ndarray:
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
     return new_pattern
-
-
-if __name__ == "__main__":
-    try:
-        opts = sys.argv
-
-    except getopt.GetoptError:
-            print("help_mes")
-            sys.exit()
-    try:
-        trace_pattern_out(opts[1])
-        print("done")
-    except IndexError:
-        print("no file given")
-    
 
 
