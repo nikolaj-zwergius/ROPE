@@ -10,13 +10,13 @@ import sys
 import os
 from io import TextIOWrapper
 from numpy import ndarray, float32
-from src.utils.dim3_utils import umeyama
-from src.model.Module import get_sugar_cords, Module, segmented_module, inv_segmented_module
-from src.definitions.modules import module_libary, Helix
-from src.definitions.nucleotide import nucleotide_libary
-from src.core.trace_logic import trace_backbone
-from src.core.grid_mapping import generate_np_pattern, map_structure
-from src.core.module_mapper import module_mapper
+from rope.utils.dim3_utils import umeyama
+from rope.model.Module import get_sugar_cords, Module, segmented_module, inv_segmented_module
+from rope.definitions.modules import module_libary, Helix
+from rope.definitions.nucleotide import nucleotide_libary
+from rope.core.trace_logic import trace_backbone
+from rope.core.grid_mapping import generate_np_pattern, map_structure
+from rope.core.module_mapper import module_mapper
 
 import sys
 from pathlib import Path

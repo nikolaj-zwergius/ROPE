@@ -1,5 +1,5 @@
 
-from src.model.Nucleotide import nucleotide
+from rope.model.Nucleotide import nucleotide
 
 ### Nucleotides
 A=nucleotide(name = 'A', file = 'A.pdb', symbol = 'A')

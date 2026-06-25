@@ -1,8 +1,8 @@
 import sys,os
 SCRIPT_DIR = os.path.abspath(__file__)
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-import src.definitions.rope_def as rd
-from src.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
+import rope.definitions.rope_def as rd
+from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
 from numpy import ndarray,int64
 
 

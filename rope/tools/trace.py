@@ -4,8 +4,8 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 import sys
 from pathlib import Path
-from src.io.structure_printers import trace_pattern_out
-from src.core.trace_logic import generate_np_pattern, trace_backbone
+from rope.io.structure_printers import trace_pattern_out
+from rope.core.trace_logic import generate_np_pattern, trace_backbone
 
 # Add project root to Python path
 ROOT = Path(__file__).resolve().parents[2]

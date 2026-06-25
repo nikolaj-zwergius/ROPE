@@ -1,5 +1,5 @@
-import src.definitions.rope_def as rd
-import src.model.direction as di
+import rope.definitions.rope_def as rd
+import rope.model.direction as di
 import numpy as np
 
 COMPLEMENT_WINDOW = 10

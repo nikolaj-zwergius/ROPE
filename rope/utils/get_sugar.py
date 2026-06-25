@@ -1,5 +1,5 @@
 import numpy as np
-from src.definitions.rope_def import SUGAR_ATOMS
+from rope.definitions.rope_def import SUGAR_ATOMS
 def get_sugar_cords(coords:np.ndarray) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]

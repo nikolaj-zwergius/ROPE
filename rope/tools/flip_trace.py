@@ -9,8 +9,8 @@ sys.path.insert(0, str(ROOT))
 import getopt
 import sys
 import numpy as np
-import src.definitions.rope_def as rd
-from src.io.structure_printers import flip_pattern
+import rope.definitions.rope_def as rd
+from rope.io.structure_printers import flip_pattern
         
 
 if __name__ == "__main__":

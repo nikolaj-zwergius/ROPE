@@ -1,7 +1,7 @@
 import os
-import src.definitions.rope_def as rd
-import src.core.trace_logic as tp
-import src.core.grid_mapping as tu
+import rope.definitions.rope_def as rd
+import rope.core.trace_logic as tp
+import rope.core.grid_mapping as tu
 import getopt,sys
 import RNA
 import random

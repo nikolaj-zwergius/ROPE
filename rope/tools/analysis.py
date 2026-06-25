@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT))
 
 import sys
 import os
-from src.core.analysis_logic import trace_analysis_out
+from rope.core.analysis_logic import trace_analysis_out
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))  

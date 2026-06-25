@@ -1,7 +1,7 @@
 from numpy import ndarray
-from src.definitions.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
-import src.core.trace_logic as tp
-from src.core.grid_mapping import (
+from rope.definitions.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
+import rope.core.trace_logic as tp
+from rope.core.grid_mapping import (
     COMPLEMENT_WINDOW,
     DUPLICATE_WINDOW,
     map_structure,
@@ -10,9 +10,9 @@ from src.core.grid_mapping import (
     get_backbone_start,
     generate_np_pattern
 )
-from src.io.blueprint_reader import parse_header, read_sequence_file
-from src.core.trace_logic import trace_backbone
-from src.io.structure_printers import analysis_out
+from rope.io.blueprint_reader import parse_header, read_sequence_file
+from rope.core.trace_logic import trace_backbone
+from rope.io.structure_printers import analysis_out
 
 
 def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:

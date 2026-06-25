@@ -10,12 +10,12 @@ import sys
 import os
 from pathlib import Path
 import concurrent.futures
-import src.core.revolvr as revolvr
-import src.core.trace_logic as trace_logic
-from src.core.analysis_logic import trace_analysis_out
-from src.definitions.rope_def import VALID_BASES
-import src.core.grid_mapping as tu
-from src.io.structure_printers import structure_printer, render_pattern, save_revolver_output
+import rope.core.revolvr as revolvr
+import rope.core.trace_logic as trace_logic
+from rope.core.analysis_logic import trace_analysis_out
+from rope.definitions.rope_def import VALID_BASES
+import rope.core.grid_mapping as tu
+from rope.io.structure_printers import structure_printer, render_pattern, save_revolver_output
 
         
 

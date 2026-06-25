@@ -1,8 +1,8 @@
-from src.core.grid_mapping import generate_np_pattern, map_structure
-from src.definitions.modules import module_libary, Helix, base
-from src.core.trace_logic import trace_backbone
-from src.definitions.rope_def import one_letter_code
-from src.model.Module import segmented_module, RangeDict
+from rope.core.grid_mapping import generate_np_pattern, map_structure
+from rope.definitions.modules import module_libary, Helix, base
+from rope.core.trace_logic import trace_backbone
+from rope.definitions.rope_def import one_letter_code
+from rope.model.Module import segmented_module, RangeDict
 from numpy import ndarray
 
 

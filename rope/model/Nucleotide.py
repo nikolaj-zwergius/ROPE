@@ -1,9 +1,9 @@
 from __future__ import annotations
 import numpy as np
 import os
-from src.model.StructuralElement import StructuralElement
-from src.utils.get_sugar import get_sugar_cords
-from src.definitions.rope_def import NT_FOLDER
+from rope.model.StructuralElement import StructuralElement
+from rope.utils.get_sugar import get_sugar_cords
+from rope.definitions.rope_def import NT_FOLDER
 
 
 class nucleotide(StructuralElement):

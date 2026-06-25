@@ -1,4 +1,4 @@
-from src.model.Module import Module, segmented_module
+from rope.model.Module import Module, segmented_module
 
 ### Structual Modules
 base = Module(name = 'base', file = 'helix_backbone.pdb', symbol = 'H1')

@@ -1,11 +1,11 @@
 
-from src.core.grid_mapping import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW
-from src.definitions.rope_def import VALID_BASES, NUCLEOTIDE_CHARS
+from rope.core.grid_mapping import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW
+from rope.definitions.rope_def import VALID_BASES, NUCLEOTIDE_CHARS
 from io import TextIOWrapper
 from numpy import ndarray
 from pathlib import Path
-import src.core.revolvr as revolvr
-import src.definitions.rope_def as rd
+import rope.core.revolvr as revolvr
+import rope.definitions.rope_def as rd
 import numpy as np
 
 
