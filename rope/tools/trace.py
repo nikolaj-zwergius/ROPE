@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 
-if __name__ == "__main__":
+def main():
     try:
         opts = sys.argv
 
@@ -26,6 +26,9 @@ if __name__ == "__main__":
         print("done")
     except IndexError:
         print("no file given")
+
+if __name__ == "__main__":
+    main()
     
 
 

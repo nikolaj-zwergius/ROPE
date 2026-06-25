@@ -9,7 +9,8 @@ sys.path.insert(0, str(ROOT))
 import sys
 import os
 from rope.core.analysis_logic import trace_analysis_out
-if __name__ == "__main__":
+
+def main():
 
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
@@ -40,3 +41,8 @@ if __name__ == "__main__":
                 trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
             else:
                 print(f"{file} not found in folder")
+
+                
+if __name__ == "__main__":
+
+    main()

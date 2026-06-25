@@ -11,9 +11,9 @@ import sys
 import numpy as np
 import rope.definitions.rope_def as rd
 from rope.io.structure_printers import flip_pattern
-        
 
-if __name__ == "__main__":
+
+def main():   
     try:
         opts = sys.argv
 
@@ -24,5 +24,8 @@ if __name__ == "__main__":
         flip_pattern(opts[1])
     except IndexError:
         print("no file given")
+        
+if __name__ == "__main__":
+    main()
 
 

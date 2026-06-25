@@ -43,8 +43,7 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
         for _ in executor.map(_run_revolver_task, tasks):
             pass
 
-
-if __name__ == "__main__":
+def main():
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -69,3 +68,7 @@ if __name__ == "__main__":
     args.extend(file_args)
 
     run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
+
+    
+if __name__ == "__main__":
+    main()

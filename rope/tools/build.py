@@ -197,9 +197,10 @@ def RNAbuild(file:str,output:str) -> None:
 
                 build[residue_count-1] = last_build
         ligand_printer(f,ligand_stack,atom_count,seq)
-            
-if __name__ == "__main__":
-    
+
+
+def main():
+        
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -229,3 +230,6 @@ if __name__ == "__main__":
                 RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
             else:
                 print(f"{file} not found in folder")
+                  
+if __name__ == "__main__":
+    main()

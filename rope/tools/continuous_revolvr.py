@@ -59,8 +59,7 @@ def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str = "re
         for _ in executor.map(_run_dragon_task, tasks):
             pass
 
-
-if __name__ == "__main__":
+def main():
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -93,3 +92,6 @@ if __name__ == "__main__":
         print("Dragon will not work with less tasks then workers")
         exit()
     run_dragons(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed)
+
+if __name__ == "__main__":
+    main()
