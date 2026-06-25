@@ -1,0 +1,32 @@
+[project]
+name = "rna-rope"
+version = "0.1.0"
+description = "RNA structure analysis toolkit"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy>=2.1.0",
+]
+
+
+[project.scripts]
+rope-trace   = "rope.tools.trace:main"
+rope-analyse = "rope.tools.analysis:main"
+rope-build   = "rope.tools.build:main"
+rope-fold    = "rope.tools.batch_revolvr:main"
+rope-dragon  = "rope.tools.continuous_revolvr:main"
+rope-flip    = "rope.tools.flip_trace:main"
+#legacy names
+trace_pattern   = "rope.tools.trace:main"
+trace_analysis  = "rope.tools.analysis:main"
+RNAbuild        = "rope.tools.build:main"
+batch_revolvr   = "rope.tools.batch_revolvr:main"
+flip_trace      = "rope.tools.flip_trace:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rope*"]
