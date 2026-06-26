@@ -12,7 +12,7 @@ from rope.core.analysis_logic import trace_analysis_out
 
 def main():
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))  
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
 
@@ -33,7 +33,7 @@ def main():
                 trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
     else:
         for file in args:
-            file = str(file.split(chr(92))[1])
+            file = str(file.lstrip(f".{chr(92)}"))
             if not file.endswith(".txt"):
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
@@ -42,7 +42,7 @@ def main():
             else:
                 print(f"{file} not found in folder")
 
-                
+
 if __name__ == "__main__":
 
     main()

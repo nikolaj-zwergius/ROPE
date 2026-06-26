@@ -19,9 +19,15 @@ def run(cmd):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Install NAMIX with optional local rna-rope."
+        description="Install ROPE."
     )
 
+    parser.add_argument(
+            "--pip",
+            choices=["pip", "pipx"],
+            default="pip",
+            help="Pick install tool (default: pip)",
+        )
 
     parser.add_argument(
         "--mode",
@@ -42,6 +48,7 @@ def main():
 
     print("\n------------------------------")
     print(f"Installer : {args.pip}")
+    print(f"Mode      : {args.mode}")
     print(f"Forced    : {args.force}")
     print("------------------------------\n")
 
@@ -73,7 +80,7 @@ def main():
             install_logic_rope.append("-e")
 
         install_logic_rope.extend(["."])
-        
+
         run(install_logic_rope)
 
     print("\n✅ Installation complete\n")

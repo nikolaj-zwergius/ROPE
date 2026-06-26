@@ -69,7 +69,7 @@ SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 
 
 FOLDER = ROOT/"data"/"RNA_lib"/"modules"

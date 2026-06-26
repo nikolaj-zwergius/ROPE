@@ -116,7 +116,7 @@ def build_seq_module(f:TextIOWrapper,mod:Module,build:list,align_value:tuple[int
         align_residue = residue.dot(c*R)+t
         if mod.sequence[res_index] == "N":
             atom_count, aligned_sugar = align_base_to_backbonde(f,mod.coord_dict,res_index,seq_index,seq,atom_count,(c,R,t),residue_count)
-        else:    
+        else:
             for line_index,line in enumerate(mod.build_lines[res_index]):
                 f.write(output_pdb(line,mod.sequence,res_index,line_index,align_residue,atom_count,residue_count))
                 atom_count += 1
@@ -164,15 +164,15 @@ def RNAbuild(file:str,output:str) -> None:
                         segment_stack[Structure[i][1+offset:]] = []
                 elif Structure[i][0+offset] == "1":
                     last = segment_stack[Structure[i][1+offset:]].pop(-1)
-                
-                
+
+
 
                 assert type(mod) == inv_segmented_module or type(mod) == segmented_module
                 mod.change_elements(seg_index)
                 c,R,t = umeyama(mod.start_cord,last)
                 atom_count,last_build,build,residue_count,seq_index = build_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
                 mod.reset_elements()
-                
+
                 if Structure[i][0+offset] == "0":
                     segment_stack[Structure[i][1+offset:]].append(last_build)
                     if mod.ligand:
@@ -200,8 +200,8 @@ def RNAbuild(file:str,output:str) -> None:
 
 
 def main():
-        
-    dir_path = os.path.dirname(os.path.realpath(__file__))  
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
 
@@ -222,7 +222,7 @@ def main():
                 RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
     else:
         for file in args:
-            file = str(file.split(chr(92))[1])
+            file = str(file.lstrip(f".{chr(92)}"))
             if not file.endswith(".txt"):
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
@@ -230,6 +230,6 @@ def main():
                 RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb")
             else:
                 print(f"{file} not found in folder")
-                  
+
 if __name__ == "__main__":
     main()
