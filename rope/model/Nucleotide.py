@@ -3,12 +3,12 @@ import numpy as np
 import os
 from rope.model.StructuralElement import StructuralElement
 from rope.utils.get_sugar import get_sugar_cords
-from rope.definitions.rope_def import NT_FOLDER
 
 
 class nucleotide(StructuralElement):
     def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N'):
         super().__init__(name, file, symbol)
+        self.generate_cords()
 
     def _generate_cords(self):
         start_res_id = None
@@ -17,7 +17,7 @@ class nucleotide(StructuralElement):
         other_res_lines = []
         current_res_id = None
         try:
-            with open(NT_FOLDER/self.file, 'r') as f:
+            with open(self.file, 'r') as f:
                 for line in f:
                     if line.startswith('ATOM'):
                         if start_res_id is None:
@@ -38,6 +38,7 @@ class nucleotide(StructuralElement):
             
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
-            return None, None, None,None,None
-        return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
+            raise
+            return None, None, None,None,None,False
+        return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict,True
 

@@ -12,5 +12,4 @@ class StructuralElement():
         self.symbol = symbol
     
     def generate_cords(self):
-        self.start_cord,self.build_cords,self.build_lines,self.last_coord,self.coord_dict = self._generate_cords()
-        
+        self.start_cord,self.build_cords,self.build_lines,self.last_coord,self.coord_dict,self.flie_found = self._generate_cords()

@@ -44,6 +44,7 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
             pass
 
 def main():
+    print("starting")
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
@@ -66,7 +67,7 @@ def main():
             else:
                 file_args.append(file)
     args.extend(file_args)
-
+    print("starting")
     run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
 
     

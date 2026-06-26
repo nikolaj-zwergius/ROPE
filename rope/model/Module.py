@@ -4,10 +4,11 @@ import os
 from rope.model.StructuralElement import StructuralElement
 from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS
 from rope.utils.get_sugar import get_sugar_cords
+from rope.utils.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None, priority=0, len=None, ligand = None):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None, priority=0, len=None, ligand = None,test =False):
         super().__init__(name, file, symbol)
         self.sequence = sequence
         self.have_seq = False
@@ -29,6 +30,9 @@ class Module(StructuralElement):
             self.len = len(self.build_cords)
         else:
             self.len = 1
+        if not self.flie_found:
+            self.len = 0
+            return
         if len(self.build_cords) != self.len:
             raise Exception(f"{self.name}: Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
         
@@ -40,7 +44,7 @@ class Module(StructuralElement):
         other_res_lines = []
         current_res_id = None
         try:
-            with open(FOLDER/self.file, 'r') as f:
+            with open(self.file, 'r') as f:
                 for line in f:
                     if line.startswith('ATOM'):
                         if start_res_id is None:
@@ -62,9 +66,10 @@ class Module(StructuralElement):
                 other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
         except FileNotFoundError:
 
-            print(f"File {self.file} not found. Please check the file path.")
-            return None, None, None, None,None
-        return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict
+            print(f"File {self.file} not found. Please check the file path {FOLDER/self.file}.")
+            raise
+            return None, None, None, None,None,False
+        return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict,True
 
 
     def get_ligand_coords(self):
@@ -269,51 +274,3 @@ class inv_segmented_module(segmented_module):
         except AssertionError:
             print(self.name,f"segment = {i}",len(self.build_cords[i]),len(self.segments[i]))
             raise
-
-def get_sugar_cords(coords:np.ndarray) -> np.ndarray:
-    sugar_coord = {}
-    sugar_corrd_list=[]
-    for atom in coords.keys():
-        if atom in SUGAR_ATOMS:
-            sugar_coord[atom] = coords[atom]
-    sc_sorted = sorted(sugar_coord.keys())
-    for i in range(len(sc_sorted)):
-        sugar_corrd_list.append(sugar_coord[sc_sorted[i]])
-    sugar_coord = np.array(sugar_corrd_list, dtype=np.float32)
-    return sugar_coord
-
-
-class RangeDict(dict):
-
-    def __setitem__(self, key, value):
-        if key in self:
-            raise KeyError(f"Key {key} overlaps with existing key(s) in RangeDict.")
-        if not isinstance(key, range):
-            super().__setitem__(range(key,key+1), value)
-        else:
-            super().__setitem__(key, value)
-
-    def __contains__(self, item):
-        if not isinstance(item, range): # or xrange in Python 2
-            for key in self:
-                if item in key:
-                    return True
-            return False
-        else:
-            return super().__contains__(item)
-
-    def __getitem__(self, item):
-        if not isinstance(item, range): # or xrange in Python 2
-            for key in self:
-                if item in key:
-                    return self[key]
-            raise KeyError(item)
-        else:
-            return super().__getitem__(item)
-    def override(self, key, value):
-        if key not in self:
-            self.__setitem__(key, value)
-        if not isinstance(key, range):
-            super().__setitem__(range(key,key+1), value)
-        else:
-            super().__setitem__(key, value)

@@ -21,6 +21,7 @@ rope-build   = "rope.tools.build:main"
 rope-fold    = "rope.tools.batch_revolvr:main"
 rope-dragon  = "rope.tools.continuous_revolvr:main"
 rope-flip    = "rope.tools.flip_trace:main"
+rope-add-module = "rope.io.pdb_file_cleaner:clean_rna_lib_pdb_files"
 #legacy names
 trace_pattern   = "rope.tools.trace:main"
 trace_analysis  = "rope.tools.analysis:main"
@@ -43,5 +44,9 @@ rope = ["data/modules/*.pdb","data/nucleotides/*.pdb"]
 [project.urls]
 Homepage = "https://github.com/nikolaj-zwergius/ROPE.git"
 
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["rope"]
 
 

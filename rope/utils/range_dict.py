@@ -15,7 +15,10 @@ class RangeDict(dict):
                     return True
             return False
         else:
-            return super().__contains__(item)
+            for element in item:
+                if self.__contains__(element):
+                    return True
+            return False
 
     def __getitem__(self, item):
         if not isinstance(item, range): # or xrange in Python 2
@@ -25,9 +28,16 @@ class RangeDict(dict):
             raise KeyError(item)
         else:
             return super().__getitem__(item)
+        
     def override(self, key, value):
-        if key not in self:
-            self.__setitem__(key, value)
+        if not isinstance(key,range):
+            if not super().__contains__(range(key,key+1)):
+                raise Exception("""override can only be used if a excat key is given, for other use cases remove overlapping element first
+                            before adding the new one""")
+        elif not super().__contains__(key):
+            raise Exception("""override can only be used if a excat key is given, for other use cases remove overlapping element first
+                            before adding the new one""")
+
         if not isinstance(key, range):
             super().__setitem__(range(key,key+1), value)
         else:
