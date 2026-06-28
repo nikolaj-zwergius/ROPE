@@ -1,20 +1,18 @@
 
 import sys
 from pathlib import Path
+import os
+import concurrent.futures
+import rope.core.revolvr as revolvr
+import rope.core.trace_logic as trace_logic
+from rope.core.analysis_logic import trace_analysis_out
+from rope.io.structure_printers import save_revolver_output
 
 # Add project root to Python path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-import sys
-import os
-from pathlib import Path
-import concurrent.futures
-import rope.core.revolvr as revolvr
-import rope.core.trace_logic as trace_logic
-from rope.core.analysis_logic import trace_analysis_out
-from rope.io.structure_printers import structure_printer, render_pattern, save_revolver_output
-   
+
 
 def _run_revolver_task(task: tuple[str, int, str]) -> None:
     file_path, run_index, output_root = task
@@ -45,7 +43,7 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "
 
 def main():
     print("starting")
-    dir_path = os.path.dirname(os.path.realpath(__file__))  
+    dir_path = os.path.dirname(os.path.realpath(__file__))
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
     out_folder = Path(wd+"/revolver_outputs")
@@ -70,6 +68,6 @@ def main():
     print("starting")
     run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
 
-    
+
 if __name__ == "__main__":
     main()

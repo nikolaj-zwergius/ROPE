@@ -1,9 +1,6 @@
 from numpy import ndarray
-from rope.definitions.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
 import rope.core.trace_logic as tp
 from rope.core.grid_mapping import (
-    COMPLEMENT_WINDOW,
-    DUPLICATE_WINDOW,
     map_structure,
     count_repeats,
     build_barriers,
@@ -15,9 +12,12 @@ from rope.core.trace_logic import trace_backbone
 from rope.io.structure_printers import analysis_out
 
 
-def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
+def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
     primary_sequence = None
+    name = ""
     if out:
+        if pattern_file is None:
+            raise ValueError
         name, kl_pattern = parse_header(pattern_file)
         if sequence_file:
             primary_sequence = read_sequence_file(sequence_file)
@@ -26,6 +26,8 @@ def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=Tr
         p5,_,_= get_backbone_start(grid)
         seq, structure_map,n_map, strand_dir = tp.trace_backbone(grid)
     else:
+        if input_grid is None:
+            raise ValueError
         grid = input_grid
         p5,_,_= get_backbone_start(grid)
         seq, structure_map,n_map, strand_dir = trace_backbone(grid)
@@ -58,5 +60,6 @@ def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=Tr
             wobbles_seq[partner] = right
     if out :
         analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
+        return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
     else:
         return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir

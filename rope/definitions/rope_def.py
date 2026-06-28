@@ -1,4 +1,4 @@
-
+from pathlib import Path
 one_letter_code = {"A":("A"),
                    "C":"C",
                    "G":"G",
@@ -68,7 +68,7 @@ flips =[((0),{"╰":"╭","╭":"╰","╯":"╮","╮":"╯","/":chr(92),chr(92
 SUGAR_ATOMS = ['C3\'', 'C4\'', 'C5\'', 'O4\'',"P"]
 
 
-from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 
 

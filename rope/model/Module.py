@@ -1,15 +1,17 @@
 from __future__ import annotations
 import numpy as np
-import os
+
+from numpy._core import ndarray
 from rope.model.StructuralElement import StructuralElement
-from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS
+from rope.definitions.rope_def import FOLDER
 from rope.utils.get_sugar import get_sugar_cords
 from rope.utils.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None, priority=0, len=None, ligand = None,test =False):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = "", priority=0, len=None, ligand = None,test =False):
         super().__init__(name, file, symbol)
+        self.segments=[]
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
@@ -23,7 +25,7 @@ class Module(StructuralElement):
         self.priority = priority
 
     def set_len(self):
-        if self.sequence is not None:
+        if self.sequence != "":
             self.have_seq = True
             self.len = len(self.sequence)
         elif self.build_cords is not None:
@@ -35,9 +37,9 @@ class Module(StructuralElement):
             return
         if len(self.build_cords) != self.len:
             raise Exception(f"{self.name}: Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
-        
 
-    def _generate_cords(self):
+
+    def _generate_cords(self) -> tuple[np.ndarray, list[ndarray], list, np.ndarray, list[dict], bool]:
         start_res_id = None
         start_res_coord = {}
         other_res_coord = []
@@ -54,7 +56,7 @@ class Module(StructuralElement):
                                 other_res_coord.append({})
                                 other_res_lines.append([])
                                 current_res_id = int(line[22:26])
-                            other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54])) 
+                            other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
                             other_res_lines[-1].append(line)
                         if int(line[22:26]) == start_res_id:
                             start_res_coord[line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
@@ -68,11 +70,10 @@ class Module(StructuralElement):
 
             print(f"File {self.file} not found. Please check the file path {FOLDER/self.file}.")
             raise
-            return None, None, None, None,None,False
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict,True
 
 
-    def get_ligand_coords(self):
+    def get_ligand_coords(self) -> tuple[list,list]:
         other_res_coord = []
         other_res_lines = []
         current_res_id = None
@@ -86,16 +87,17 @@ class Module(StructuralElement):
                             other_res_coord.append({})
                             other_res_lines.append([])
                             current_res_id = int(line[22:26])
-                        other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54])) 
+                        other_res_coord[-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
                         other_res_lines[-1].append(line)
-            other_res_coord_dict = other_res_coord.copy()
 
             for i in range(len(other_res_coord)):
                 other_res_coord[i] = np.array(list(other_res_coord[i].values()), dtype=np.float32)
-            
+
             return other_res_coord,other_res_lines
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
+        return [],[]
+
     def __lt__(self, other:Module) -> bool:
         if self.priority < other.priority:
             return True
@@ -110,21 +112,24 @@ class Module(StructuralElement):
             return self.len > other.len
         else:
             return False
-    def __eq__(self, other:Module) -> bool:
+    def __eq__(self,other) -> bool:
         return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
-    def __repr__(self): 
+    def __repr__(self):
         return f"Module: {self.name}"
+    def inverted(self) -> inv_segmented_module:
+        raise NotImplementedError
+
 
 
 class segmented_module(Module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0,ligand:str|None=None):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence:list[str] = [""],spacer = [""],priority=0,ligand:str|None=None):
         try:
-            assert type(sequence) == list
-            assert type(spacer) == list
+            assert type(sequence) is list
+            assert type(spacer) is list
             assert len(spacer) == len(sequence)-1
-        except:
+        except AssertionError:
             print(type(sequence),type(spacer),len(spacer),len(sequence)-1)
             raise AssertionError
         spaced_sequnces = []
@@ -155,7 +160,7 @@ class segmented_module(Module):
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
-    def _generate_segment_cords(self,invsers:bool)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
+    def _generate_segment_cords(self,invsers:bool)-> tuple[list[ndarray],list[list[ndarray]],list[dict],list[dict],list[dict]]:
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -167,37 +172,37 @@ class segmented_module(Module):
         segment_range = RangeDict()
         current = 1
         element = 0
-        
+
         if invsers:
             current =1
-        
+
         for seg in self.segments:
-            
+
             segment_range[range(current,current+len(seg)+1)] = element
             if element >= len(self.spacer):
                 break
             current += len(seg)
             current += len(self.spacer[element])
             element += 1
-        
-        
+
+
         try:
             segment_coords = [[] for i in range(len(segment_range))]
-            line_count = 0
+
             with open(FOLDER/self.file, 'r') as f:
                 for line in f:
                     if not line.startswith('ATOM'):
                         continue
                     if int(line[22:26]) in segment_range:
                         segment_coords[segment_range[int(line[22:26])]].append(line)
-        
+
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
             raise
         seq_index = 0
         if invsers:
             segment_coords = segment_coords[::-1]
-            
+
         for seg in segment_coords:
             start_res_id = None
             segment_sugar_coord.append([])
@@ -208,7 +213,7 @@ class segmented_module(Module):
             segment_other_res_coord_list.append([])
             start_res_coord.append([])
             current_res_id = None
-            
+
             for line in seg:
                 if start_res_id is None:
                     start_res_id = int(line[22:26])
@@ -224,7 +229,7 @@ class segmented_module(Module):
                     start_res_coord[seq_index][-1][line[12:16].strip()] = (float(line[30:38]), float(line[38:46]), float(line[46:54]))
             if seq_index != 0:
                 segment_sugar_coord[seq_index] = segment_last_coord[seq_index-1]
-                
+
             if seq_index == 0:
                 segment_sugar_coord[seq_index] = get_sugar_cords(start_res_coord[seq_index][-1])
             segment_last_coord[seq_index] = get_sugar_cords(segment_other_res_coord[seq_index][-1])
@@ -233,14 +238,14 @@ class segmented_module(Module):
                 segment_other_res_coord_list[seq_index].append(np.array(list(segment_other_res_coord[seq_index][i].values()), dtype=np.float32))
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
-    
+
     def change_elements(self,seg_index:int):
         """
         Changes which elemets that the segmented module shows, from the full to a segment
 
         Warning: This function should always be followed by the use of the reset_elements funtion of segmented_module,
         whe processsing of the current segment is done to ensure that the module can still use the full length in between.
-        
+
         There is no check or enforcment of this
         """
         self.start_cord  = self.segment_start_cord[seg_index]
@@ -252,22 +257,23 @@ class segmented_module(Module):
 
 
     def reset_elements(self):
-        self.start_cord  = self.full_start_cord 
+        self.start_cord  = self.full_start_cord
         self.build_cords = self.full_build_cords
         self.build_lines = self.full_build_lines
-        self.last_coord  = self.full_last_coord 
-        self.coord_dict  = self.full_coord_dict 
+        self.last_coord  = self.full_last_coord
+        self.coord_dict  = self.full_coord_dict
         self.sequence = self.full_sequence
-    
+
     def inverted(self) -> inv_segmented_module:
         mod = inv_segmented_module("i"+self.name,self.file,"i"+self.symbol,self.segments,self.spacer,self.priority,self.ligand)
         return mod
-    
+
 class inv_segmented_module(segmented_module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence=None, spacer=[""], priority=0, ligand = None):
+    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence="", spacer=[""], priority=0, ligand = None):
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
         self.generate_segment_cords(True)
         self.segments = sequence[::-1]
+        i=0
         try:
             for i in range(len(sequence)):
                 assert len(self.segment_build_cords[i]) == len(self.segments[i])

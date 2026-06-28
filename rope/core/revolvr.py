@@ -2,7 +2,8 @@ import os
 import rope.definitions.rope_def as rd
 import rope.core.trace_logic as tp
 import rope.core.grid_mapping as tu
-import getopt,sys
+import getopt
+import sys
 import RNA
 import random
 from types import FunctionType
@@ -48,7 +49,7 @@ def initlize_structure(file:str)->tuple[str,str,str,str]:
         name = f.readline().rstrip().lstrip(">")
         pattern= tu.generate_np_pattern(file)
     init_seq,init_struc,_,_ = tp.trace_backbone(pattern)
-    
+
     stack = []
     stack1 = []
     seq = ""
@@ -136,7 +137,7 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
             predic_fold2 =  RNA.fold(new_seq)[0]
             tested_seq[new_seq] =  predic_fold2
         di2 =  RNA.hamming_distance(clean_struc,predic_fold2)
-        
+
         if di2 <= di1:
             if rad_level != None and di2 < di1:
                 rad_level -= 1
@@ -146,7 +147,7 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
             predic_fold = predic_fold2
             seq = new_seq
             mutate_mask = dir_mutate_mask_gen(clean_struc,predic_fold,seq)
-           
+
         elif rad_level != None:
             rad_level += 1
         new_seq = [None]*len(clean_struc)
@@ -203,7 +204,7 @@ def base_pair_mapper(clean_struc:str) -> dict:
     return base_pair_map
 
 def penalty_score(seq:str,struc:str) -> tuple[list,int]:
-    
+
     new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq,bpmap=bp_map)
     PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
@@ -363,14 +364,14 @@ def problem_in_loced(problem_mask:list,init_seq:str,control=True)->bool:
         locked_problem = True
     return locked_problem
 
-def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str,float,float,float]:    
+def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str,float,float,float]:
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     #print("setup done")
     struc,seq = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
-    
-    
-    #print("mutator 1 done") 
+
+
+    #print("mutator 1 done")
 
     num=0
     mask = dir_mutate_mask_gen(clean_struc,struc,seq)
@@ -394,7 +395,7 @@ def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[
         #print(init_seq)
         #print(mask)
         #print(RNA.hamming_distance(clean_struc,struc))
-    
+
 
 
     #print("mutator 2 done")
@@ -408,9 +409,9 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
     mask = []
     runs = 0
     same = 0
-    
+
     while set(mask) != {"-"}  or gc_ratio_calculator(seq)>55.1 or ps>0:
-        
+
         mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL,init_seq)
         #print(ps)
         pre_seq = seq
@@ -496,11 +497,11 @@ def revolver(file:str):
     name,init_seq,init_struc,seq,clean_struc= initlize_structure(file)
 
     FAV_RAD_LEVEL = 15
-    bp_map = base_pair_mapper(clean_struc) 
+    bp_map = base_pair_mapper(clean_struc)
     KL_MIN = -7.2
     KL_MAX = -10.8
     KL_OFF = -6.0
-    
+
     global tested_seq
     tested_seq = {}
     global kls
@@ -509,7 +510,7 @@ def revolver(file:str):
         mfe,feq,ed =compute_ED(seq)
         problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
-    
+
     with open(f"{parent_dir_path}/definitions/kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
@@ -536,10 +537,10 @@ if __name__ == "__main__":
         revolver(opts[1])
     except IndexError:
         print("no file given")
-    
 
 
 
-    
+
+
 
 

@@ -16,7 +16,7 @@ def generate_np_pattern(file:str) -> np.ndarray:
             line=line.rstrip()
             if len(line) >= colum:
                 colum = len(line)
-        rows -=1 
+        rows -=1
         pattern = np.full((rows,colum)," ")
         input_file.seek(0)
         line_index = 0
@@ -34,7 +34,7 @@ def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
     p5 = (p5[0][0],p5[1][0])
     return p5
 
-def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],di.dirction]:
+def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.dirction]:
     p5 = find_5_prime(pattern)
     up, down, left, rigth = check_round(pattern, p5)
     if up.isalpha():
@@ -61,15 +61,16 @@ def check_round(pattern:np.ndarray,tup:tuple[int,int])->tuple[str,str,str,str]:
     return up,down,left,rigth
 
 def reverse(seq:str) -> str:
+    rev = ""
     for char in seq:
         rev += rd.base_pairs_table[char][0]
         rev = rev[::-1]
     return rev
 
 
-def map_structure(structure:str):
+def map_structure(structure:str) -> list[int]:
     structure.strip(".")
-    mapping = [[]]*len(structure)
+    mapping = [0]*len(structure)
     stack1 = []
     stack2 = []
     stack3 = []
@@ -101,6 +102,8 @@ def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_w
     pattern_repeats = 0
     poly_repeats = 0
     restriction_sites = 0
+    if bpmap is None:
+        raise ValueError
 
     for i in range(strand_length - complement_window + 1):
         block = sequence[i : i + complement_window]
@@ -109,7 +112,7 @@ def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_w
             for base in reversed(block)
         )
         j = sequence.find(antisense, i)
-       
+
         while j != -1:
             for k in range(complement_window):
                 if j+complement_window in bpmap:

@@ -1,19 +1,15 @@
-﻿
-import sys
+﻿import sys
+import os
+from rope.core.analysis_logic import trace_analysis_out
 from pathlib import Path
 
 # Add project root to Python path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-import sys
-import os
-from rope.core.analysis_logic import trace_analysis_out
+
 
 def main():
-
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
 
     if len(sys.argv) < 1:

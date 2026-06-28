@@ -1,13 +1,15 @@
-import sys,os
-SCRIPT_DIR = os.path.abspath(__file__)
-sys.path.append(os.path.dirname(SCRIPT_DIR))
+import sys
+import os
 import rope.definitions.rope_def as rd
 from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
-from numpy import ndarray,int64
+from numpy import ndarray
+SCRIPT_DIR = os.path.abspath(__file__)
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 
 
-def base_pair_id(pattern:ndarray,tup:tuple[int64,int64]) -> tuple[None|tuple,None|str]:
+
+def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
     up,down,left,rigth = check_round(pattern,tup)
     if up in ["┊","!","*"]:
         return (tup[0]-2,tup[1]),up
@@ -60,7 +62,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
             case ".":
                 base_pair+="."
             case _:
-        
+
                 pass
         if crossover and next_base_name == "^":
             seq+="^"
@@ -72,7 +74,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
         if next_base_name in dir.move_list.keys():
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
-        
+
     return seq,base_pair,n_map,strand_dir
 
 

@@ -71,13 +71,13 @@ def module_mapper(pattern:ndarray):
                 for segment in module.segments:
                     if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
-                           
+
     for i in range(length): # filling out missing elements
         if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
             covered[i] = Helix.symbol
         elif i not in covered:
             covered[i] = base.symbol
-    
+
     ###
     #logic for check if both half of a segmented module are present in the strucutre remove any unmatched detections
     ##
@@ -94,7 +94,7 @@ def module_mapper(pattern:ndarray):
         if covered[key][0] == "1":
             istack.append(covered[key][1:])
             irange_stack.append(key)
-    
+
     for key in covered:
         if covered[key][1:] in stack and covered[key][0] != "0":
             stack.pop(stack.index(covered[key][1:]))
@@ -129,7 +129,7 @@ def module_mapper(pattern:ndarray):
                     pass
             else:
                 pairs[element[1:]] = (element[0],i,element)
-    
-        
+
+
 
     return map_list

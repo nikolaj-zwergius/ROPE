@@ -2,11 +2,12 @@ class dirction():
     row = 0
     colum = 0
     move_list ={}
+    replace_list = {}
     def __int__(self,move_list):
-        move_list = self.move_list
+        self.move_list = self.move_list
     def move(self,last_id:tuple[int,int])->tuple[int,int]:
         return (last_id[0]+self.row,last_id[1]+self.colum)
-        
+
 class dir_up(dirction):
     row = -1
     def __init__(self):
@@ -16,10 +17,10 @@ class dir_up(dirction):
                     "/":dir_rigth,
                     chr(92):dir_left,}
         self.replace_list = {"/":"╭",chr(92):"╮","-":"─"}
-        
+
     def __repr__(self) -> str:
         return "dir_up"
-    
+
 class dir_down(dirction):
     row = 1
     def __init__(self):
