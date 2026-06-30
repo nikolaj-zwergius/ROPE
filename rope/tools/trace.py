@@ -15,17 +15,17 @@ sys.path.insert(0, str(ROOT))
 def main():
     try:
         opts = sys.argv
-
+        file = os.getcwd()/Path(opts[1])
     except getopt.GetoptError:
             print("help_mes")
             sys.exit()
     try:
-        pattern = generate_np_pattern(opts[1])
+        pattern = generate_np_pattern(file))
         seq,base_pair,_,_= trace_backbone(pattern)
         trace_pattern_out(opts[1],seq,base_pair)
-        print("done")
     except IndexError:
         print("no file given")
+        raise
 
 if __name__ == "__main__":
     main()
