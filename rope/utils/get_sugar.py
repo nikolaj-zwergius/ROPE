@@ -1,6 +1,6 @@
 import numpy as np
 from rope.definitions.rope_def import SUGAR_ATOMS
-def get_sugar_cords(coords:np.ndarray) -> np.ndarray:
+def get_sugar_cords(coords:dict) -> np.ndarray:
     sugar_coord = {}
     sugar_corrd_list=[]
     for atom in coords.keys():

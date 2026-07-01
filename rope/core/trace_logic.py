@@ -4,10 +4,11 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 import rope.definitions.rope_def as rd
 from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
 from numpy import ndarray,int64
+from pathlib import Path
 
 
 
-def base_pair_id(pattern:ndarray,tup:tuple[int64,int64]) -> tuple[None|tuple,None|str]:
+def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
     up,down,left,rigth = check_round(pattern,tup)
     if up in ["┊","!","*"]:
         return (tup[0]-2,tup[1]),up
@@ -79,7 +80,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
 
 
 
-def trace_seq_into_backbone(seq:str,file: str) -> ndarray:
+def trace_seq_into_backbone(seq:str,file: str|Path) -> ndarray:
     new_pattern = generate_np_pattern(file)
     _, first, dir = get_backbone_start(new_pattern)
     index = 0

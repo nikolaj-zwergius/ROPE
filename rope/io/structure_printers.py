@@ -1,5 +1,5 @@
 
-from rope.core.grid_mapping import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW
+from rope.core.grid_mapping import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW,generate_np_pattern
 from rope.definitions.rope_def import VALID_BASES, NUCLEOTIDE_CHARS
 from io import TextIOWrapper
 from numpy import ndarray
@@ -10,7 +10,7 @@ import numpy as np
 
 
 
-def render_pattern(out:TextIOWrapper,message:str,data:list,n_map:list,grid:ndarray):
+def render_pattern(out:TextIOWrapper,message:str,data:list|str,n_map:dict,grid:ndarray):
     out.write(message)
     for i in range(grid.shape[0]):
         row_chars = []
@@ -36,7 +36,7 @@ def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
     return ch
 
 
-def render_cell(ch:str, type_list:list, n_map:list, i:int, j:int) -> str:
+def render_cell(ch:str, type_list:list|str, n_map:dict, i:int, j:int) -> str:
     if ch in NUCLEOTIDE_CHARS:
         idx = n_map.get((i, j), None)
         if idx is not None and 0 <= idx <= len(type_list):
@@ -44,7 +44,7 @@ def render_cell(ch:str, type_list:list, n_map:list, i:int, j:int) -> str:
     return ch
 
 
-def structure_printer(output:TextIOWrapper, grid:ndarray, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|None=None):
+def structure_printer(output:TextIOWrapper, grid:ndarray, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|str|None=None):
         
         output.write("2D diagram with sequence\n")
         for i in range(grid.shape[0]):
@@ -85,7 +85,7 @@ def analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbl
             structure_printer(output, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
             return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
 
-def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
+def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list|str,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
     output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
@@ -110,8 +110,8 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str, seq:
         structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
 
 
-def flip_pattern(file)->None:
-     pattern = rd.generate_np_pattern(file)
+def flip_pattern(file:str|Path)->None:
+     pattern = generate_np_pattern(file)
      with open("flip.txt","w",encoding="utf-8") as f:
         f.write("Input file:")
         f.write("\n")
@@ -137,7 +137,7 @@ def flip_pattern(file)->None:
             f.write("\n")
             f.write("\n")
 
-def trace_pattern_out(file:str,seq:str,base_pair:str) -> None:
+def trace_pattern_out(file:str|Path,seq:str,base_pair:str) -> None:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
 

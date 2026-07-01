@@ -1,13 +1,6 @@
-
-import sys
-from pathlib import Path
-
-# Add project root to Python path
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
 import sys
 import os
+from pathlib import Path
 from io import TextIOWrapper
 from numpy import ndarray, float32
 from rope.utils.dim3_utils import umeyama
@@ -18,8 +11,12 @@ from rope.core.trace_logic import trace_backbone
 from rope.core.grid_mapping import generate_np_pattern, map_structure
 from rope.core.module_mapper import module_mapper
 
-import sys
-from pathlib import Path
+
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+
 
 # Add project root to Python path
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,13 +42,12 @@ def output_ligand_pdb(line:str,align_atom:ndarray,ligand_index:int,atom_count:in
     return "".join(line_string)
 
 
-def align_base_to_backbonde(f:TextIOWrapper,coord_dict:dict[ndarray],res_index:int,seq_index:int,seq:str,atom_count:int,aligment_variable:tuple[float32,ndarray,ndarray],residue_count:int) -> tuple[int,ndarray]:
+def align_base_to_backbonde(f:TextIOWrapper,coord_dict:list[dict[int,ndarray]],res_index:int,seq_index:int,seq:str,atom_count:int,aligment_variable:tuple[float32,ndarray,ndarray],residue_count:int) -> tuple[int,ndarray]:
     c,R,t=aligment_variable
     sugar_residue = get_sugar_cords(coord_dict[res_index])
     align_sugar = sugar_residue.dot(c*R)+t
     c2,R2,t2 = umeyama(nucleotide_libary[seq[seq_index]].start_cord,align_sugar)
     align_residue = nucleotide_libary[seq[seq_index]].build_cords[0].dot(c2*R2)+t2
-    #print(nucleotide_libary[seq[seq_index]])
     for line_index,line in enumerate(nucleotide_libary[seq[seq_index]].build_lines[0]):
         f.write(output_pdb(line,seq,seq_index,line_index,align_residue,atom_count,residue_count))
         atom_count += 1
@@ -72,8 +68,8 @@ def ligand_printer(f:TextIOWrapper,ligand_stack:list,atom_count:int,seq:str) -> 
     return
 
 def length_test(Structure:list,seq:str):
+    Structure_len = 1
     try:
-        Structure_len = 1
         for i in range(1,len(Structure)):
             if Structure[i][0].isnumeric():
                 Structure_len += len(module_libary[Structure[i][1:]].segments[int(Structure[i][0])])
@@ -99,7 +95,8 @@ def build_start(f:TextIOWrapper,seq:str,atom_count:int,build:list,residue_count:
     seq_index += 1
     return atom_count,last_build,build,residue_count,seq_index
 
-def build_non_seq_module(f:TextIOWrapper,mod:Module,build:list,align_var:tuple[int,ndarray,ndarray],seq:str,atom_count:int,residue_count:int,seq_index:int) -> tuple[int,ndarray,list,int,int]:
+def build_non_seq_module(f:TextIOWrapper,mod:Module,build:list,align_var:tuple[float32,ndarray,ndarray],seq:str,atom_count:int,residue_count:int,seq_index:int) -> tuple[int,ndarray,list,int,int]:
+    last_build = ndarray((0,0))
     for res_index,residue in enumerate(mod.build_cords):
         atom_count, aligned_sugar = align_base_to_backbonde(f,mod.coord_dict,res_index,seq_index,seq,atom_count,align_var,residue_count)
         build[residue_count-1] = aligned_sugar
@@ -109,8 +106,10 @@ def build_non_seq_module(f:TextIOWrapper,mod:Module,build:list,align_var:tuple[i
         seq_index += 1
     return atom_count,last_build,build,residue_count,seq_index
 
-def build_seq_module(f:TextIOWrapper,mod:Module,build:list,align_value:tuple[int,ndarray,ndarray],seq:str,atom_count:int,residue_count:int,seq_index:int) -> tuple[int,ndarray,list,int,int]:
+def build_seq_module(f:TextIOWrapper,mod:Module,build:list[ndarray],align_value:tuple[float32,ndarray,ndarray],seq:str,atom_count:int,residue_count:int,seq_index:int) -> tuple[int,ndarray,list,int,int]:
+    last_build = ndarray((0,0))
     c,R,t = align_value
+    assert type(mod.sequence) is str
     for res_index,residue in enumerate(mod.build_cords):
         aligned_sugar = get_sugar_cords(mod.coord_dict[res_index]).dot(c*R)+t
         align_residue = residue.dot(c*R)+t
@@ -133,12 +132,13 @@ def RNAbuild(file:str,output:str) -> None:
 
     Structure:list = module_mapper(pattern)
     print(Structure)
-    build = [None]*(len(seq)+1)
+    build = [ndarray((0,0))]*(len(seq)+1)
     ligand_stack = []
-    module = Module
+    mod:Module|segmented_module|inv_segmented_module
     length_test(Structure,seq)
 
     segment_stack={}
+    last_build = ndarray((0,0))
 
     with open(output, "w") as f:
         atom_count = 1
@@ -150,10 +150,10 @@ def RNAbuild(file:str,output:str) -> None:
 
             elif Structure[i][0].isnumeric() or Structure[i][0]=="i":
                 if Structure[i][0].isnumeric():
-                    mod:segmented_module = module_libary[Structure[i][1:]]
+                    mod = module_libary[Structure[i][1:]]
                     offset = 0
                 else:
-                    mod:inv_segmented_module = module_libary[Structure[i][2:]].inverted()
+                    mod = module_libary[Structure[i][2:]].inverted()
                     offset = 1
 
                 seg_index = int(Structure[i][0+offset])
@@ -164,6 +164,8 @@ def RNAbuild(file:str,output:str) -> None:
                         segment_stack[Structure[i][1+offset:]] = []
                 elif Structure[i][0+offset] == "1":
                     last = segment_stack[Structure[i][1+offset:]].pop(-1)
+                else:
+                    raise Exception
 
 
 
@@ -182,7 +184,8 @@ def RNAbuild(file:str,output:str) -> None:
                     if mod.ligand:
                         ligand_stack = ligand_addtion((c,R,t),mod,ligand_stack)
             elif Structure[i] == Helix.symbol:
-                mod:Module = module_libary[Structure[i]]
+                mod = module_libary[Structure[i]]
+                build[mapping[residue_count-1]]
                 c,R,t = umeyama(mod.start_cord,build[mapping[residue_count-1]])
                 atom_count,last_build,build,residue_count,seq_index =build_non_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
             else:

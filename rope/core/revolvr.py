@@ -43,7 +43,7 @@ def mutate(mutation_rate:tuple[int,int,int,int])->str:
     new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
     return new_base[0]
 
-def initlize_structure(file:str)->tuple[str,str,str,str]:
+def initlize_structure(file:str)->tuple[str,str,str,str,str]:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
         pattern= tu.generate_np_pattern(file)
@@ -104,8 +104,8 @@ def initlize_structure(file:str)->tuple[str,str,str,str]:
     clean_struc=init_struc.replace("[",".").replace("{",".").replace("}",".").replace("]",".")
     return name,init_seq,init_struc,seq,clean_struc
 
-def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tuple[int,int,int,int],mask_gen:FunctionType ,rad_level:int=None) -> str:
-    new_seq = [None]*len(clean_struc)
+def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tuple[int,int,int,int],mask_gen:FunctionType ,rad_level:int|None=None) -> tuple[str,str,int|None]:
+    new_seq = [" "]*len(clean_struc)
     predic_fold=struc
     mutate_mask = mask_gen(clean_struc,struc,seq,rad_level)
     di1 =  RNA.hamming_distance(clean_struc,predic_fold)
@@ -114,7 +114,7 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
             if init_seq[i] in rd.VALID_BASES:
                 new_seq[i] = init_seq[i]
                 continue
-            if mutate_mask[i] == "X" and i in bp_map.keys():
+            if mutate_mask[i] == "X" and i in bp_map:
                 if init_seq[i] == "N":
                     new_base=mutate(mutate_weitg)
                     new_seq[i]=new_base
@@ -129,12 +129,12 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
                 new_seq[i]=new_base
             else:
                 new_seq[i]=seq[i]
-        new_seq = "".join(new_seq)
-        if new_seq in tested_seq.keys():
-            predic_fold2 = tested_seq[new_seq]
+        new_seq_str = "".join(new_seq)
+        if new_seq_str in tested_seq.keys():
+            predic_fold2 = tested_seq[new_seq_str]
         else:
-            predic_fold2 =  RNA.fold(new_seq)[0]
-            tested_seq[new_seq] =  predic_fold2
+            predic_fold2 =  RNA.fold(new_seq_str)[0]
+            tested_seq[new_seq_str] =  predic_fold2
         di2 =  RNA.hamming_distance(clean_struc,predic_fold2)
         
         if di2 <= di1:
@@ -144,12 +144,12 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
                 rad_level += 1
             di1 = di2
             predic_fold = predic_fold2
-            seq = new_seq
+            seq = new_seq_str
             mutate_mask = dir_mutate_mask_gen(clean_struc,predic_fold,seq)
            
         elif rad_level != None:
             rad_level += 1
-        new_seq = [None]*len(clean_struc)
+        new_seq = [""]*len(clean_struc)
         stack = []
         if rad_level != None and rad_level<1:
             rad_level = 1
@@ -158,9 +158,9 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
         ##print("rad:",rad_level)
     if rad_level != None:
         return predic_fold,seq,rad_level
-    return predic_fold,seq
+    return predic_fold,seq,None
 
-def dir_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int = None) -> str:
+def dir_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int|None = None) -> str:
     mutate_mask = []
     predic_fold = struc
     ##print(len(seq),len(clean_struc),len(RNA.fold(seq)[0]))
@@ -202,14 +202,14 @@ def base_pair_mapper(clean_struc:str) -> dict:
             base_pair_map[i] = mate
     return base_pair_map
 
-def penalty_score(seq:str,struc:str) -> tuple[list,int]:
+def penalty_score(seq:str,struc:str,bp_map:list[int]) -> tuple[list,int]:
     
     new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq,bpmap=bp_map)
     PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
     return new_seq, PS
 
-def gc_ratio_calculator(seq:str) -> int:
+def gc_ratio_calculator(seq:str) -> float:
     GC = 0
     AU = 0
     GC_ration = 0
@@ -222,7 +222,7 @@ def gc_ratio_calculator(seq:str) -> int:
     return GC_ration
 
 def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tuple[list,int]:
-    ps_matix, ps = penalty_score(seq,clean_struc)
+    ps_matix, ps = penalty_score(seq,clean_struc,bp_map)
 
     n_switch = False
     n_id = 0
@@ -254,7 +254,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                     mutate_matix[i] = random.choice([mutate(rd.change_base["A"]),"-"])
             try:
                 #print(mutate_matix[i],rd.base_pairs_table[bp_map[i]])
-                if mutate_matix[i] not in rd.base_pairs_table[bp_map[i]]:
+                if mutate_matix[i] not in rd.base_pairs_table[init_seq[bp_map[i]]]:
                             mutate_matix[i] = "-"
             except:
                 pass
@@ -268,7 +268,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                 if i in bp_map:
                     if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
                         mutate_matix[i] = "-"
-        if seq[i] in ["G","U"] and i in bp_map.keys() and mutate_matix[i] in "-":
+        if seq[i] in ["G","U"] and i in bp_map and mutate_matix[i] in "-":
             if i in bp_map:
                 if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
                     mutate_matix[i] = "-"
@@ -306,13 +306,13 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
         mutate_matix[pick] = "-"
     return mutate_matix,ps
 
-def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> str:
+def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
     seq_list = list(seq)
     ps1 = ps
     predic_fold = struc
     di1 = RNA.hamming_distance(clean_struc,predic_fold)
     for i in range(len(mask)):
-        if mask[i] == "K" and i in bp_map.keys():
+        if mask[i] == "K" and i in bp_map:
             seq_list[i],seq_list[bp_map[i]] = seq_list[bp_map[i]],seq_list[i]
         elif mask[i] == "B":
             seq_list[i] = "G"
@@ -320,11 +320,11 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
             seq_list[i] = "U"
         elif mask[i] != "-":
             seq_list[i] = mask[i]
-            if i in bp_map.keys():
+            if i in bp_map:
                 if rd.base_pairs_table[mask[i]] in rd.one_letter_code[init_seq[i]]:
                     seq_list[bp_map[i]] = rd.base_pairs_table[mask[i]]
     seq_string = "".join(seq_list)
-    _,ps2 = penalty_score(seq_string,clean_struc)
+    _,ps2 = penalty_score(seq_string,clean_struc,bp_map)
     if seq_string in tested_seq.keys():
         new_struc = tested_seq[seq_string]
     else:
@@ -345,7 +345,7 @@ def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     #print(seq)
     return struc,seq
 
-def problem_in_loced(problem_mask:list,init_seq:str,control=True)->bool:
+def problem_in_loced(problem_mask:str|list,init_seq:str,control=True)->bool:
     locked_problem = False
     problems = 0
     locked_problems = 0
@@ -367,13 +367,14 @@ def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     #print("setup done")
-    struc,seq = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
+    struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
     
     
     #print("mutator 1 done") 
 
     num=0
     mask = dir_mutate_mask_gen(clean_struc,struc,seq)
+    
     same = 0
     runs = 0
     locked_probelms = False
@@ -408,6 +409,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
     mask = []
     runs = 0
     same = 0
+    ps = float("inf")
     
     while set(mask) != {"-"}  or gc_ratio_calculator(seq)>55.1 or ps>0:
         
@@ -415,7 +417,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
         #print(ps)
         pre_seq = seq
         struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
-        test_mask,test_ps =penalty_score(seq,clean_struc)
+        test_mask,test_ps =penalty_score(seq,clean_struc,bp_map)
         #print(test_mask)
         #print(gc_ratio_calculator(seq),set(mask),test_ps)
         runs += 1
@@ -473,7 +475,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
                     if energy > KL_OFF and j == i+1:
                         kl_rejected = True
         seq = "".join(string_list)
-        dump,ps = penalty_score(seq,clean_struc)
+        dump,ps = penalty_score(seq,clean_struc,bp_map)
         if ps == 0:
             di = RNA.hamming_distance(clean_struc,RNA.fold(seq)[0])
             #print("di = ",di,"PS = ",0)
@@ -496,7 +498,7 @@ def revolver(file:str):
     name,init_seq,init_struc,seq,clean_struc= initlize_structure(file)
 
     FAV_RAD_LEVEL = 15
-    bp_map = base_pair_mapper(clean_struc) 
+    bp_map = tu.map_structure(clean_struc) 
     KL_MIN = -7.2
     KL_MAX = -10.8
     KL_OFF = -6.0
@@ -513,9 +515,9 @@ def revolver(file:str):
     with open(f"{parent_dir_path}/definitions/kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
-            line_list[0] = float(line_list[0])
+            line_list[0] = line_list[0]
             line_list[2] = line_list[2].strip("\n")
-            if line_list[0] >= KL_MAX and line_list[0] <= KL_MIN:
+            if float(line_list[0]) >= KL_MAX and float(line_list[0]) <= KL_MIN:
                 kls.append(line_list)
 
     seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)

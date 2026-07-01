@@ -15,9 +15,11 @@ from rope.core.trace_logic import trace_backbone
 from rope.io.structure_printers import analysis_out
 
 
-def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
+def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]|None:
     primary_sequence = None
+    name=""
     if out:
+        assert pattern_file is not None
         name, kl_pattern = parse_header(pattern_file)
         if sequence_file:
             primary_sequence = read_sequence_file(sequence_file)
@@ -26,6 +28,7 @@ def trace_analysis_out(pattern_file:str, sequence_file:str|None=None,out:bool=Tr
         p5,_,_= get_backbone_start(grid)
         seq, structure_map,n_map, strand_dir = tp.trace_backbone(grid)
     else:
+        assert type(input_grid) == ndarray
         grid = input_grid
         p5,_,_= get_backbone_start(grid)
         seq, structure_map,n_map, strand_dir = trace_backbone(grid)

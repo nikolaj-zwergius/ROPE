@@ -47,7 +47,7 @@ def _slice_field(line: str, start: int, end: int) -> str:
     return line[start:end] if len(line) >= end else line[start:].ljust(end - start)
 
 
-def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> str:
+def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> tuple[str,int,int]:
     record_name = _slice_field(line, 0, 6).strip()
     serial = _slice_field(line, 6, 11).strip()
     atom_name = _slice_field(line, 12, 16)

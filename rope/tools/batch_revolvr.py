@@ -24,10 +24,11 @@ def _run_revolver_task(task: tuple[str, int, str]) -> None:
     seq, struc, mfe, feq, ed, problem,init_seq = revolvr.revolver(str(input_path))
     new_pattern = trace_logic.trace_seq_into_backbone(seq, str(input_path))
     analysis_values = trace_analysis_out(None, None, out=False, input_grid=new_pattern)
+    assert analysis_values is not None
     save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq,analysis_values)
 
 
-def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str = "revolver_outputs", max_workers: int|None = None) -> None:
+def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None) -> None:
     """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)

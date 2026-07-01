@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
 import os
+from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
 from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS
 from rope.utils.get_sugar import get_sugar_cords
@@ -8,8 +9,9 @@ from rope.utils.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None, priority=0, len=None, ligand = None,test =False):
+    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, len:int|None=None, ligand:str|None = None,test:bool =False):
         super().__init__(name, file, symbol)
+        
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
@@ -21,6 +23,10 @@ class Module(StructuralElement):
         else:
             self.len = len
         self.priority = priority
+
+        self.segments = NotImplemented
+    def inverted(self):
+        raise NotImplementedError
 
     def set_len(self):
         if self.sequence is not None:
@@ -96,6 +102,7 @@ class Module(StructuralElement):
             return other_res_coord,other_res_lines
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
+            raise
     def __lt__(self, other:Module) -> bool:
         if self.priority < other.priority:
             return True
@@ -110,7 +117,9 @@ class Module(StructuralElement):
             return self.len > other.len
         else:
             return False
-    def __eq__(self, other:Module) -> bool:
+    def __eq__(self, other) -> bool:
+        if type(other) != Module:
+            raise TypeError
         return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
@@ -119,7 +128,7 @@ class Module(StructuralElement):
 
 
 class segmented_module(Module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence = None,spacer = [""],priority=0,ligand:str|None=None):
+    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None):
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -128,14 +137,15 @@ class segmented_module(Module):
             print(type(sequence),type(spacer),len(spacer),len(sequence)-1)
             raise AssertionError
         spaced_sequnces = []
-        self.segments = sequence
-        self.segments_len = len(sequence)
+        
         for i in range(len(sequence)):
             spaced_sequnces.append(sequence[i])
             if i != len(sequence)-1:
                 spaced_sequnces.append(spacer[i])
         spaced_sequnces = "".join(spaced_sequnces)
         super().__init__(name, file, symbol, spaced_sequnces,priority=priority,ligand=ligand)
+        self.segments = sequence
+        self.segments_len = len(sequence)
         self.spacer = spacer
         self.generate_segment_cords()
         assert len(self.build_cords) == len(self.sequence)
@@ -155,7 +165,7 @@ class segmented_module(Module):
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
-    def _generate_segment_cords(self,invsers:bool)-> tuple[list[dict],list[dict],list[dict],list[dict],list[dict]]: 
+    def _generate_segment_cords(self,invsers:bool)-> tuple[list[np.ndarray],list[list],list[list],list[dict],list[dict]]: 
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -268,6 +278,7 @@ class inv_segmented_module(segmented_module):
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
         self.generate_segment_cords(True)
         self.segments = sequence[::-1]
+        i=0
         try:
             for i in range(len(sequence)):
                 assert len(self.segment_build_cords[i]) == len(self.segments[i])

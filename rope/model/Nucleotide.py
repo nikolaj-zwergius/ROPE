@@ -1,18 +1,19 @@
 from __future__ import annotations
 import numpy as np
 import os
+from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
 from rope.utils.get_sugar import get_sugar_cords
 
 
-class nucleotide(StructuralElement):
-    def __init__(self,name = 'Nucleotide', file = 'Nucleotide.pdb', symbol = 'N'):
+class Nucleotide(StructuralElement):
+    def __init__(self,name:str, file:str|Path, symbol:str):
         super().__init__(name, file, symbol)
         self.generate_cords()
 
     def _generate_cords(self):
         start_res_id = None
-        start_res_coord = {}
+        start_res_coord:dict[str,tuple[float,float,float]] = {}
         other_res_coord = []
         other_res_lines = []
         current_res_id = None

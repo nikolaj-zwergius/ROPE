@@ -1,12 +1,12 @@
 import rope.definitions.rope_def as rd
 import rope.model.direction as di
 import numpy as np
-
+from pathlib import Path
 COMPLEMENT_WINDOW = 10
 DUPLICATE_WINDOW = 10
 KL_DELAY = 150
 
-def generate_np_pattern(file:str) -> np.ndarray:
+def generate_np_pattern(file:str|Path) -> np.ndarray:
     with open(file, encoding="utf-8") as input_file:
         rows = 0
         colum = 0
@@ -34,7 +34,7 @@ def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
     p5 = (p5[0][0],p5[1][0])
     return p5
 
-def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],di.dirction]:
+def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.dirction]:
     p5 = find_5_prime(pattern)
     up, down, left, rigth = check_round(pattern, p5)
     if up.isalpha():
@@ -61,6 +61,7 @@ def check_round(pattern:np.ndarray,tup:tuple[int,int])->tuple[str,str,str,str]:
     return up,down,left,rigth
 
 def reverse(seq:str) -> str:
+    rev = ""
     for char in seq:
         rev += rd.base_pairs_table[char][0]
         rev = rev[::-1]
@@ -69,7 +70,7 @@ def reverse(seq:str) -> str:
 
 def map_structure(structure:str):
     structure.strip(".")
-    mapping = [[]]*len(structure)
+    mapping = [-1]*len(structure)
     stack1 = []
     stack2 = []
     stack3 = []
@@ -95,7 +96,7 @@ def map_structure(structure:str):
     return mapping
 
 
-def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap:list|None=None):
+def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap:list[int] = []):
     strand_length = len(sequence)
     repeat_map = ["-"] * strand_length
     pattern_repeats = 0

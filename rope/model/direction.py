@@ -2,6 +2,7 @@ class dirction():
     row = 0
     colum = 0
     move_list ={}
+    replace_list ={}
     def __int__(self,move_list):
         move_list = self.move_list
     def move(self,last_id:tuple[int,int])->tuple[int,int]:
