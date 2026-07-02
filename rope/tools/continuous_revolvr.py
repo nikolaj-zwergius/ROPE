@@ -43,7 +43,7 @@ def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
             return
 
 
-def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str = "revolver_outputs", max_workers: int|None = None,target_ed=0) -> None:
+def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None,target_ed=0) -> None:
     """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)

@@ -15,7 +15,7 @@ from rope.core.trace_logic import trace_backbone
 from rope.io.structure_printers import analysis_out
 
 
-def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]|None:
+def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
     primary_sequence = None
     name=""
     if out:
@@ -61,5 +61,4 @@ def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bo
             wobbles_seq[partner] = right
     if out :
         analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
-    else:
-        return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
+    return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
