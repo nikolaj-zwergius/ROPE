@@ -15,7 +15,7 @@ import rope.core.trace_logic as trace_logic
 from rope.core.analysis_logic import trace_analysis_out
 from rope.definitions.rope_def import VALID_BASES
 import rope.core.grid_mapping as tu
-from rope.io.structure_printers import structure_printer, render_pattern, save_revolver_output
+from rope.io.structure_printers import save_revolver_output
 
         
 
@@ -26,7 +26,7 @@ def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
     ed = float("inf")
     output_dir.mkdir(parents=True, exist_ok=True)
     grid = tu.generate_np_pattern(file_path)
-    seq,_,_,_ = trace_logic.trace_backbone(grid)
+    seq,_,_,_ = trace_logic.trace_backbone(grid,header=False)
     one_run = False
     if set(seq) ==  set(VALID_BASES):
         one_run = True

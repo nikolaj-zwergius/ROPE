@@ -26,12 +26,12 @@ def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bo
 
         grid = generate_np_pattern(pattern_file)
         p5,_,_= get_backbone_start(grid)
-        seq, structure_map,n_map, strand_dir = tp.trace_backbone(grid)
+        seq, structure_map,n_map, strand_dir = tp.trace_backbone(grid,header=kl_pattern)
     else:
         assert type(input_grid) == ndarray
         grid = input_grid
         p5,_,_= get_backbone_start(grid)
-        seq, structure_map,n_map, strand_dir = trace_backbone(grid)
+        seq, structure_map,n_map, strand_dir = trace_backbone(grid,header=False)
     if not p5:
         print(f"The trace through the structure failed (3p end not found). Ended at row {p5[0]}, column {p5[1]}.")
     seq_output = []
@@ -45,7 +45,7 @@ def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bo
     seq_output = "".join(seq_output)
 
     p5, _, _ = get_backbone_start(grid)
-    scrubbed_sequence, structure_map,n_map, strand_dir = tp.trace_backbone(grid)
+    scrubbed_sequence, structure_map,n_map, strand_dir = tp.trace_backbone(grid,header=False)
     map_array = map_structure(structure_map)
     repeat_map, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = count_repeats(scrubbed_sequence,bpmap=map_array)
     barriers = build_barriers(structure_map, map_array, len(scrubbed_sequence))

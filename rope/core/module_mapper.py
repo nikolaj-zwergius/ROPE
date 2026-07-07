@@ -31,7 +31,7 @@ def module_mapper(pattern:ndarray):
     if isinstance(pattern, str):
         pattern = generate_np_pattern(pattern)
 
-    seq, clean_struc, _, _ = trace_backbone(pattern,crossover = True)
+    seq, clean_struc, _, _ = trace_backbone(pattern,crossover = True,header=False)
     mapping = map_structure(clean_struc)
     length = len(seq)
     covered = RangeDict()
@@ -48,6 +48,8 @@ def module_mapper(pattern:ndarray):
     for i in range(len(seq)-9):
         if seq[i:i+2] == "AA" and seq[i+8]=="A":
             if clean_struc[i:i+9] == ".........":
+                soft_kls.append(i)
+            elif  clean_struc[i:i+9] == "..@@@@@@.":
                 soft_kls.append(i)
 
     modules = sorted(module_libary.values(), reverse=True)

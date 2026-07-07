@@ -37,7 +37,7 @@ one_letter_code = {"A":("A"),
                    "D":{"A","G","U"},
                    "B":{"C","G","U"},}
 k_table = {"G":"U","U":"G"}
-base_pairs_table = {"A":"U","U":"A","G":"CU","C":"G"}
+base_pairs_table = {"A":"U","U":"A","G":"CU","C":"G","N":"N"}
 
 VALID_BASES = set(base_pairs_table.keys())
 NUCLEOTIDE_CHARS = set(one_letter_code.keys())
