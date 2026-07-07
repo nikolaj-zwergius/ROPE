@@ -21,7 +21,9 @@ def generate_np_pattern(file:str|Path) -> np.ndarray:
         input_file.seek(0)
         line_index = 0
         for line in input_file:
-            if line.startswith(">") or line.isspace():
+            if line.startswith(">") or line.isspace() or line.startswith("$"):
+                continue
+            if line.startswith("@"):
                 continue
             line = line.rstrip()
             for char_index,char in enumerate(line):

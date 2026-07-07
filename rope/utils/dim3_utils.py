@@ -1,7 +1,7 @@
 import numpy as np
-from numpy import ndarray
+from numpy import ndarray,float32
 
-def umeyama(P:ndarray, Q:ndarray) -> tuple[int,ndarray,ndarray]:
+def umeyama(P:ndarray, Q:ndarray) -> tuple[float32,ndarray,ndarray]:
     assert P.shape == Q.shape
     n, dim = P.shape
 

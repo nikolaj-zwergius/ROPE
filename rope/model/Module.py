@@ -9,13 +9,23 @@ from rope.utils.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, len:int|None=None, ligand:str|None = None,test:bool =False):
+    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, len:int|None=None, ligand:str|None = None,test:bool =False,ligand_variants_files:dict[str,str]|None = None,main=True):
         super().__init__(name, file, symbol)
-        
+        self.name = name
+        self.file = file
+        self.symbol = symbol
         self.sequence = sequence
         self.have_seq = False
         self.generate_cords()
         self.ligand = ligand
+        self.ligand_variants = ligand_variants_files
+        self.variants = {}
+        self.default_varian= None
+        if main:
+            self.default_variant = Module(name, file, symbol, sequence, priority, len, ligand,test=test,main=False)
+        if ligand_variants_files is not None and main:
+            for i in ligand_variants_files.keys():
+                self.variants[i] = Module(name, ligand_variants_files[i], symbol, sequence, priority, len, ligand=i,test=test,main=False)
         if ligand is not None:
             self.ligand_coords,self.ligand_lines = self.get_ligand_coords()
         if len is None:
@@ -117,6 +127,33 @@ class Module(StructuralElement):
             return self.len > other.len
         else:
             return False
+        
+    def _copy_state(self,variant:Module):
+                self.name = variant.name
+                self.file = variant.file
+                self.symbol = variant.symbol
+                self.sequence = variant.sequence
+                if self.ligand is not None:
+                    self.ligand = variant.ligand
+                    self.ligand_coords = variant.ligand_coords
+                    self.ligand_lines = variant.ligand_lines
+                self.len = variant.len
+                self.start_cord = variant.start_cord
+                self.build_cords = variant.build_cords
+                self.build_lines = variant.build_lines
+                self.last_coord = variant.last_coord
+                self.coord_dict = variant.coord_dict
+
+    def set_variant(self, variant_str: str):
+        variant = self.variants[variant_str]
+        self._copy_state(variant)
+
+    def reset_variant(self):
+        self._copy_state(self.default_variant)
+
+    def reset(self):
+        self.reset_variant()
+
     def __eq__(self, other) -> bool:
         if type(other) != Module:
             raise TypeError
@@ -128,7 +165,7 @@ class Module(StructuralElement):
 
 
 class segmented_module(Module):
-    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None):
+    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None,main=True,ligand_variants_files:dict[str,str]|None = None,test:bool=False):
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -162,6 +199,13 @@ class segmented_module(Module):
         self.full_last_coord = self.last_coord
         self.full_coord_dict =  self.coord_dict
         self.full_sequence = self.sequence
+
+        if main:
+            self.default_variant = segmented_module(name,file,symbol,sequence,spacer,priority,ligand,main=False)
+        if ligand_variants_files is not None and main:
+            for i in ligand_variants_files.keys():
+                self.variants[i] = segmented_module(name, ligand_variants_files[i], symbol, sequence, spacer, priority, ligand=i,main=False)
+
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
@@ -244,12 +288,32 @@ class segmented_module(Module):
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
     
+    def _copy_state_segments_variants(self,variant:segmented_module):
+        self.segments = variant.segments
+        self.spacer = variant.spacer
+        self.segment_start_cord = variant.segment_start_cord
+        self.segment_build_cords = variant.segment_build_cords
+        self.segment_build_lines = variant.segment_build_lines
+        self.segment_last_coord = variant.segment_last_coord
+        self.segment_coord_dict = variant.segment_coord_dict
+        self._copy_state(variant)
+    
+    def set_variant(self, variant_str: str):
+        variant = self.variants[variant_str]
+        if type(variant) is segmented_module:
+            self._copy_state_segments_variants(variant)
+        return super().set_variant(variant_str)
+
+    def reset_variant(self):
+        self._copy_state_segments_variants(self.default_variant)
+        super().reset_variant()
+
     def change_elements(self,seg_index:int):
         """
         Changes which elemets that the segmented module shows, from the full to a segment
 
         Warning: This function should always be followed by the use of the reset_elements funtion of segmented_module,
-        whe processsing of the current segment is done to ensure that the module can still use the full length in between.
+        when processsing of the current segment is done to ensure that the module can still use the full length in between.
         
         There is no check or enforcment of this
         """
@@ -269,12 +333,20 @@ class segmented_module(Module):
         self.coord_dict  = self.full_coord_dict 
         self.sequence = self.full_sequence
     
+    def reset(self):
+        self.reset_elements()
+        self.reset_variant()
+        super().reset()
+
+
     def inverted(self) -> inv_segmented_module:
         mod = inv_segmented_module("i"+self.name,self.file,"i"+self.symbol,self.segments,self.spacer,self.priority,self.ligand)
         return mod
     
+
+    
 class inv_segmented_module(segmented_module):
-    def __init__(self, name='Module', file='Module.pdb', symbol='M', sequence=None, spacer=[""], priority=0, ligand = None):
+    def __init__(self, name, file, symbol, sequence, spacer, priority=0, ligand = None):
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
         self.generate_segment_cords(True)
         self.segments = sequence[::-1]
