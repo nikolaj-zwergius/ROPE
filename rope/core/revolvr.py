@@ -43,12 +43,12 @@ def mutate(mutation_rate:tuple[int,int,int,int])->str:
     new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
     return new_base[0]
 
-def initlize_structure(file:str)->tuple[str,str,str,str,str]:
+def initlize_structure(file:str)->tuple[str,str,str,str,str,str]:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
+        kl_meta = f.readline().rstrip().lstrip("@")
         pattern= tu.generate_np_pattern(file)
-    init_seq,init_struc,_,_ = tp.trace_backbone(pattern)
-    
+    init_seq,init_struc,_,_ = tp.trace_backbone(pattern,header=(name,kl_meta))
     stack = []
     stack1 = []
     seq = ""
@@ -102,7 +102,7 @@ def initlize_structure(file:str)->tuple[str,str,str,str,str]:
             new_base=mutate(rd.mutation_rate[init_seq[i]])
             seq += new_base
     clean_struc=init_struc.replace("[",".").replace("{",".").replace("}",".").replace("]",".")
-    return name,init_seq,init_struc,seq,clean_struc
+    return name,init_seq,init_struc,seq,clean_struc,kl_meta
 
 def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tuple[int,int,int,int],mask_gen:FunctionType ,rad_level:int|None=None) -> tuple[str,str,int|None]:
     new_seq = [" "]*len(clean_struc)
@@ -166,6 +166,8 @@ def dir_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int|None = N
     ##print(len(seq),len(clean_struc),len(RNA.fold(seq)[0]))
     for i in range(len(clean_struc)):
         if clean_struc[i] == predic_fold[i]:
+            mutate_mask.append("-")
+        elif clean_struc[i] == "@" and predic_fold[i] == ".":
             mutate_mask.append("-")
         else:
             mutate_mask.append("X")
@@ -432,6 +434,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
         if runs == same and ps == 0 and set(mask) == {"-"} and runs > 5000 and problem_in_loced(test_mask,init_seq) :
             break
     stack = []
+    meta_stack = []
     kl_id = []
     kl_found = False
     kl_start = float("inf")
@@ -448,8 +451,19 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
             kl_found = True
         elif i == kl_start+6:
             kl_found = False
+        if init_struc[i] == "@" and kl_found == False:
+            meta_stack.append((i,i+6))
+            kl_found = True
+            kl_start = i
+        elif i == kl_start+6:
+            kl_found = False
 
     string_list = list(seq)
+    try:
+        assert len(kl_meta) == len(meta_stack)
+    except AssertionError:
+        print("The nummer of free kissing loops are not equal to the number of free kissing loops defined by @ in blueprint")
+    meta_kls = dict(zip(kl_meta,meta_stack))
     ps = 1
     di = 1
     x = 0
@@ -466,16 +480,30 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
                 string_list[i[1][0]:i[1][1]] = kl[2][1:-1]
                 kl_used.append(kl[1])
                 kl_used.append(kl[2])
-            if len(set(kl_used)) == len(kl_id):
-                kl_rejected = True
+            used_meta = []
+            for i in meta_kls:
+                if rd.kl_meta_list[i] in used_meta:
+                    continue
+                kl = random.choice(kls)
+                string_list[meta_kls[i][0]:meta_kls[i][1]] = kl[1][1:-1]
+                used_meta.append(i)
+                kl_used.append(kl[1])
+                try:
+                    if rd.kl_meta_list[i] not in used_meta:
+                        string_list[meta_kls[rd.kl_meta_list[i]][0]:meta_kls[rd.kl_meta_list[i]][1]] = kl[2][1:-1]
+                        kl_used.append(kl[2])
+                except KeyError:
+                    pass
+
 
             for i in range(len(kl_used)):
                 for j in range(len(kl_used[i:])):
                     energy = RNA.duplexfold(kl_used[i],kl_used[j]).energy
+                    #print(kl_used[i],kl_used[j],energy)
                     if energy > KL_OFF and j == i+1:
                         kl_rejected = True
         seq = "".join(string_list)
-        dump,ps = penalty_score(seq,clean_struc,bp_map)
+        _,ps = penalty_score(seq,clean_struc,bp_map)
         if ps == 0:
             di = RNA.hamming_distance(clean_struc,RNA.fold(seq)[0])
             #print("di = ",di,"PS = ",0)
@@ -484,7 +512,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
             pass
         x += 1
         if x > 4068:
-            raise Exception
+            raise Exception("tested all kls")
        #print("Done KL round:",x)
     mfe,feq,ed =compute_ED(seq)
     return seq,struc,mfe, feq, ed
@@ -495,7 +523,8 @@ def revolver(file:str):
     global tested_seq
     global FAV_RAD_LEVEL
     global KL_OFF
-    name,init_seq,init_struc,seq,clean_struc= initlize_structure(file)
+    global kl_meta
+    name,init_seq,init_struc,seq,clean_struc,kl_meta= initlize_structure(file)
 
     FAV_RAD_LEVEL = 15
     bp_map = tu.map_structure(clean_struc) 

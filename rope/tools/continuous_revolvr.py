@@ -60,8 +60,6 @@ def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path 
             pass
 
 def main():
-    dir_path = os.path.dirname(os.path.realpath(__file__))  
-    parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()
     out_folder = Path(wd+"/dragon_outputs")
 

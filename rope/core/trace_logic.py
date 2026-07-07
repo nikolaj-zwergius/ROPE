@@ -5,7 +5,7 @@ import rope.definitions.rope_def as rd
 from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
 from numpy import ndarray,int64
 from pathlib import Path
-
+from rope.io.blueprint_reader import parse_header
 
 
 def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
@@ -16,11 +16,13 @@ def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|st
         return (tup[0]+2,tup[1]),down
     if pattern[tup[0]][tup[1]] in rd.NUCLEOTIDE_CHARS:
         return None,"."
+    if pattern[tup[0]][tup[1]] == "X":
+        return None,"@"
     return None,None
 
-def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict,dict]:
+def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[str,str,dict,dict]:
     _, first, dir = get_backbone_start(pattern)
-
+    #print(header)
     seq = ""
     base_pair =""
     next_base = first
@@ -60,6 +62,10 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
                     base_pair+=")"
             case ".":
                 base_pair+="."
+            case "@":
+                if header is None:
+                    raise Exception("trying to use free KL without vaild @AB21 meta data")
+                base_pair+="@"
             case _:
         
                 pass
@@ -68,6 +74,10 @@ def trace_backbone(pattern:ndarray,crossover:bool = False) -> tuple[str,str,dict
             base_pair+="^"
         if next_base_name in rd.NUCLEOTIDE_CHARS:
             seq+=next_base_name
+            n_map[next_base] = index
+            index +=1
+        if next_base_name == "X":
+            seq+="N"
             n_map[next_base] = index
             index +=1
         if next_base_name in dir.move_list.keys():
