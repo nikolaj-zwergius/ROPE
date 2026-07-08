@@ -2,25 +2,19 @@ import os
 from rope.definitions.modules import named_module_libary
 import argparse
 from rope.core.Build_logic import RNAbuild
+from rope.utils.parser_herlper import WideFormatter
 
 
-class WideFormatter(argparse.RawTextHelpFormatter):
-    def __init__(self, prog):
-        super().__init__(
-            prog,
-            max_help_position=40,   # column where help starts
-            width=140               # total line width
-        )
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
     description="Build PDB files from blueprint",
-    formatter_class=WideFormatter
+    formatter_class=WideFormatter,
+    prog="rope-build",
     )
     
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "-c",
         "--config",
         help="Configuration TOML file"
     )

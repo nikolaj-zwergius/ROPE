@@ -1,29 +1,34 @@
 
 import sys
-from pathlib import Path
-
-# Add project root to Python path
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
 import getopt
-import sys
-import numpy as np
-import rope.definitions.rope_def as rd
 from rope.io.structure_printers import flip_pattern
+from rope.utils.parser_herlper import WideFormatter
+import argparse
 
+def flip_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+    description="Flip blueprint",
+    prog="rope-flip",
+    formatter_class=WideFormatter
+    )
+
+    parser.add_argument(
+        "file",
+        nargs="?",
+        metavar="input file",
+        help="Input blueprint file"
+    )
+
+    return parser
 
 def main():   
-    try:
-        opts = sys.argv
+    args = flip_parser().parse_args(sys.argv[1:])
+    if args.file is None:
+        print("FileNotFoundError: ","no file given")
+        exit()
+    
+    flip_pattern(args.file)
 
-    except getopt.GetoptError:
-            print("help_mes")
-            sys.exit()
-    try:
-        flip_pattern(opts[1])
-    except IndexError:
-        print("no file given")
         
 if __name__ == "__main__":
     main()

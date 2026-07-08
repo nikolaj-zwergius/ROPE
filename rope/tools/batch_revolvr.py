@@ -1,11 +1,3 @@
-
-import sys
-from pathlib import Path
-
-# Add project root to Python path
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
 import sys
 import os
 from pathlib import Path
@@ -13,8 +5,42 @@ import concurrent.futures
 import rope.core.revolvr as revolvr
 import rope.core.trace_logic as trace_logic
 from rope.core.analysis_logic import trace_analysis_out
-from rope.io.structure_printers import structure_printer, render_pattern, save_revolver_output
-   
+from rope.io.structure_printers import save_revolver_output
+from rope.utils.parser_herlper import WideFormatter
+import argparse
+
+def batch_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+    prog="rope-fold",
+    description="Batch sequnce prediction from blueprint",
+    formatter_class=WideFormatter
+    )
+    
+    parser.add_argument(
+        "file",
+        nargs="?",
+        metavar="input file",
+        help="Input file if none given all valid files in folder will be processed"
+    )
+
+    parser.add_argument(
+        "-r",
+        nargs="?",
+        const=1,
+        metavar="Runs",
+        help="Number of runs per input file"
+    )
+
+    parser.add_argument(
+        "-w",
+        nargs="?",
+        const= 1,
+        metavar="Workers/Theads",
+        help="Number of workers/theads assigned to the job"
+    )
+
+
+    return parser
 
 def _run_revolver_task(task: tuple[str, int, str]) -> None:
     file_path, run_index, output_root = task
@@ -48,25 +74,23 @@ def main():
     wd = os.getcwd()
     out_folder = Path(wd+"/revolver_outputs")
 
-    args = sys.argv[1:]
+    args = batch_parser().parse_args(sys.argv[1:])
     file_args = []
     runs = 1
     max_workers = None
-    if args and args[-1].isdigit():
-        max_workers = int(args[-1])
-        args = args[:-1]
-    if args and args[-1].isdigit():
-        runs = int(args[-1])
-        args = args[:-1]
-    if not args or args[-1] == "*":
-         for file in os.listdir():
+    if args.w:
+        max_workers = int(args.w)
+    if args.r:
+        runs = int(args.r)
+    if args.file is None or args.file == "*":
+        for file in os.listdir():
             if not file.endswith(".txt"):
                 continue
             else:
                 file_args.append(file)
-    args.extend(file_args)
+        args.file = file_args
     print("starting")
-    run_revolvers(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
+    run_revolvers(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
 
     
 if __name__ == "__main__":

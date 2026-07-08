@@ -1,33 +1,39 @@
-import getopt,sys,os
-SCRIPT_DIR = os.path.abspath(__file__)
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-
+import getopt,os
 import sys
 from pathlib import Path
 from rope.io.structure_printers import trace_pattern_out
 from rope.core.trace_logic import generate_np_pattern, trace_backbone
 from rope.io.blueprint_reader import parse_header
-# Add project root to Python path
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
+from rope.utils.parser_herlper import WideFormatter
+import argparse
+
+def trace_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+    description="Trace blueprint to extended dot-bracket",
+    prog="rope-trace",
+    formatter_class=WideFormatter
+    )
+
+    parser.add_argument(
+        "file",
+        nargs="?",
+        metavar="input file",
+        help="Input blueprint file"
+    )
+
+
+    return parser
 
 
 def main():
-    try:
-        opts = sys.argv
-        file = os.getcwd()/Path(opts[1])
-    except getopt.GetoptError:
-            print("help_mes")
-            sys.exit()
-    try:
-        header = parse_header(file)
-        pattern = generate_np_pattern(file)
-        seq,base_pair,_,_= trace_backbone(pattern,header=header)
-        trace_pattern_out(file,seq,base_pair)
-        print("done")
-    except IndexError:
-        print("no file given")
-        raise
+    args = trace_parser().parse_args(sys.argv[1:])
+    if args.file is None:
+        print("FileNotFoundError: No file given")
+        exit()
+    header = parse_header(args.file)
+    pattern = generate_np_pattern(args.file)
+    seq,base_pair,_,_= trace_backbone(pattern,header=header)
+    trace_pattern_out(args.file,seq,base_pair)
 
 if __name__ == "__main__":
     main()

@@ -21,6 +21,11 @@ rope-build   = "rope.tools.build:main"
 rope-fold    = "rope.tools.batch_revolvr:main"
 rope-dragon  = "rope.tools.continuous_revolvr:main"
 rope-flip    = "rope.tools.flip_trace:main"
+
+#Helper
+rope = "rope.helper:main"
+rope-help ="rope.helper:main"
+
 #legacy names
 trace_pattern   = "rope.tools.trace:main"
 trace_analysis  = "rope.tools.analysis:main"

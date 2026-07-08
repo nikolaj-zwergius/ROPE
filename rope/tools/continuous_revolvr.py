@@ -1,14 +1,7 @@
 
 import sys
 from pathlib import Path
-
-# Add project root to Python path
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-
-import sys
 import os
-from pathlib import Path
 import concurrent.futures
 import rope.core.revolvr as revolvr
 import rope.core.trace_logic as trace_logic
@@ -16,8 +9,50 @@ from rope.core.analysis_logic import trace_analysis_out
 from rope.definitions.rope_def import VALID_BASES
 import rope.core.grid_mapping as tu
 from rope.io.structure_printers import save_revolver_output
+import argparse
+from rope.utils.parser_herlper import WideFormatter
 
-        
+
+def continuous_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+    description="Continuous sequnce predection from blueprint",
+    prog="rope-dragon",
+    formatter_class=WideFormatter
+    )
+    
+    parser.add_argument(
+        "file",
+        nargs="?",
+        metavar="input file",
+        help="Input file if none given all valid files in folder will be processed"
+    )
+
+    parser.add_argument(
+        "-r",
+        nargs="?",
+        const=1,
+        metavar="Runs",
+        help="Number of runs per input file"
+    )
+
+    parser.add_argument(
+        "-w",
+        nargs="?",
+        const= 1,
+        metavar="Workers/Theads",
+        help="Number of workers/theads assigned to the job"
+    )
+
+    parser.add_argument(
+        "-e",
+        nargs="?",
+        const= 1,
+        metavar="ED",
+        help="Target Ensemble diversity"
+    )
+
+
+    return parser        
 
 def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
     file_path, run_index, output_root,target_ed = task
@@ -63,33 +98,30 @@ def main():
     wd = os.getcwd()
     out_folder = Path(wd+"/dragon_outputs")
 
-    args = sys.argv[1:]
+    args = continuous_parser().parse_args(sys.argv[1:])
     file_args = []
     runs = 1
     max_workers = 1
     target_ed=0
-    if args and args[-1].isdigit():
-      runs = int(args[-1])
-      args = args[:-1]
-    if args and args[-1].isdigit():
-        max_workers = int(args[-1])
-        args = args[:-1]
-    if args and args[-1].isdigit():
-      target_ed = int(args[-1])
-      args = args[:-1]
-    if not args or args[-1] == "*":
-         for file in os.listdir():
+    if args.r:
+      runs = int(args.r)
+    if args.w:
+        max_workers = int(args.w)
+    if args and args.e:
+      target_ed = int(args.e)
+    if args.file is None or args.file == "*":
+        for file in os.listdir():
             if not file.endswith(".txt"):
                 continue
             else:
                 file_args.append(file)
-    args.extend(file_args)
+        args.file = file_args
     if max_workers == 1 and runs ==1:
-        max_workers = len(args)
-    if runs*len(args) > max_workers:
+        max_workers = len(args.file)
+    if runs*len(args.file) > max_workers:
         print("Dragon will not work with less tasks then workers")
         exit()
-    run_dragons(args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed)
+    run_dragons(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed)
 
 if __name__ == "__main__":
     main()
