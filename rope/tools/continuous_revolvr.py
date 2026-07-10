@@ -11,7 +11,7 @@ import rope.core.grid_mapping as tu
 from rope.io.structure_printers import save_revolver_output
 import argparse
 from rope.utils.parser_herlper import WideFormatter
-
+import time
 
 def continuous_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -22,7 +22,7 @@ def continuous_parser() -> argparse.ArgumentParser:
     
     parser.add_argument(
         "file",
-        nargs="?",
+        nargs="*",
         metavar="input file",
         help="Input file if none given all valid files in folder will be processed"
     )
@@ -50,12 +50,19 @@ def continuous_parser() -> argparse.ArgumentParser:
         metavar="ED",
         help="Target Ensemble diversity"
     )
+    parser.add_argument(
+        "-t",
+        nargs="?",
+        const= 0,
+        metavar="Time per run",
+        help="Maximum time per run, in the format xd:xh:xm:xs "
+    )
 
 
     return parser        
 
-def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
-    file_path, run_index, output_root,target_ed = task
+def _run_dragon_task(task: tuple[str, int, str,int,int]) -> None:
+    file_path, run_index, output_root,target_ed,timer = task
     input_path = Path(file_path)
     output_dir = Path(output_root) / input_path.stem / Path(f"run_{run_index}")
     ed = float("inf")
@@ -63,9 +70,11 @@ def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
     grid = tu.generate_np_pattern(file_path)
     seq,_,_,_ = trace_logic.trace_backbone(grid,header=False)
     one_run = False
-    if set(seq) ==  set(VALID_BASES):
+    if set(seq) ==  set(VALID_BASES) and "N" not in set(seq):
         one_run = True
-    while ed > target_ed:
+    start = time.time()
+    time_since_start = 0
+    while ed > target_ed and (timer >= time_since_start or  timer == 0):
         seq, struc, mfe, feq, ed, problem,init_seq = revolvr.revolver(str(input_path))
         new_pattern = trace_logic.trace_seq_into_backbone(seq, str(input_path))
         analysis_values = trace_analysis_out(None, None, out=False, input_grid=new_pattern)
@@ -76,9 +85,11 @@ def _run_dragon_task(task: tuple[str, int, str,int]) -> None:
             save_revolver_output(output_dir, run_index, str(input_path), seq, struc, mfe, feq, ed, problem,init_seq,analysis_values)
         if one_run:
             return
+        time_since_start = time.time() - start
+        
 
 
-def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None,target_ed=0) -> None:
+def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None,target_ed=0,timer=0) -> None:
     """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)
@@ -88,7 +99,7 @@ def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path 
         if not input_path.is_file():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         for run_index in range(1, runs_per_file + 1):
-            tasks.append((str(input_path), run_index, str(root_dir),target_ed))
+            tasks.append((str(input_path), run_index, str(root_dir),target_ed,timer))
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         for _ in executor.map(_run_dragon_task, tasks):
@@ -109,7 +120,7 @@ def main():
         max_workers = int(args.w)
     if args and args.e:
       target_ed = int(args.e)
-    if args.file is None or args.file == "*":
+    if args.file == [] or args.file == "*":
         for file in os.listdir():
             if not file.endswith(".txt"):
                 continue
@@ -121,7 +132,22 @@ def main():
     if runs*len(args.file) > max_workers:
         print("Dragon will not work with less tasks then workers")
         exit()
-    run_dragons(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed)
+    max_time_int = 0
+    if args.t:
+        max_time = args.t
+        max_time_list:list[str] = max_time.split(":")
+        for elem in max_time_list:
+            if elem.lower().endswith("d"):
+                max_time_int += int(elem.strip("d").strip("D"))*86400
+            if elem.lower().endswith("h"):
+                max_time_int += int(elem.strip("h").strip("H"))*3600
+            if elem.lower().endswith("m"):
+                max_time_int += int(elem.strip("m").strip("M"))*60
+            if elem.lower().endswith("s"):
+                max_time_int += int(elem.strip("s").strip("S"))
+            if elem.isnumeric():
+                raise TypeError("values need to be followed be a timescale indicator d(days) h(hours) m(miniuts) s(seconds)")
+    run_dragons(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed,timer=max_time_int)
 
 if __name__ == "__main__":
     main()
