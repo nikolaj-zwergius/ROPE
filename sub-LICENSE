@@ -1,5 +1,9 @@
 
-This programs code is derived from THE ROAD software pakage, which is licensed under the MIT license. The copyright notice for this code is included here:
+This program contains code derived from the ROAD software package,
+which is licensed under the MIT License.
+
+The original ROAD copyright notice and license are reproduced below:
+
 
 Revolvr, RNAbuild, RNApath and all scripts which they
 require, including but not limited to:
