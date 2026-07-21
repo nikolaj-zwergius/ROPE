@@ -1,0 +1,13 @@
+[metadata]
+name = "Helix"
+source = "ROAD"
+
+[module]
+symbol = "H2"
+type = "module"
+priority = 0
+nonstandard = true
+reason = "Uses pair-based assignment and custom build logic. Cannot be validated using the standard module validator."
+
+[default]
+file = "helix_match.pdb"

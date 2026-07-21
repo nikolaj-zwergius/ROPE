@@ -3,7 +3,7 @@ import numpy as np
 import os
 from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
-from rope.utils.get_sugar import get_sugar_cords
+from rope.utils.dim3_utils import get_sugar_cords
 
 
 class Nucleotide(StructuralElement):

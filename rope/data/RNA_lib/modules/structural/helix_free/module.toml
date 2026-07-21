@@ -1,0 +1,13 @@
+[metadata]
+name = "Base"
+source = "ROAD"
+
+[module]
+symbol  = "H1"
+type = "module"
+priority = 0
+nonstandard = true
+reason = "Fallback module assigned to unmapped residues. Cannot be validated using the standard module validator."
+
+[default]
+file = "helix_backbone.pdb"

@@ -4,44 +4,42 @@ import os
 from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
 from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS
-from rope.utils.get_sugar import get_sugar_cords
-from rope.utils.range_dict import RangeDict
+from rope.utils.dim3_utils import get_sugar_cords
+from rope.model.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, len:int|None=None, ligand:str|None = None,test:bool =False,ligand_variants_files:dict[str,str]|None = None,main=True):
+    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, nonstandard:bool=False, ligand:str|None = None,test:bool =False,ligand_variants_files:dict[str,str]|None = None,main=True):
         super().__init__(name, file, symbol)
         self.name = name
         self.file = file
         self.symbol = symbol
         self.sequence = sequence
-        self.have_seq = False
+        self.nonstandard = nonstandard
         self.generate_cords()
         self.ligand = ligand
         self.ligand_variants = ligand_variants_files
         self.variants = {}
         self.default_varian= None
         if main:
-            self.default_variant = Module(name, file, symbol, sequence, priority, len, ligand,test=test,main=False)
+            self.default_variant = Module(name, file, symbol, sequence, priority, nonstandard, ligand,test=test,main=False)
         if ligand_variants_files is not None and main:
             for i in ligand_variants_files.keys():
-                self.variants[i] = Module(name, ligand_variants_files[i], symbol, sequence, priority, len, ligand=i,test=test,main=False)
+                self.variants[i] = Module(name, ligand_variants_files[i], symbol, sequence, priority, nonstandard, ligand=i,test=test,main=False)
         if ligand is not None:
             self.ligand_coords,self.ligand_lines = self.get_ligand_coords()
-        if len is None:
-            self.set_len()
-        else:
-            self.len = len
+        self.set_len()
         self.priority = priority
 
         self.segments = NotImplemented
+
+        
     def inverted(self):
         raise NotImplementedError
 
     def set_len(self):
         if self.sequence is not None:
-            self.have_seq = True
-            self.len = len(self.sequence)
+            self.len = len(self.sequence.replace("^",""))
         elif self.build_cords is not None:
             self.len = len(self.build_cords)
         else:
@@ -113,20 +111,6 @@ class Module(StructuralElement):
         except FileNotFoundError:
             print(f"File {self.file} not found. Please check the file path.")
             raise
-    def __lt__(self, other:Module) -> bool:
-        if self.priority < other.priority:
-            return True
-        elif self.priority == other.priority:
-            return self.len < other.len
-        else:
-            return False
-    def __gt__(self, other:Module) -> bool:
-        if self.priority > other.priority:
-            return True
-        elif self.priority == other.priority:
-            return self.len > other.len
-        else:
-            return False
         
     def _copy_state(self,variant:Module):
                 self.name = variant.name
@@ -154,10 +138,6 @@ class Module(StructuralElement):
     def reset(self):
         self.reset_variant()
 
-    def __eq__(self, other) -> bool:
-        if type(other) != Module:
-            raise TypeError
-        return self.priority == other.priority and self.len == other.len
     def __str__(self):
         return f"Module: {self.name}"
     def __repr__(self): 

@@ -22,6 +22,7 @@ rope-build   = "rope.tools.build:main"
 rope-fold    = "rope.tools.batch_revolvr:main"
 rope-dragon  = "rope.tools.continuous_revolvr:main"
 rope-flip    = "rope.tools.flip_trace:main"
+rope-library = "rope.tools.library:main"
 
 #Helper
 rope = "rope.helper:main"

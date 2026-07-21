@@ -1,0 +1,12 @@
+[metadata]
+name = "Kissingloop"
+source = "ROAD"
+
+[module]
+symbol = "K"
+type = "module"
+priority = 2
+sequence = "NNAANNNNNNANN"
+
+[default]
+file = "KissingLoop.pdb"

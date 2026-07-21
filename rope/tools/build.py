@@ -83,7 +83,7 @@ def main():
     ligands = {}
     ligands = ligand_switcher(args)
     wd = os.getcwd()
-    folder = f"{wd}/RNAbuild"
+    folder = f"{wd}/RNAbuild"   
     if not os.path.exists(folder):
         os.makedirs(folder)
 

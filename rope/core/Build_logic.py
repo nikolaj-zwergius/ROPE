@@ -7,9 +7,9 @@ from rope.definitions.nucleotide import nucleotide_libary
 from rope.core.trace_logic import trace_backbone
 from rope.core.grid_mapping import generate_np_pattern, map_structure
 from rope.core.module_mapper import module_mapper
-from rope.io.pdb_out import output_pdb, output_ligand_pdb, get_remarks
+from rope.io.pdb_io import output_pdb, output_ligand_pdb, get_remarks
 from rope.io.blueprint_reader import parse_header
-
+from rope.io.index_handler import load_index
 
 
 
@@ -105,13 +105,11 @@ def RNAbuild(file:str,output:str,ligands:dict[str,str]|None=None) -> None:
     pattern=generate_np_pattern(file)
     seq,base_pairs,_,_ = trace_backbone(pattern,header=False)
     mapping = map_structure(base_pairs)
-
-    Structure:list = module_mapper(pattern)
-    print(Structure)
+    index_library = load_index()
+    Structure:list = module_mapper(pattern,index_library)
     build = [ndarray((0,0))]*(len(seq)+1)
     ligand_stack = []
     mod:Module|segmented_module|inv_segmented_module
-    length_test(Structure,seq)
 
     segment_stack={}
     last_build = ndarray((0,0))
@@ -171,7 +169,7 @@ def RNAbuild(file:str,output:str,ligands:dict[str,str]|None=None) -> None:
             else:
                 mod = module_libary[Structure[i]]
                 c,R,t = umeyama(module_libary[Structure[i]].start_cord,last_build)
-                if mod.have_seq:
+                if not mod.nonstandard:
                     atom_count,last_build,build,residue_count,seq_index = build_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
                 else:
                     atom_count,last_build,build,residue_count,seq_index =build_non_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)

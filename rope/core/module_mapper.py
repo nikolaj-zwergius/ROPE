@@ -21,7 +21,7 @@ def sequnce_matcher(module_seq:str,seq:str):
             return False
     return True
 
-def module_mapper(pattern:ndarray):
+def module_mapper(pattern:ndarray,index_library:dict):
     """Map a traced RNA sequence to a list of module symbols.
 
     The returned list begins with "S" for the 5' end, then includes module symbols
@@ -52,7 +52,12 @@ def module_mapper(pattern:ndarray):
             elif  clean_struc[i:i+9] == "..@@@@@@.":
                 soft_kls.append(i)
 
-    modules = sorted(module_libary.values(), reverse=True)
+    
+    modules = sorted(
+        index_library.values(),
+        key=lambda x: (x.priority, x.len),
+        reverse=True)
+
     for module in modules:
         if module.sequence is None:
             continue
@@ -64,6 +69,7 @@ def module_mapper(pattern:ndarray):
                     covered[range(seq_index-2,seq_index+11)] = "K"
                 continue
             if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
+                print(len(module.sequence),module.sequence,module.len)
                 if module == module_libary["T"]: # tetraloop detection
                     if clean_struc[seq_index:seq_index + len(module.sequence)] == "(....)":
                         covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol

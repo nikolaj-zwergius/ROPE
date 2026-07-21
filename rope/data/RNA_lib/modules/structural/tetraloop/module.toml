@@ -1,0 +1,12 @@
+[metadata]
+name = "Tetraloop"
+source = "ROAD"
+
+[module]
+symbol = "T"
+type = "module"
+priority = 2
+sequence = "NUUCGN"
+
+[default]
+file = "Tetraloop.pdb"

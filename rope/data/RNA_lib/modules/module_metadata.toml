@@ -1,0 +1,129 @@
+[beetroot]
+source = "PDB"
+doi="https://doi.org/10.1038/s41467-023-38683-3"
+[beetroot.THT]
+source_pdb = "8EYW"
+[beetroot.DFHO]
+source_pdb = "8EYV"
+[beetroot.DFAME]
+source_pdb ="8EYU"
+
+[broccoli]
+doi="https://doi.org/10.1093/nar/gkae1218"
+source = "PDB"
+source_pdb ="8K7W"
+
+
+[chili]
+doi="https://doi.org/10.1038/s41467-021-23932-0"
+source = "PDB"
+[chili.DMHBI]
+source_pdb = "7OAW"
+[chili.DMHBO]
+source_pdb = "7OAX"
+
+
+[cilivia]
+doi="https://doi.org/10.1038/s41589-024-01633-1"
+source = "PDB"
+[cilivia.N618]
+source_pdb = "8HZD"
+[cilivia.N565]
+source_pdb = "8HZF"
+[cilivia.N571]
+source_pdb = "8HZJ"
+[cilivia.N]
+source_pdb = "8HZE"
+
+[corn]
+doi="https://doi.org/10.1016/j.chembiol.2019.04.012"
+source = "PDB"
+[corn.apo]
+source_pdb = "6E80"
+[corn.THT]
+source_pdb = "6E81"
+[corn.TO]
+source_pdb = "6E84"
+[corn.DFHO]
+source_pdb = "8HZE"
+doi = "https://doi.org/10.1038/nchembio.2475"
+
+[ispinach]
+doi="https://doi.org/10.1261/rna.063008.117"
+source = "PDB"
+source_pdb = "5OB3"
+
+
+
+[rhobast]
+doi="https://doi.org/10.1093/nar/gkaf555"
+source = "PDB"
+source_pdb = "9BUN"
+
+[spinach]
+source = "PDB"
+[spinach.DFHBI]
+source_pdb = "4TS2"
+doi="https://doi.org/10.1038/nsmb.2865"
+[spinach.DFHBI-1T]
+source_pdb = "7L0Z"
+doi="https://doi.org/10.1261/rna.078220.120"
+
+[squash]
+doi=""
+source = "PDB"
+[thrombin]
+doi=""
+source = "PDB"
+[FMN]
+doi=""
+source = "PDB"
+[SAM-I]
+doi="https://doi.org/10.1016/j.str.2010.04.006"
+source = "PDB"
+source_pdb = "3IQN"
+[SAM-IV]
+doi=""
+source = "PDB"
+[5-hydroxytryptophan]
+doi="https://doi.org/10.1038/nchembio.2278"
+source = "PDB"
+source_pdb = "5KPY"
+[dopamine]
+doi=""
+source = "PDB"
+[neomycin]
+doi="https://doi.org/10.1016/S0969-2126(99)80105-1"
+source = "PDB"
+source_pdb = "1NEM"
+[oxoguanine]
+doi=""
+source = "PDB"
+source_pdb = "9NBC"
+[quinine-I]
+doi=""
+source = "PDB"
+[theophylline]
+doi=""
+source = "PDB"
+[THF]
+doi=""
+source = "PDB"
+
+
+[kissingloop]
+doi="https://doi.org/10.1038/s41565-023-01321-6"
+source = "PDB"
+source_pdb = "7QDU"
+[crossover]
+doi="https://doi.org/10.1038/s41565-023-01321-6"
+source = "ROAD"
+[helix_backbone]
+doi="https://doi.org/10.1038/s41565-023-01321-6"
+source = "ROAD"
+[helix_match]
+doi="https://doi.org/10.1038/s41565-023-01321-6"
+source = "ROAD"
+[tetraloop]
+doi="https://doi.org/10.1038/s41565-023-01321-6"
+source = "ROAD"
