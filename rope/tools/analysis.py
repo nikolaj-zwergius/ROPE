@@ -2,7 +2,7 @@
 import os
 from rope.core.analysis_logic import trace_analysis_out
 import argparse
-from rope.utils.parser_herlper import WideFormatter
+from rope.utils.cli_helper import WideFormatter
 
 def analysis_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

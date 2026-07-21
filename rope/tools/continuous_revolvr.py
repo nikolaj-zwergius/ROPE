@@ -10,7 +10,7 @@ from rope.definitions.rope_def import VALID_BASES
 import rope.core.grid_mapping as tu
 from rope.io.structure_printers import save_revolver_output
 import argparse
-from rope.utils.parser_herlper import WideFormatter
+from rope.utils.cli_helper import WideFormatter
 import time
 
 def continuous_parser() -> argparse.ArgumentParser:

@@ -1,10 +1,10 @@
 import os
-from rope.definitions.modules import named_module_libary
+#from rope.definitions.modules import named_module_libary
 import argparse
 from rope.core.Build_logic import RNAbuild
-from rope.utils.parser_herlper import WideFormatter
-
-
+from rope.utils.cli_helper import WideFormatter
+from rope.model.ModuleCache import ModuleCache
+from rope.io.index_handler import load_index, load_variant_index
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -50,40 +50,48 @@ def ligand_switcher(args)-> dict[str,str]:
     elif args.ligand:
         for i in args.ligand:
             name,option = i.split("=")
-            named_module_libary[name].set_variant(option)
             ligands[name] = option
 
     return ligands
 
 
-def ligand_print(args):
+def ligand_print(args,index):
+    variants = load_variant_index()
     if args.list == "all":
-        for module in named_module_libary.values():
-            print(f"{module.name}:")
-            if not module.ligand_variants:
+        for i in index:
+            print(f"{index[i].name}:")
+            if index[i].symbol not in variants:
                 continue
 
-            for ligand in module.ligand_variants:
+            for ligand in variants[index[i].symbol]:
                 print(f"    {ligand}")
 
             print()
             raise SystemExit(0)
 
     elif args.list:
-        module = named_module_libary[args.list]
+        module = ""
+        for i in index:
+            if index[i].name == args.list:
+                module = index[i]
+        else:
+            if not module:
+                raise Exception
         print(f"{module.name}:")
-        print()
-        for i in module.variants.keys():
-            print(f"\t {i}")
+        for i in variants[module.symbol]:
+            print(f"    {i}")
         raise SystemExit(0)
 
 def main():
     args = build_parser().parse_args()
-    ligand_print(args)
+    wd = os.getcwd()
+    folder = f"{wd}/RNAbuild"
+    index_library = load_index()
+    modulecahce = ModuleCache(index_library)
+    ligand_print(args,index_library)
     ligands = {}
     ligands = ligand_switcher(args)
-    wd = os.getcwd()
-    folder = f"{wd}/RNAbuild"   
+    
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -92,7 +100,7 @@ def main():
             if not file.endswith(".txt"):
                 continue
             else:
-                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",ligands)
+                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",modulecahce,index_library,ligands)
     else:
         for file in args.blueprint:
             file = str(file.lstrip(f".{chr(92)}"))
@@ -100,7 +108,7 @@ def main():
                 print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
                 continue
             if file in os.listdir():
-                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",ligands)
+                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",modulecahce,index_library,ligands)
             else:
                 print(f"{file} not found in folder")
 

@@ -1,11 +1,11 @@
-from rope.model.Module import Module, segmented_module
-from rope.definitions.rope_def import FOLDER
-### Structual Modules
-base = Module(name = 'base', file = FOLDER/"structural"/"helix_free"/'helix_backbone.pdb', symbol = 'H1',nonstandard =True)
-Helix = Module(name = 'Helix', file = FOLDER/"structural"/"helix_paired"/'helix_match.pdb', symbol = 'H2',nonstandard =True)
-Crossover = Module(name = 'Crossover', file = FOLDER/"structural"/"crossover"/'crossover.pdb', symbol = 'X',sequence = ("NNN^NNNN"),nonstandard =True)
-TetraLoop = Module(name = 'TetraLoop', file = FOLDER/"structural"/"tetraloop"/'Tetraloop.pdb', symbol = 'T',sequence = ("NUUCGN"),priority=2)
-KissingLoop = Module(name = 'KissingLoop', file = FOLDER/"structural"/"kissingloop"/'KissingLoop.pdb', symbol = 'K',sequence = ("NNAANNNNNNANN"),priority=2)
+#from rope.model.Module import Module, segmented_module
+#from rope.definitions.rope_def import FOLDER
+#### Structual Modules
+#base = Module(name = 'base', file = FOLDER/"structural"/"helix_free"/'helix_backbone.pdb', symbol = 'H1',nonstandard =True)
+#Helix = Module(name = 'Helix', file = FOLDER/"structural"/"helix_paired"/'helix_match.pdb', symbol = 'H2',nonstandard =True)
+#Crossover = Module(name = 'Crossover', file = FOLDER/"structural"/"crossover"/'crossover.pdb', symbol = 'X',sequence = ("NNN^NNNN"),nonstandard =True)
+#TetraLoop = Module(name = 'TetraLoop', file = FOLDER/"structural"/"tetraloop"/'Tetraloop.pdb', symbol = 'T',sequence = ("NUUCGN"),priority=2)
+#KissingLoop = Module(name = 'KissingLoop', file = FOLDER/"structural"/"kissingloop"/'KissingLoop.pdb', symbol = 'K',sequence = ("NNAANNNNNNANN"),priority=2)
 
 
 ### Fluorescent Modules
@@ -111,21 +111,22 @@ KissingLoop = Module(name = 'KissingLoop', file = FOLDER/"structural"/"kissinglo
 
 
 
-module_libary:dict[str,Module|segmented_module] = {
-    base.symbol:base,
-    Helix.symbol: Helix,
-    Crossover.symbol: Crossover,
-    TetraLoop.symbol: TetraLoop,
-    KissingLoop.symbol: KissingLoop,
-    #Broccoli.symbol: Broccoli,
-    #Mango.symbol: Mango,
-    #Pepper.symbol: Pepper,
-    #Cilivia.symbol: Cilivia,
-    #Spinach.symbol: Spinach,
-    #Squash.symbol: Squash,
-}
-
-named_module_libary:dict[str,Module|segmented_module] = {}
-for i in module_libary:
-    if module_libary[i].ligand:
-        named_module_libary[module_libary[i].name] = module_libary[i]
+#module_libary:dict[str,Module|segmented_module] = {
+#    base.symbol:base,
+#    Helix.symbol: Helix,
+#    Crossover.symbol: Crossover,
+#    TetraLoop.symbol: TetraLoop,
+#    KissingLoop.symbol: KissingLoop,
+#    #Broccoli.symbol: Broccoli,
+#    #Mango.symbol: Mango,
+#    #Pepper.symbol: Pepper,
+#    #Cilivia.symbol: Cilivia,
+#    #Spinach.symbol: Spinach,
+#    #Squash.symbol: Squash,
+#}
+#
+#named_module_libary:dict[str,Module|segmented_module] = {}
+#for i in module_libary:
+#    if module_libary[i].ligand:
+#        named_module_libary[module_libary[i].name] = module_libary[i]
+#

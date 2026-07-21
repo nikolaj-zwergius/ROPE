@@ -1,6 +1,16 @@
-if __name__ == "__main__":
-    import sys
-    import os
+import argparse
+import sys
+import os
+
+class WideFormatter(argparse.RawTextHelpFormatter):
+    def __init__(self, prog):
+        super().__init__(
+            prog,
+            max_help_position=40,   # column where help starts
+            width=140               # total line width
+        )
+
+def cli_error():
     dir_path = os.path.dirname(os.path.realpath(__file__))  
     parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
     wd = os.getcwd()

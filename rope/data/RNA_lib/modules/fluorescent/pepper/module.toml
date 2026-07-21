@@ -1,0 +1,35 @@
+[metadata]
+name = "pepper"
+source = "PDB"
+doi="https://doi.org/10.1038/s41589-021-00884-6"
+
+[module]
+symbol  = "P"
+type = "module"
+priority = 2
+sequence = "NNNACUGGCGCCNNNCCUUCGGGNNNCAAUCGUGGCGUGUCGNNN"
+segments = ["NNNACUGGCGCCNNN","NNNCAAUCGUGGCGUGUCGNNN"]
+spacer =["CCUUCGGG"]
+
+nonstandard = false
+has_constraints  = false
+[default]
+file = "Pepper_J8L.pdb"
+
+[variant.HBC]
+source_pdb ="7EOH"
+[variant.HBC497]
+source_pdb ="7EOL"
+[variant.HBC508]
+source_pdb ="7EOM"
+[variant.HBC514]
+source_pdb ="7EON"
+[variant.HBC525]
+source_pdb ="7EON"
+[variant.HBC485]
+source_pdb ="7EOK"
+[variant.HBC620]
+source_pdb ="7EOP"
+
+
+

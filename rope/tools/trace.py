@@ -4,7 +4,7 @@ from pathlib import Path
 from rope.io.structure_printers import trace_pattern_out
 from rope.core.trace_logic import generate_np_pattern, trace_backbone
 from rope.io.blueprint_reader import parse_header
-from rope.utils.parser_herlper import WideFormatter
+from rope.utils.cli_helper import WideFormatter
 import argparse
 
 def trace_parser() -> argparse.ArgumentParser:

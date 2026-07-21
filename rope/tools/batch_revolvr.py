@@ -6,7 +6,7 @@ import rope.core.revolvr as revolvr
 import rope.core.trace_logic as trace_logic
 from rope.core.analysis_logic import trace_analysis_out
 from rope.io.structure_printers import save_revolver_output
-from rope.utils.parser_herlper import WideFormatter
+from rope.utils.cli_helper import WideFormatter
 import argparse
 
 def batch_parser() -> argparse.ArgumentParser:

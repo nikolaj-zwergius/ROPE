@@ -1,0 +1,6 @@
+P|pepper|fluorescent\pepper|NNNACUGGCGCCNNNCCUUCGGGNNNCAAUCGUGGCGUGUCGNNN|2|
+X|Crossover|structural\crossover|NNN^NNNN|0|
+H1|Base|structural\helix_free||0|
+H2|Helix|structural\helix_paired||0|
+K|Kissingloop|structural\kissingloop|NNAANNNNNNANN|2|((.........)),((..[[[[[[.)),((..]]]]]].)),((..@@@@@@.))
+T|Tetraloop|structural\tetraloop|NUUCGN|2|(....)

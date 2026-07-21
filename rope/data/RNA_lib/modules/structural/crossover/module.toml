@@ -9,8 +9,7 @@ priority = 0
 sequence = "NNN^NNNN"
 nonstandard = true
 reason = "Topology module using ^ sequence markers. Requires custom build logic and cannot be validated using the standard module validator."
-
+has_constraints  = false
 [default]
 file = "crossover.pdb"
-
 

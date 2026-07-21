@@ -1,10 +1,11 @@
 from rope.core.grid_mapping import generate_np_pattern, map_structure
-from rope.definitions.modules import module_libary, Helix, base
+#from rope.definitions.modules import module_libary, Helix, base
 from rope.core.trace_logic import trace_backbone
 from rope.definitions.rope_def import one_letter_code
-from rope.model.Module import segmented_module, RangeDict
+from rope.model.Module import segmented_module
+from rope.model.range_dict import RangeDict
+from rope.model.records import IndexEntry
 from numpy import ndarray
-
 
 
 def sequnce_matcher(module_seq:str,seq:str):
@@ -21,7 +22,7 @@ def sequnce_matcher(module_seq:str,seq:str):
             return False
     return True
 
-def module_mapper(pattern:ndarray,index_library:dict):
+def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
     """Map a traced RNA sequence to a list of module symbols.
 
     The returned list begins with "S" for the 5' end, then includes module symbols
@@ -35,54 +36,36 @@ def module_mapper(pattern:ndarray,index_library:dict):
     mapping = map_structure(clean_struc)
     length = len(seq)
     covered = RangeDict()
-
-    kl_detect = False
-    kls = []
-    soft_kls = []
-    for i in range(len(clean_struc)):
-        if (clean_struc[i] == "[" or clean_struc[i] == "]") and not kl_detect:
-            kl_detect = True
-            kls.append(i)
-        if kl_detect and (clean_struc[i] != "[" and clean_struc[i] != "]"):
-            kl_detect = False
-    for i in range(len(seq)-9):
-        if seq[i:i+2] == "AA" and seq[i+8]=="A":
-            if clean_struc[i:i+9] == ".........":
-                soft_kls.append(i)
-            elif  clean_struc[i:i+9] == "..@@@@@@.":
-                soft_kls.append(i)
-
     
+    base = index_library["H1"]
+    helix = index_library["H2"]
+
+
     modules = sorted(
         index_library.values(),
         key=lambda x: (x.priority, x.len),
         reverse=True)
-
+    
     for module in modules:
-        if module.sequence is None:
+        
+        if not module.sequence:
             continue
         for seq_index in range(length):
-            if module == module_libary["K"]: #Kissing loop labeling
-                if seq_index in kls:
-                    covered[range(seq_index-4,seq_index+9)] = "K"
-                if seq_index in soft_kls:
-                    covered[range(seq_index-2,seq_index+11)] = "K"
-                continue
             if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
-                print(len(module.sequence),module.sequence,module.len)
-                if module == module_libary["T"]: # tetraloop detection
-                    if clean_struc[seq_index:seq_index + len(module.sequence)] == "(....)":
-                        covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol
+                if module.has_constrain: # tetraloop detection
+                    for constrain in module.constrains:
+                        if clean_struc[seq_index:seq_index + len(module.sequence)] == constrain:
+                            covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol
                     continue
                 covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol
-            elif isinstance(module, segmented_module): #segment detection
+            elif module.type == segmented_module: #segment detection
                 for segment in module.segments:
                     if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
                            
     for i in range(length): # filling out missing elements
         if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
-            covered[i] = Helix.symbol
+            covered[i] = helix.symbol
         elif i not in covered:
             covered[i] = base.symbol
     
@@ -139,5 +122,5 @@ def module_mapper(pattern:ndarray,index_library:dict):
                 pairs[element[1:]] = (element[0],i,element)
     
         
-
+    print(map_list)
     return map_list

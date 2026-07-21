@@ -2,7 +2,7 @@ from io import TextIOWrapper
 from numpy import ndarray, float32
 from rope.utils.dim3_utils import umeyama
 from rope.model.Module import get_sugar_cords, Module, segmented_module, inv_segmented_module
-from rope.definitions.modules import module_libary, Helix
+#from rope.definitions.modules import module_libary, Helix
 from rope.definitions.nucleotide import nucleotide_libary
 from rope.core.trace_logic import trace_backbone
 from rope.core.grid_mapping import generate_np_pattern, map_structure
@@ -10,7 +10,7 @@ from rope.core.module_mapper import module_mapper
 from rope.io.pdb_io import output_pdb, output_ligand_pdb, get_remarks
 from rope.io.blueprint_reader import parse_header
 from rope.io.index_handler import load_index
-
+from rope.model.ModuleCache import ModuleCache
 
 
 def align_base_to_backbonde(f:TextIOWrapper,coord_dict:list[dict[int,ndarray]],res_index:int,seq_index:int,seq:str,atom_count:int,aligment_variable:tuple[float32,ndarray,ndarray],residue_count:int) -> tuple[int,ndarray]:
@@ -38,17 +38,17 @@ def ligand_printer(f:TextIOWrapper,ligand_stack:list,atom_count:int,seq:str) -> 
         ligand_index +=1
     return
 
-def length_test(Structure:list,seq:str):
+def length_test(Structure:list,seq:str,cache:ModuleCache,ligands):
     Structure_len = 1
     try:
         for i in range(1,len(Structure)):
             if Structure[i][0].isnumeric():
-                Structure_len += len(module_libary[Structure[i][1:]].segments[int(Structure[i][0])])
+                Structure_len += len(cache.get_module(Structure[i][1:],ligands).segments[int(Structure[i][0])])
                 continue
             if Structure[i][0] == "i":
-                Structure_len += len(module_libary[Structure[i][2:]].segments[int(Structure[i][1])])
+                Structure_len += len(cache.get_module(Structure[i][2:],ligands).segments[int(Structure[i][1])])
                 continue
-            Structure_len += module_libary[Structure[i]].len
+            Structure_len += cache.get_module(Structure[i],ligands).len
         assert Structure_len == len(seq)
     except AssertionError:
         print("Error: The length of the structure and sequence must be the same.")
@@ -99,20 +99,17 @@ def build_seq_module(f:TextIOWrapper,mod:Module,build:list[ndarray],align_value:
 
 
 
-def RNAbuild(file:str,output:str,ligands:dict[str,str]|None=None) -> None:
-    for i in module_libary:
-        module_libary[i].reset()
+def RNAbuild(file:str,output:str,cahce: ModuleCache,index_library,ligands:dict[str,str]|None=None) -> None:
     pattern=generate_np_pattern(file)
     seq,base_pairs,_,_ = trace_backbone(pattern,header=False)
     mapping = map_structure(base_pairs)
-    index_library = load_index()
     Structure:list = module_mapper(pattern,index_library)
     build = [ndarray((0,0))]*(len(seq)+1)
     ligand_stack = []
     mod:Module|segmented_module|inv_segmented_module
-
     segment_stack={}
     last_build = ndarray((0,0))
+    Helix = cahce.get_module("H2",ligands)
 
     with open(output, "w") as f:
         if ligands is not None:
@@ -128,10 +125,10 @@ def RNAbuild(file:str,output:str,ligands:dict[str,str]|None=None) -> None:
 
             elif Structure[i][0].isnumeric() or Structure[i][0]=="i":
                 if Structure[i][0].isnumeric():
-                    mod = module_libary[Structure[i][1:]]
+                    mod = cahce.get_module(Structure[i][1:],ligands)
                     offset = 0
                 else:
-                    mod = module_libary[Structure[i][2:]].inverted()
+                    mod = cahce.get_module(Structure[i][2:],ligands).inverted()
                     offset = 1
 
                 seg_index = int(Structure[i][0+offset])
@@ -162,13 +159,13 @@ def RNAbuild(file:str,output:str,ligands:dict[str,str]|None=None) -> None:
                     if mod.ligand:
                         ligand_stack = ligand_addtion((c,R,t),mod,ligand_stack)
             elif Structure[i] == Helix.symbol:
-                mod = module_libary[Structure[i]]
+                mod = cahce.get_module(Structure[i],ligands)
                 build[mapping[residue_count-1]]
                 c,R,t = umeyama(mod.start_cord,build[mapping[residue_count-1]])
                 atom_count,last_build,build,residue_count,seq_index =build_non_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
             else:
-                mod = module_libary[Structure[i]]
-                c,R,t = umeyama(module_libary[Structure[i]].start_cord,last_build)
+                mod = cahce.get_module(Structure[i],ligands)
+                c,R,t = umeyama(mod.start_cord,last_build)
                 if not mod.nonstandard:
                     atom_count,last_build,build,residue_count,seq_index = build_seq_module(f,mod,build,(c,R,t),seq,atom_count,residue_count,seq_index)
                 else:

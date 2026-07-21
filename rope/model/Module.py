@@ -9,7 +9,7 @@ from rope.model.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, nonstandard:bool=False, ligand:str|None = None,test:bool =False,ligand_variants_files:dict[str,str]|None = None,main=True):
+    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, nonstandard:bool=False, ligand:str|None = None):
         super().__init__(name, file, symbol)
         self.name = name
         self.file = file
@@ -18,17 +18,11 @@ class Module(StructuralElement):
         self.nonstandard = nonstandard
         self.generate_cords()
         self.ligand = ligand
-        self.ligand_variants = ligand_variants_files
-        self.variants = {}
-        self.default_varian= None
-        if main:
-            self.default_variant = Module(name, file, symbol, sequence, priority, nonstandard, ligand,test=test,main=False)
-        if ligand_variants_files is not None and main:
-            for i in ligand_variants_files.keys():
-                self.variants[i] = Module(name, ligand_variants_files[i], symbol, sequence, priority, nonstandard, ligand=i,test=test,main=False)
+
         if ligand is not None:
             self.ligand_coords,self.ligand_lines = self.get_ligand_coords()
         self.set_len()
+        
         self.priority = priority
 
         self.segments = NotImplemented
@@ -128,16 +122,6 @@ class Module(StructuralElement):
                 self.last_coord = variant.last_coord
                 self.coord_dict = variant.coord_dict
 
-    def set_variant(self, variant_str: str):
-        variant = self.variants[variant_str]
-        self._copy_state(variant)
-
-    def reset_variant(self):
-        self._copy_state(self.default_variant)
-
-    def reset(self):
-        self.reset_variant()
-
     def __str__(self):
         return f"Module: {self.name}"
     def __repr__(self): 
@@ -145,7 +129,7 @@ class Module(StructuralElement):
 
 
 class segmented_module(Module):
-    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None,main=True,ligand_variants_files:dict[str,str]|None = None,test:bool=False):
+    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None):
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -179,12 +163,6 @@ class segmented_module(Module):
         self.full_last_coord = self.last_coord
         self.full_coord_dict =  self.coord_dict
         self.full_sequence = self.sequence
-
-        if main:
-            self.default_variant = segmented_module(name,file,symbol,sequence,spacer,priority,ligand,main=False)
-        if ligand_variants_files is not None and main:
-            for i in ligand_variants_files.keys():
-                self.variants[i] = segmented_module(name, ligand_variants_files[i], symbol, sequence, spacer, priority, ligand=i,main=False)
 
     def generate_segment_cords(self,invsers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
@@ -278,15 +256,6 @@ class segmented_module(Module):
         self.segment_coord_dict = variant.segment_coord_dict
         self._copy_state(variant)
     
-    def set_variant(self, variant_str: str):
-        variant = self.variants[variant_str]
-        if type(variant) is segmented_module:
-            self._copy_state_segments_variants(variant)
-        return super().set_variant(variant_str)
-
-    def reset_variant(self):
-        self._copy_state_segments_variants(self.default_variant)
-        super().reset_variant()
 
     def change_elements(self,seg_index:int):
         """
@@ -315,8 +284,6 @@ class segmented_module(Module):
     
     def reset(self):
         self.reset_elements()
-        self.reset_variant()
-        super().reset()
 
 
     def inverted(self) -> inv_segmented_module:

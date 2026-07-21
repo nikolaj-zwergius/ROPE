@@ -2,7 +2,7 @@
 import sys
 import getopt
 from rope.io.structure_printers import flip_pattern
-from rope.utils.parser_herlper import WideFormatter
+from rope.utils.cli_helper import WideFormatter
 import argparse
 
 def flip_parser() -> argparse.ArgumentParser:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from rope.model.Module import Module,segmented_module
 from enum import Enum
-
+from pathlib import Path
 
 
 
@@ -21,9 +21,10 @@ class ValidationResult:
 @dataclass
 class ValidationReport:
     pakage:str
+    path:Path
     module:str|None
     reports:list[ValidationResult]
-    validated:bool
+    validated:ValidationStatus
     indexed: bool
 
 @dataclass
@@ -36,6 +37,9 @@ class IndexEntry:
     sequence:str
     segments: list[str]
     type: type[Module]|type[segmented_module]
+    has_constrain:bool
+    constrains: list[str]
+    index_line:str
 
 
 

@@ -7,6 +7,9 @@ symbol = "T"
 type = "module"
 priority = 2
 sequence = "NUUCGN"
+nonstandard = false
+has_constraints  = true
+constraints = ["(....)"]
 
 [default]
 file = "Tetraloop.pdb"
