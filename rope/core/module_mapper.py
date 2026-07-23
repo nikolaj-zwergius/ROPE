@@ -51,6 +51,7 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
         if not module.sequence:
             continue
         for seq_index in range(length):
+            #print(module.name,module.sequence,seq[seq_index:seq_index+len(module.sequence)])
             if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
                 if module.has_constrain: # tetraloop detection
                     for constrain in module.constrains:

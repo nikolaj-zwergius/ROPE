@@ -126,7 +126,7 @@ def _validate_toml_fields(toml,result:ValidationResult):
         result.errors.append((error_type, "No module.symbol field defined"))
     if not module.get("type"):
         result.errors.append((error_type, "No module.type field defined"))
-    if not module.get("priority"):
+    if module.get("priority") is None:
         result.functional_warnings.append((fwarning_type,"No module.priority defined"))
     if not default.get("file"):
         result.errors.append((error_type,"No default.file defined"))
@@ -140,7 +140,7 @@ def _validate_toml_fields(toml,result:ValidationResult):
         result.errors.append((error_type,"No module.sequence field defined"))
     if module.get("has_constraints") and not module.get("constraints"):
         result.errors.append((error_type,"No module.constraints field defined"))
-    if not module.get("nonstandard"):
+    if module.get("nonstandard") is None:
         result.functional_warnings.append((fwarning_type,"No module.nonstandard defined"))
     if module.get("has_constraints") is True:
         if not module.get("constraints"):

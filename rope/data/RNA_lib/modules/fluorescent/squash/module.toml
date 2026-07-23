@@ -1,0 +1,20 @@
+[metadata]
+name = "Squash"
+source = "PDB"
+doi=""
+
+
+[module]
+symbol  = "sQ"
+type = "module"
+priority = 3
+sequence = "AUACAAGGUGAGCCCAAUAAUAUGGUUUGGGUUAGGAUAGGAAGUAGAGCCUUAAACUCUCUAAGCGGUAU"
+nonstandard = false
+has_constraints  = false
+
+[default]
+file = "squash_DFHBI-1T.pdb"
+ligand = "2ZY"
+name = "DHFBI-1T"
+
+

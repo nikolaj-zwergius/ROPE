@@ -1,0 +1,19 @@
+[metadata]
+name = "brocolli"
+source = "PDB"
+doi="https://doi.org/10.1093/nar/gkae1218"
+
+[module]
+symbol  = "B"
+type = "segmented"
+priority = 2
+sequence = "GACGGUCGGGUCCAGCUUCGUGUCGAGUAGAGUGUGGGC"
+segments = ["GACGGUCGGGUCCAG","UGUCGAGUAGAGUGUGGGC"]
+spacer =["CUUCG"]
+
+nonstandard = false
+has_constraints  = false
+[default]
+file = "Brocolli_DFHBI-1T.pdb"
+source_pdb ="8K7W"
+name = "DFHBI-1T"

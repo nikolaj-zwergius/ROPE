@@ -6,7 +6,13 @@ def load_module(path,wanted_variant):
     toml = load_toml(path/"module.toml")
     meta:dict = toml.get("metadata",{})
     module:dict = toml.get("module",{})
-    variant:dict = toml.get(wanted_variant,"default")
+    variant:dict = toml.get(wanted_variant,{})
+    if variant == {}:
+        defualt = toml.get("default",{})
+        if wanted_variant == defualt.get("name"):
+            variant = defualt
+        else:
+            raise KeyError("Invalid ligand given")
 
     name = meta.get("name","")
     symbol = module.get("symbol","")
@@ -15,7 +21,8 @@ def load_module(path,wanted_variant):
     nonstandard = bool(module.get("nonstandard",False))
     file = path/variant.get("file","")
     module_type= module.get("type")
-    ligand = variant.get("ligand_code",None)
+    ligand = variant.get("ligand",None)
+
 
     if module_type == "module":
         mod =Module(name,file,symbol,sequence,priority,nonstandard,ligand)

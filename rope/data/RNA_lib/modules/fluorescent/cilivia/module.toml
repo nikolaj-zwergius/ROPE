@@ -1,0 +1,30 @@
+[metadata]
+name = "cilivia"
+source = "PDB"
+doi="https://doi.org/10.1038/s41589-024-01633-1"
+
+[module]
+symbol  = "C"
+type = "segmented"
+priority = 2
+sequence = "GAAGAUUGUAAACAUGCCGAAAGGCAGACACUUC"
+segments = ["GAAGAUUGUAAACAUGC","GCAGACACUUC"]
+spacer =["CGAAAG"]
+
+nonstandard = false
+has_constraints  = false
+
+[default]
+file = "cilivia_N618.pdb"
+ligand = "O2I"
+source_pdb = "8HZD"
+name = "N618"
+
+[variant.N565]
+source_pdb = "8HZF"
+[variant.N571]
+source_pdb = "8HZJ"
+[variant.N]
+source_pdb = "8HZE"
+
+

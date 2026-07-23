@@ -59,16 +59,13 @@ def ligand_print(args,index):
     variants = load_variant_index()
     if args.list == "all":
         for i in index:
-            print(f"{index[i].name}:")
+            
             if index[i].symbol not in variants:
                 continue
-
+            print(f"{index[i].name}:")
             for ligand in variants[index[i].symbol]:
                 print(f"    {ligand}")
-
-            print()
-            raise SystemExit(0)
-
+        exit()  
     elif args.list:
         module = ""
         for i in index:

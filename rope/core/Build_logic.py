@@ -130,9 +130,8 @@ def RNAbuild(file:str,output:str,cahce: ModuleCache,index_library,ligands:dict[s
                 else:
                     mod = cahce.get_module(Structure[i][2:],ligands).inverted()
                     offset = 1
-
+                
                 seg_index = int(Structure[i][0+offset])
-
                 if Structure[i][0+offset] == "0":
                     last = last_build
                     if Structure[i][1+offset:] not in segment_stack:
