@@ -4,10 +4,12 @@ class ModuleCache:
 
     def __init__(self, index_library):
         self.index_library = index_library
+        self.index_libary_name_key = {}
         self.cache = {}
 
     def get_module(self, symbol, ligands):
-        variant = ligands.get(symbol, "default")
+        name  =  self.index_library[symbol].name
+        variant = ligands.get(name, "default")
         key = (symbol, variant)
 
         if key not in self.cache:

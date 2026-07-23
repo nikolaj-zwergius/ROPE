@@ -15,23 +15,34 @@ nonstandard = false
 has_constraints  = false
 
 [default]
-file = "Pepper_J8L.pdb"
-name = "HBC485"
-source_pdb ="7EOK"
-ligand = "J8L"
+name = "HBC620"
+source_pdb ="7EOP"
+file = "pdb7eop.pdb"
+ligand = "J93"
 
 [variant.HBC]
 source_pdb ="7EOH"
+file = "pdb7eoh.pdb"
+ligand = "J8F"
+[variant.HBC485]
+file = "Pepper_J8L.pdb"
+source_pdb ="7EOK"
+ligand = "J8L"
 [variant.HBC497]
 source_pdb ="7EOL"
+file = "pdb7eol.pdb"
+ligand = "J8O"
 [variant.HBC508]
 source_pdb ="7EOM"
+file = "pdb7eom.pdb"
+ligand = "J8R"
 [variant.HBC514]
 source_pdb ="7EON"
+file = "pdb7eon.pdb"
+ligand = "J8U"
 [variant.HBC525]
-source_pdb ="7EON"
-[variant.HBC620]
-source_pdb ="7EOP"
-
+source_pdb ="7EOO"
+file = "pdb7eoo.pdb"
+ligand = "J8X"
 
 

@@ -5,8 +5,9 @@ ATOM/HETATM records, and normalizes atom names to the standard nucleotide
 library names.
 """
 
+from pathlib import Path
+from rope.definitions.rope_def import ROOT
 import os
-
 STANDARD_ATOM_NAME_MAP = {
     'O1P': 'OP1',
     'O2P': 'OP2',
@@ -86,7 +87,7 @@ def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> tuple[str,
     ),current_res,res_index
 
 
-def clean_pdb_file(file_path: str) -> None:
+def clean_pdb_file(file_path: Path) -> None:
     """Clean a single PDB file in place."""
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as reader:
         original_lines = reader.readlines()
@@ -104,15 +105,19 @@ def clean_pdb_file(file_path: str) -> None:
             writer.writelines(cleaned_lines)
 
 
-def clean_rna_lib_pdb_files(root_dir: str | None = None) -> None:
+def clean_rna_lib_pdb_files(root_dir: Path | None = None) -> None:
     """Recursively clean all PDB files under the RNA_lib directory."""
     if root_dir is None:
-        root_dir = os.path.dirname(__file__)
-
-    for dirpath, _, filenames in os.walk(root_dir):
-        for filename in filenames:
-            if filename.lower().endswith('.pdb'):
-                clean_pdb_file(os.path.join(dirpath, filename))
+        root_dir = ROOT/"data/RNA_lib/modules"
+    dirs = os.listdir(root_dir)  
+    print(dirs)
+    for folder in dirs:
+        path = Path(root_dir)/folder
+        for modules in os.listdir(path):
+            pdb_path = path/modules
+            for file in os.listdir(pdb_path):
+                if file.endswith(".pdb"):
+                    clean_pdb_file(pdb_path/file)
 
 
 if __name__ == '__main__':

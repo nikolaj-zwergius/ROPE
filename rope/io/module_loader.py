@@ -6,12 +6,12 @@ def load_module(path,wanted_variant):
     toml = load_toml(path/"module.toml")
     meta:dict = toml.get("metadata",{})
     module:dict = toml.get("module",{})
-    variant:dict = toml.get(wanted_variant,{})
+    variant:dict = toml.get("variant",{}).get(wanted_variant,{})
     if variant == {}:
         defualt = toml.get("default",{})
-        if wanted_variant == defualt.get("name"):
+        if wanted_variant == "default":
             variant = defualt
-        else:
+        if variant == {}:
             raise KeyError("Invalid ligand given")
 
     name = meta.get("name","")
