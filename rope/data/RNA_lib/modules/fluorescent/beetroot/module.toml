@@ -1,0 +1,26 @@
+[metadata]
+name = "beetroot"
+source = "PDB"
+doi="https://doi.org/10.1038/s41467-023-38683-3"
+
+[module]
+symbol  = "bR"
+type = "module"
+priority = 2
+sequence = "GCGCCGGUUAGGCAGAGGUGGGUGGUGUGGAGGAGUAUCUGUCCGGCGC"
+nonstandard = false
+has_constraints  = false
+
+[default]
+name = "THT"
+source_pdb = "8EYW"
+ligand = "TFX"
+file = "pdb8eyw.pdb"
+[variant.DFHO]
+file = "pdb8eyv.pdb"
+source_pdb = "8EYV"
+ligand = "747"
+[variant.DFAME]
+source_pdb ="8EYU"
+ligand = "X5R"
+file = " pdb8eyu.pdb"

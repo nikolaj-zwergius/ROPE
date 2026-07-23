@@ -20,11 +20,17 @@ ligand = "O2I"
 source_pdb = "8HZD"
 name = "N618"
 
-[variant.N565]
-source_pdb = "8HZF"
-[variant.N571]
-source_pdb = "8HZJ"
 [variant.N]
 source_pdb = "8HZE"
+file = "pdb8hze.pdb"
+ligand = "NI4"
+[variant.N565]
+source_pdb = "8HZF"
+file = "pdb8hzf.pdb"
+ligand = "NJL"
+[variant.N571]
+source_pdb = "8HZJ"
+file = "pdb8hzj.pdb"
+ligand = "O00"
 
 
