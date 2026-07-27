@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from rope.model.Module import Module,segmented_module
 from enum import Enum
 from pathlib import Path
-
+from numpy import ndarray
+from io import TextIOWrapper
 
 
 class ValidationStatus(Enum):
@@ -42,6 +43,17 @@ class IndexEntry:
     index_line:str
 
 
+@dataclass
+class BuildState:
+    build:list
+    last_build:ndarray
+    seq:str
+    output:TextIOWrapper
+    atom_count:int = 1
+    residue_count:int = 1
+    seq_index:int = 0
+    
+    
 
 @dataclass
 class BuildResult:

@@ -2,16 +2,17 @@
 from numpy import ndarray
 from rope.version import get_version
 from rope.io.blueprint_reader import parse_header
+from rope.model.records import BuildState
 
-def output_pdb(line:str,seq:str,index:int,line_index:int,align_residue:ndarray,atom_count:int,residue_count:int) -> str:
+def output_pdb(line:str,line_index:int,align_residue:ndarray,buildstate:BuildState) -> None:
     line_string = list(line)
-    line_string[6:11] = f"{atom_count:5d}"
-    line_string[17:20] = f"{seq[index]:>3s}"
-    line_string[22:26] = f"{residue_count:4d}"
+    line_string[6:11] = f"{buildstate.atom_count:5d}"
+    line_string[17:20] = f"{buildstate.seq[buildstate.seq_index]:>3s}"
+    line_string[22:26] = f"{buildstate.residue_count:4d}"
     line_string[30:38] = f"{align_residue[line_index][0]:8.3f}"
     line_string[38:46] = f"{align_residue[line_index][1]:8.3f}"
     line_string[46:54] = f"{align_residue[line_index][2]:8.3f}"
-    return "".join(line_string)
+    buildstate.output.write("".join(line_string))
 
 def output_ligand_pdb(line:str,align_atom:ndarray,ligand_index:int,atom_count:int):
     line_string = list(line)

@@ -567,10 +567,3 @@ if __name__ == "__main__":
         revolver(opts[1])
     except IndexError:
         print("no file given")
-    
-
-
-
-    
-
-
