@@ -1,9 +1,6 @@
 from numpy import ndarray
-from rope.definitions.rope_def import (NUCLEOTIDE_CHARS,VALID_BASES,one_letter_code)
 import rope.core.trace_logic as tp
 from rope.core.grid_mapping import (
-    COMPLEMENT_WINDOW,
-    DUPLICATE_WINDOW,
     map_structure,
     count_repeats,
     build_barriers,

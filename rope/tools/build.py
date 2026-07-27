@@ -1,5 +1,4 @@
 import os
-#from rope.definitions.modules import named_module_libary
 import argparse
 from rope.core.Build_logic import RNAbuild
 from rope.utils.cli_helper import WideFormatter
@@ -34,9 +33,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--list",
         nargs="?",
-        const="all",
+        const="module",
         metavar="MODULE",
-        help="Show avaliable ligands for a givin module, if none givin show all"
+        help="Show avaliable ligands for a given module, if none given show module, for all use all"
     )
 
 
@@ -65,7 +64,12 @@ def ligand_print(args,index):
             print(f"{index[i].name}:")
             for ligand in variants[index[i].symbol]:
                 print(f"    {ligand}")
-        exit()  
+        exit()
+    elif args.list == "module":
+        print("Modules with variant ligands:")
+        for i in index:
+            if index[i].symbol in variants:
+                print("  Name: ",index[i].name,"\tDefault ligand:" ,variants[index[i].symbol][0].split(" ")[0])
     elif args.list:
         module = ""
         for i in index:
@@ -77,6 +81,7 @@ def ligand_print(args,index):
         print(f"{module.name}:")
         for i in variants[module.symbol]:
             print(f"    {i}")
+    if args.list:
         raise SystemExit(0)
 
 def main():

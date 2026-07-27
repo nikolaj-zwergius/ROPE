@@ -1,11 +1,7 @@
-import sys,os
-SCRIPT_DIR = os.path.abspath(__file__)
-sys.path.append(os.path.dirname(SCRIPT_DIR))
 import rope.definitions.rope_def as rd
 from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
-from numpy import ndarray,int64
+from numpy import ndarray
 from pathlib import Path
-from rope.io.blueprint_reader import parse_header
 
 
 def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:

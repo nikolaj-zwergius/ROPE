@@ -8,8 +8,6 @@ from rope.core.trace_logic import trace_backbone
 from rope.core.grid_mapping import generate_np_pattern, map_structure
 from rope.core.module_mapper import module_mapper
 from rope.io.pdb_io import output_pdb, output_ligand_pdb, get_remarks
-from rope.io.blueprint_reader import parse_header
-from rope.io.index_handler import load_index
 from rope.model.ModuleCache import ModuleCache
 
 

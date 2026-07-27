@@ -1,6 +1,5 @@
 from __future__ import annotations
 import numpy as np
-import os
 from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
 from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS

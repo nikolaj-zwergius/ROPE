@@ -1,4 +1,4 @@
-from os import listdir, getcwd
+from os import listdir
 from pathlib import Path
 
 def find_pakages() -> tuple[list[Path],list[Path],list[Path],list[Path]]:

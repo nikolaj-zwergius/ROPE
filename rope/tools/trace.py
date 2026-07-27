@@ -1,6 +1,4 @@
-import getopt,os
 import sys
-from pathlib import Path
 from rope.io.structure_printers import trace_pattern_out
 from rope.core.trace_logic import generate_np_pattern, trace_backbone
 from rope.io.blueprint_reader import parse_header
