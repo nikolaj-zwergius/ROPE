@@ -1,6 +1,9 @@
 
 from pathlib import Path
-import tomllib
+try: import tomllib
+except ImportError:
+    import tomli as tomllib
+
 
 def get_version() -> str:
     pyproject = Path(__file__).parents[1] / "pyproject.toml"
