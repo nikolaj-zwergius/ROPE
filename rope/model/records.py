@@ -18,6 +18,7 @@ class ValidationResult:
     warnings: list[tuple]
     functional_warnings: list[tuple]
     errors: list[tuple]
+    funtional_error: list[tuple]
 
 @dataclass
 class ValidationReport:
@@ -59,3 +60,10 @@ class BuildState:
 class BuildResult:
     build = bool
 
+@dataclass
+class ValidationContex:
+    package:Path
+    global_skip:bool
+    path: Path
+    toml:dict|None = None
+    pdbs:list|None = None

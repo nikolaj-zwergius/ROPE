@@ -1,15 +1,17 @@
 from rope.io.pakage_disover import find_pakages
 from rope.io.index_handler import load_index, write_index, index_line_maker
-from rope.model.records import ValidationStatus,ValidationResult,ValidationReport
+from rope.model.records import ValidationStatus,ValidationResult,ValidationReport,ValidationContex
 from rope.io.toml_io import load_toml
 from tomllib import TOMLDecodeError
 from pathlib import Path
+
 def validator():
     pakages,_,_,_ = find_pakages()
     index = load_index()
     master_report:list[ValidationReport] = []
-    global_skip = False
+    
     for pakage in pakages:
+        contex = ValidationContex(package=pakage,global_skip = False,path=pakage.parent)
         report = ValidationReport(
             pakage=pakage.parent.stem,
             path = pakage,
@@ -18,17 +20,17 @@ def validator():
             validated=ValidationStatus.FAIL,
             indexed=False
         )
-        result = validate_toml(pakage)
+        result = validate_toml(contex)
         report.reports.append(result)
         if result.status == ValidationStatus.FAIL:
-            global_skip = False
+            contex.global_skip = False
         
-        result = validate_files(pakage,global_skip)
+        result = validate_files(contex)
         report.reports.append(result)
         if result.status == ValidationStatus.FAIL:
-            global_skip = False
+            contex.global_skip = False
 
-        result = validate_index_state(pakage,global_skip,index)
+        result = validate_index_state(contex,index)
         report.reports.append(result)
         if result.status == ValidationStatus.FAIL:
             global_skip = False
@@ -41,6 +43,13 @@ def validator():
         else:
             report.validated = ValidationStatus.PASS
             master_report.append(report)
+
+
+
+
+
+
+
     index_lines = []
     variant_lines = []
     used_symbols = []
@@ -55,7 +64,6 @@ def validator():
         if key not in used_symbols:
             index_lines.append(index[key].index_line)
     write_index(index_lines,variant_lines)
-
     validattion_reporter(master_report)
 
 def validattion_reporter(master_report:list[ValidationReport]):
@@ -77,16 +85,17 @@ def validattion_reporter(master_report:list[ValidationReport]):
                     print("\t\t",error)
 
 
-def validate_toml(path):
+def validate_toml(contex:ValidationContex):
     result = ValidationResult(
         stage="TOML Validation",
         status=ValidationStatus.FAIL,
         warnings=[],
         functional_warnings =[],
-        errors=[]
+        errors=[],
+        funtional_error = []
     )
     try:
-        toml = load_toml(path)
+        toml = load_toml(contex.package)
     except TOMLDecodeError as e:
         result.errors.append(
             ("TomlLoadError",str(e)))
@@ -99,6 +108,7 @@ def validate_toml(path):
 
     ### missing variant logic
     if len(result.errors) == 0:
+        contex.toml = toml
         result.status = ValidationStatus.PASS
     return result
 
@@ -172,46 +182,96 @@ def _validate_toml_types(toml,result:ValidationResult):
     if "constraints" in module and not type(module.get("constraints")) is list:
         result.errors.append((error_type,"module.constraints not list"))
 
-def validate_files(path:Path,skipped):
-    error_type = "File not found"
+def validate_files(contex:ValidationContex):
     result = ValidationResult(
         stage="File Validation",
         status=ValidationStatus.FAIL,
         warnings=[],
         functional_warnings =[],
-        errors=[]
+        errors=[],
+        funtional_error=[]
     )
-    toml = load_toml(path)
-    if skipped:
+    if contex.global_skip:
         result.status = ValidationStatus.SKIP
         return result
     
-    try:
-        open(path.parent/toml.get("default",{}).get("file"))
-    except FileNotFoundError:
-        result.errors.append((error_type,"No pdb found for default"))
+    _validate_extra_files_exist(contex,result)
+    if len(result.errors) > 0:
+        return result
+
+    _validate_pdb_files(contex,result)
+
 
     if len(result.errors) == 0:
         result.status =  ValidationStatus.PASS
     return result
 
-def validate_index_state(pakage:Path,skipped:bool,index:dict):
+def _validate_pdb_files(contex:ValidationContex,resualt:ValidationResult):
+    assert contex.toml is not None
+    error_type = "PDB Format Error"
+    pdb_files = []
+    toml = contex.toml
+    file = toml.get("default",{}).get("file")
+    variant = toml.get("variant",{})
+    main_failed = False
+    test_defualt = _pdb_logic(contex.path/file,error_type)
+    if not test_defualt:
+        main_failed = True
+        resualt.errors.extend(test_defualt)
+    pdb_files.append(file)
+
+    for key in variant:
+        file = variant[key].get("file")
+        resualt.funtional_error.extend(_pdb_logic(contex.path/file,error_type))
+        pdb_files.append(file)
+
+
+    contex.pdbs = pdb_files
+
+
+def _pdb_logic(file:Path,error_type:str) -> list[tuple]:
+    errors = []
+
+
+    return errors
+
+
+def _validate_extra_files_exist(contex:ValidationContex,result:ValidationResult):
+    assert contex.toml is not None
+    assert contex.path is not None
+    error_type = "File not found"
+    try:
+        open(contex.path/contex.toml.get("default",{}).get("file"))
+    except FileNotFoundError:
+        result.errors.append((error_type,"No pdb found for default"))
+    if contex.toml.get("variant"):
+        variants = contex.toml.get("variant",{})
+        for variant in contex.toml.get("variant",{}):
+            file = variants[variant].get("file")
+            try: open(contex.path.parent/file)
+            except FileNotFoundError:
+                result.errors.append((error_type,f"No pdb found for variant {variant}"))
+
+
+def validate_index_state(contex:ValidationContex,index:dict):
+    assert contex.toml is not None
     error_type = "Index Error"
     result = ValidationResult(
         stage="Index Validation",
         status=ValidationStatus.FAIL,
         warnings=[],
         functional_warnings =[],
-        errors=[]
+        errors=[],
+        funtional_error=[]
     )
-    toml = load_toml(pakage)
-    if skipped:
+    toml = contex.toml
+    if contex.global_skip:
         result.status = ValidationStatus.SKIP
         return result
     symbol = toml.get("module",{}).get("symbol")
     name = toml.get("metadata",{}).get("name")
     sequence = toml.get("module",{}).get("sequence")
-    path = str(Path(pakage.parent.parent.stem)/Path(pakage.parent.stem))
+    path = str(Path(contex.path.parent.stem)/Path(contex.path.stem))
     if symbol in index:
         if path != index[symbol].path:
             result.errors.append((error_type,f"Symbol {symbol} already asigned to {index[symbol].path}"))

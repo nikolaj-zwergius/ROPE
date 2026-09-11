@@ -1,17 +1,5 @@
-[beetroot]
-source = "PDB"
-doi="https://doi.org/10.1038/s41467-023-38683-3"
-[beetroot.THT]
-source_pdb = "8EYW"
-[beetroot.DFHO]
-source_pdb = "8EYV"
-[beetroot.DFAME]
-source_pdb ="8EYU"
 
-[broccoli]
-doi="https://doi.org/10.1093/nar/gkae1218"
-source = "PDB"
-source_pdb ="8K7W"
+
 
 
 [chili]
@@ -22,18 +10,6 @@ source_pdb = "7OAW"
 [chili.DMHBO]
 source_pdb = "7OAX"
 
-
-[cilivia]
-doi="https://doi.org/10.1038/s41589-024-01633-1"
-source = "PDB"
-[cilivia.N618]
-source_pdb = "8HZD"
-[cilivia.N565]
-source_pdb = "8HZF"
-[cilivia.N571]
-source_pdb = "8HZJ"
-[cilivia.N]
-source_pdb = "8HZE"
 
 [corn]
 doi="https://doi.org/10.1016/j.chembiol.2019.04.012"
@@ -109,21 +85,3 @@ source = "PDB"
 [THF]
 doi=""
 source = "PDB"
-
-
-[kissingloop]
-doi="https://doi.org/10.1038/s41565-023-01321-6"
-source = "PDB"
-source_pdb = "7QDU"
-[crossover]
-doi="https://doi.org/10.1038/s41565-023-01321-6"
-source = "ROAD"
-[helix_backbone]
-doi="https://doi.org/10.1038/s41565-023-01321-6"
-source = "ROAD"
-[helix_match]
-doi="https://doi.org/10.1038/s41565-023-01321-6"
-source = "ROAD"
-[tetraloop]
-doi="https://doi.org/10.1038/s41565-023-01321-6"
-source = "ROAD"
