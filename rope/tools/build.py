@@ -102,15 +102,15 @@ def main():
             if not file.endswith(".txt"):
                 continue
             else:
-                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",modulecahce,index_library,ligands)
+                RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
     else:
         for file in args.blueprint:
             file = str(file.lstrip(f".{chr(92)}"))
             if not file.endswith(".txt"):
-                print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
+                print(f"{file} is not a .txt file it is {file.split('.')[:-1]}")
                 continue
             if file in os.listdir():
-                RNAbuild(file,f"{folder}/{file.split(".")[0]}.pdb",modulecahce,index_library,ligands)
+                RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
             else:
                 print(f"{file} not found in folder")
 

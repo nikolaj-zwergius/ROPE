@@ -33,15 +33,18 @@ def main():
             if not file.endswith(".txt"):
                 continue
             else:
-                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
+                out =  f"{folder}/{file.split('.')[0]}_analysis.txt"
+                trace_analysis_out(file,outfile=out)
+                pass
     else:
         for file in args.file:
             file = str(file.lstrip(f".{chr(92)}"))
             if not file.endswith(".txt"):
-                print(f"{file} is not a .txt file it is {file.split(".")[:-1]}")
+                print(f"{file} is not a .txt file it is {file.split('.')[:-1]}")
                 continue
             if file in os.listdir():
-                trace_analysis_out(file,outfile=f"{folder}/{file.split(".")[0]}_analysis.txt")
+                trace_analysis_out(file,outfile=f"{folder}/{file.split('. ')[0]}_analysis.txt")
+                pass
             else:
                 print(f"{file} not found in folder")
 
