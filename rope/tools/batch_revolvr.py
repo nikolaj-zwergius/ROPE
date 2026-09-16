@@ -88,9 +88,10 @@ def main():
                 continue
             else:
                 file_args.append(file)
-        args.file = file_args
+    else:
+        file_args.append(args.file)
     print("starting")
-    run_revolvers(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
+    run_revolvers(file_args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
 
     
 if __name__ == "__main__":
