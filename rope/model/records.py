@@ -18,11 +18,11 @@ class ValidationResult:
     warnings: list[tuple]
     functional_warnings: list[tuple]
     errors: list[tuple]
-    funtional_error: list[tuple]
+    functional_error: list[tuple]
 
 @dataclass
 class ValidationReport:
-    pakage:str
+    package:str
     path:Path
     module:str|None
     reports:list[ValidationResult]
@@ -61,7 +61,7 @@ class BuildResult:
     build = bool
 
 @dataclass
-class ValidationContex:
+class Validationcontext:
     package:Path
     global_skip:bool
     path: Path

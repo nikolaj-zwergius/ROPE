@@ -4,7 +4,7 @@ psX|Paranemic_start|structural/paranemic_start|NN¤NN|0|
 H1|Base|structural/helix_free||0|
 H2|Helix|structural/helix_paired||0|
 X|Crossover|structural/crossover|NNN^NNNN|0|
-pssX|Paranemic_2|structural/paranemic_2|NN%NN|0|
+pssX|Paranemic_2|structural/paranemic_2|N%NN|0|
 T|Tetraloop|structural/tetraloop|NUUCGN|2|(....)
 B|broccoli|fluorescent/broccoli|GACGGUCGGGUCCAG,CUUCG,UGUCGAGUAGAGUGUGGGC|2|
 C|cilivia|fluorescent/cilivia|GAAGAUUGUAAACAUGC,CGAAAG,GCAGACACUUC|2|

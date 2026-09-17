@@ -4,9 +4,10 @@ from rope.tools.build import build_parser
 from rope.tools.continuous_revolvr import continuous_parser
 from rope.tools.flip_trace import flip_parser
 from rope.tools.trace import trace_parser
+from rope.tools.library import library_parser
 import shutil
 from rope.version import get_version
-parsers = [batch_parser,continuous_parser,build_parser,flip_parser,analysis_parser, trace_parser]
+parsers = [batch_parser,continuous_parser,build_parser,flip_parser,analysis_parser, trace_parser, library_parser]
 
 
 sep_len = (shutil.get_terminal_size().columns)//10*8

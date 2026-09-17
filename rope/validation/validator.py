@@ -63,6 +63,8 @@ def validator():
 def validation_reporter(master_report:list[ValidationReport]):
     for report in master_report:
         print(report.package, report.validated)
+        if report.validated == ValidationStatus.PASS:
+            continue
         for sub in report.reports:
             print("\t",sub.stage,sub.status)
             if sub.errors:
@@ -239,10 +241,11 @@ def _validate_extra_files_exist(context:Validationcontext,result:ValidationResul
     except FileNotFoundError:
         result.errors.append((error_type,"No pdb found for default"))
     if context.toml.get("variant"):
+
         variants = context.toml.get("variant",{})
         for variant in context.toml.get("variant",{}):
             file = variants[variant].get("file")
-            try: open(context.path.parent/file)
+            try: open(context.path/file)
             except FileNotFoundError:
                 result.errors.append((error_type,f"No pdb found for variant {variant}"))
 
