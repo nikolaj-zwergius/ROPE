@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="?",
         const="module",
         metavar="MODULE",
-        help="Show avaliable ligands for a given module, if none given show module, for all use all"
+        help="Show available ligands for a given module, if none given show module, for all use all"
     )
 
 

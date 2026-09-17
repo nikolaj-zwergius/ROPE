@@ -12,7 +12,7 @@ import argparse
 def batch_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
     prog="rope-fold",
-    description="Batch sequnce prediction from blueprint",
+    description="Batch sequence prediction from blueprint",
     formatter_class=WideFormatter
     )
     
@@ -35,8 +35,8 @@ def batch_parser() -> argparse.ArgumentParser:
         "-w",
         nargs="?",
         const= 1,
-        metavar="Workers/Theads",
-        help="Number of workers/theads assigned to the job"
+        metavar="Workers/threads",
+        help="Number of workers/threads assigned to the job"
     )
 
 

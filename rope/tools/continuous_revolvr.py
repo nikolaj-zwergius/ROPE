@@ -15,7 +15,7 @@ import time
 
 def continuous_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-    description="Continuous sequnce predection from blueprint",
+    description="Continuous sequence prediction from blueprint",
     prog="rope-dragon",
     formatter_class=WideFormatter
     )
@@ -39,8 +39,8 @@ def continuous_parser() -> argparse.ArgumentParser:
         "-w",
         nargs="?",
         const= 1,
-        metavar="Workers/Theads",
-        help="Number of workers/theads assigned to the job"
+        metavar="Workers/threads",
+        help="Number of workers/threads assigned to the job"
     )
 
     parser.add_argument(
@@ -146,7 +146,7 @@ def main():
             if elem.lower().endswith("s"):
                 max_time_int += int(elem.strip("s").strip("S"))
             if elem.isnumeric():
-                raise TypeError("values need to be followed be a timescale indicator d(days) h(hours) m(miniuts) s(seconds)")
+                raise TypeError("values need to be followed be a timescale indicator d(days) h(hours) m(minutes) s(seconds)")
     run_dragons(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed,timer=max_time_int)
 
 if __name__ == "__main__":
