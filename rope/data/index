@@ -6,7 +6,7 @@ H2|Helix|structural/helix_paired||0|
 X|Crossover|structural/crossover|NNN^NNNN|0|
 pssX|Paranemic_2|structural/paranemic_2|NN%NN|0|
 T|Tetraloop|structural/tetraloop|NUUCGN|2|(....)
-B|brocolli|fluorescent/brocolli|GACGGUCGGGUCCAG,CUUCG,UGUCGAGUAGAGUGUGGGC|2|
+B|broccoli|fluorescent/broccoli|GACGGUCGGGUCCAG,CUUCG,UGUCGAGUAGAGUGUGGGC|2|
 C|cilivia|fluorescent/cilivia|GAAGAUUGUAAACAUGC,CGAAAG,GCAGACACUUC|2|
 P|pepper|fluorescent/pepper|NNNACUGGCGCCNNN,CCUUCGGG,NNNCAAUCGUGGCGUGUCGNNN|2|
 bR|beetroot|fluorescent/beetroot|GCGCCGGUUAGGCAGAGGUGGGUGGUGUGGAGGAGUAUCUGUCCGGCGC|2|

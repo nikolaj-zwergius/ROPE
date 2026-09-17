@@ -138,14 +138,14 @@ class segmented_module(Module):
         except:
             print(type(sequence),type(spacer),len(spacer),len(sequence)-1)
             raise AssertionError
-        spaced_sequnces = []
+        spaced_sequences = []
         
         for i in range(len(sequence)):
-            spaced_sequnces.append(sequence[i])
+            spaced_sequences.append(sequence[i])
             if i != len(sequence)-1:
-                spaced_sequnces.append(spacer[i])
-        spaced_sequnces = "".join(spaced_sequnces)
-        super().__init__(name, file, symbol, spaced_sequnces,priority=priority,ligand=ligand)
+                spaced_sequences.append(spacer[i])
+        spaced_sequences = "".join(spaced_sequences)
+        super().__init__(name, file, symbol, spaced_sequences,priority=priority,ligand=ligand)
         self.segments = sequence
         self.segments_len = len(sequence)
         self.spacer = spacer
@@ -155,7 +155,7 @@ class segmented_module(Module):
             try:
                 assert len(self.segment_build_cords[i])==len(self.segments[i])
             except AssertionError:
-                print(f"Length of segment seqcencs {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
+                print(f"Length of segment sequence {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
                 raise
 
         self.full_start_cord = self.start_cord
@@ -165,10 +165,10 @@ class segmented_module(Module):
         self.full_coord_dict =  self.coord_dict
         self.full_sequence = self.sequence
 
-    def generate_segment_cords(self,invsers = False) -> None:
+    def generate_segment_cords(self,invers = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
         return
-    def _generate_segment_cords(self,invsers:bool)-> tuple[list[np.ndarray],list[list],list[list],list[dict],list[dict]]: 
+    def _generate_segment_cords(self,invers:bool)-> tuple[list[np.ndarray],list[list],list[list],list[dict],list[dict]]: 
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -181,7 +181,7 @@ class segmented_module(Module):
         current = 1
         element = 0
         
-        if invsers:
+        if invers:
             current =1
         
         for seg in self.segments:
@@ -208,7 +208,7 @@ class segmented_module(Module):
             print(f"File {self.file} not found. Please check the file path.")
             raise
         seq_index = 0
-        if invsers:
+        if invers:
             segment_coords = segment_coords[::-1]
             
         for seg in segment_coords:
@@ -260,12 +260,12 @@ class segmented_module(Module):
 
     def change_elements(self,seg_index:int):
         """
-        Changes which elemets that the segmented module shows, from the full to a segment
+        Changes which elements that the segmented module shows, from the full to a segment
 
-        Warning: This function should always be followed by the use of the reset_elements funtion of segmented_module,
-        when processsing of the current segment is done to ensure that the module can still use the full length in between.
+        Warning: This function should always be followed by the use of the reset_elements function of segmented_module,
+        when processing of the current segment is done to ensure that the module can still use the full length in between.
         
-        There is no check or enforcment of this
+        There is no check or enforcement of this
         """
         self.start_cord  = self.segment_start_cord[seg_index]
         self.build_cords = self.segment_build_cords[seg_index]
