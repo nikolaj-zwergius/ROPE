@@ -23,4 +23,4 @@ ligand = "747"
 [variant.DFAME]
 source_pdb ="8EYU"
 ligand = "X5R"
-file = " pdb8eyu.pdb"
+file = "pdb8eyu.pdb"

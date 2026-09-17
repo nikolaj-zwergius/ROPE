@@ -541,7 +541,7 @@ def revolver(file:str):
         problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
     
-    with open(f"{parent_dir_path}/definitions/kl_list","r") as f:
+    with open(f"{parent_dir_path}/data/kl_list","r") as f:
         for line in f:
             line_list = line.split(",")
             line_list[0] = line_list[0]
