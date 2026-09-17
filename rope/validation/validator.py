@@ -2,7 +2,8 @@ from rope.io.pakage_disover import find_pakages
 from rope.io.index_handler import load_index, write_index, index_line_maker
 from rope.model.records import ValidationStatus,ValidationResult,ValidationReport
 from rope.io.toml_io import load_toml
-from tomllib import TOMLDecodeError
+try:from tomllib import TOMLDecodeError
+except ImportError: from tomli import TOMLDecodeError
 from pathlib import Path
 def validator():
     pakages,_,_,_ = find_pakages()

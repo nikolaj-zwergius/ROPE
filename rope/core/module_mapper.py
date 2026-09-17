@@ -1,20 +1,24 @@
 from rope.core.grid_mapping import generate_np_pattern, map_structure
 #from rope.definitions.modules import module_libary, Helix, base
 from rope.core.trace_logic import trace_backbone
-from rope.definitions.rope_def import one_letter_code
+from rope.definitions.rope_def import one_letter_code, structural_markers
 from rope.model.Module import segmented_module
 from rope.model.range_dict import RangeDict
 from rope.model.records import IndexEntry
 from numpy import ndarray
 
 
+
+
 def sequnce_matcher(module_seq:str,seq:str):
     if len(module_seq) != len(seq):
         return False
     for i in range(len(module_seq)):
-        if seq[i] == "^" and module_seq[i] == "^":
+        if seq[i] in structural_markers and module_seq[i] in structural_markers:
+            if seq[i] != module_seq[i]:
+                return False
             continue
-        elif seq[i] != "^" and module_seq[i] == "^":
+        elif seq[i] not in structural_markers and module_seq[i] in structural_markers:
             return False
         elif seq[i] in one_letter_code[module_seq[i]]:
             continue

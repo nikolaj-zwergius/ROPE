@@ -65,9 +65,9 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
             case _:
         
                 pass
-        if crossover and next_base_name == "^":
-            seq+="^"
-            base_pair+="^"
+        if crossover and next_base_name in rd.structural_markers:
+            seq+=next_base_name
+            base_pair+=next_base_name
         if next_base_name in rd.NUCLEOTIDE_CHARS:
             seq+=next_base_name
             n_map[next_base] = index

@@ -110,13 +110,17 @@ def clean_rna_lib_pdb_files(root_dir: Path | None = None) -> None:
     if root_dir is None:
         root_dir = ROOT/"data/RNA_lib/modules"
     dirs = os.listdir(root_dir)  
-    print(dirs)
+  
     for folder in dirs:
         path = Path(root_dir)/folder
+        if not path.is_dir():
+            continue
+
         for modules in os.listdir(path):
             pdb_path = path/modules
             for file in os.listdir(pdb_path):
                 if file.endswith(".pdb"):
+                    print(file)
                     clean_pdb_file(pdb_path/file)
 
 

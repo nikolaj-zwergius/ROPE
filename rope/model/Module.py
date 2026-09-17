@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 from pathlib import Path
 from rope.model.StructuralElement import StructuralElement
-from rope.definitions.rope_def import FOLDER,SUGAR_ATOMS
+from rope.definitions.rope_def import FOLDER,structural_markers
 from rope.utils.dim3_utils import get_sugar_cords
 from rope.model.range_dict import RangeDict
 
@@ -32,12 +32,14 @@ class Module(StructuralElement):
 
     def set_len(self):
         if self.sequence is not None:
-            self.len = len(self.sequence.replace("^",""))
+            for mark in structural_markers:
+                self.sequence = self.sequence.replace(mark, "")
+            self.len = len(self.sequence)
         elif self.build_cords is not None:
             self.len = len(self.build_cords)
         else:
             self.len = 1
-        if not self.flie_found:
+        if not self.file_found:
             self.len = 0
             return
         if len(self.build_cords) != self.len:

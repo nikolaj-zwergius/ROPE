@@ -42,7 +42,7 @@ base_pairs_table = {"A":"U","U":"A","G":"CU","C":"G","N":"N"}
 VALID_BASES = set(base_pairs_table.keys())
 NUCLEOTIDE_CHARS = set(one_letter_code.keys())
 
-
+structural_markers = ["^","#","¤","%"]
 
 mutation_rate = {   "A":(100,0,0,0),
                     "C":(0,100,0,0),

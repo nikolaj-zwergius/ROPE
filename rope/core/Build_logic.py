@@ -165,6 +165,8 @@ def RNAbuild(file:str,output:str,cahce: ModuleCache,index_library,ligands:dict[s
                     build_non_seq_module(buildstate,mod,(c,R,t))
                 if mod.ligand:
                     ligand_stack =ligand_addtion((c,R,t),mod,ligand_stack)
+            try:print(mod)
+            except UnboundLocalError:pass
 
         ligand_printer(f,ligand_stack,buildstate.atom_count,seq)
 
