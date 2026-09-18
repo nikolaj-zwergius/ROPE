@@ -166,7 +166,7 @@ class segmented_module(Module):
         self.full_sequence = self.sequence
 
     def generate_segment_cords(self,invers = False) -> None:
-        self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invsers)
+        self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invers)
         return
     def _generate_segment_cords(self,invers:bool)-> tuple[list[np.ndarray],list[list],list[list],list[dict],list[dict]]: 
         segment_sugar_coord = []

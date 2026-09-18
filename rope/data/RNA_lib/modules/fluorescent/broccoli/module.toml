@@ -8,7 +8,7 @@ symbol  = "B"
 type = "segmented"
 priority = 2
 sequence = "GACGGUCGGGUCCAGCUUCGUGUCGAGUAGAGUGUGGGC"
-segments = ["GACGGUCGGGUCCAG","UGUCGAGUAGAGUGUGGGC"]
+segments = ["GACGGUCGGGUCCAN","NGUCGAGUAGAGUGUGGGC"]
 spacer =["CUUCG"]
 
 nonstandard = false

@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="?",
         const="module",
         metavar="MODULE",
-        help="Show available ligands for a given module, if none given show module, for all use all"
+        help="Show avaliable ligands for a given module, if none given show module, for all use all"
     )
 
 
@@ -102,7 +102,11 @@ def main():
             if not file.endswith(".txt"):
                 continue
             else:
-                RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
+                try:
+                    RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
+                except ValueError as e:
+                    print(f"Error building {file}: {e}")
+                    raise SystemExit(1)
     else:
         for file in args.blueprint:
             file = str(file.lstrip(f".{chr(92)}"))

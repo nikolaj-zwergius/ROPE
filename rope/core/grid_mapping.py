@@ -39,13 +39,13 @@ def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
 def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.dirction]:
     p5 = find_5_prime(pattern)
     up, down, left, rigth = check_round(pattern, p5)
-    if up.isalpha():
+    if up.isalpha() or up in rd.direction_markers:
         return p5, (p5[0] - 1, p5[1]), di.dir_up()
-    if down.isalpha():
+    if down.isalpha() or down in rd.direction_markers:
         return p5, (p5[0] + 1, p5[1]), di.dir_down()
-    if left.isalpha():
+    if left.isalpha() or left in rd.direction_markers:
         return p5, (p5[0], p5[1] - 1), di.dir_left()
-    if rigth.isalpha():
+    if rigth.isalpha() or rigth in rd.direction_markers:
         return p5, (p5[0], p5[1] + 1), di.dir_rigth()
     raise ValueError("No valid first base")
 
