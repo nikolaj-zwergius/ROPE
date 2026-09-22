@@ -11,6 +11,7 @@ from numpy import ndarray
 
 
 def sequnce_matcher(module_seq:str,seq:str):
+    print(f"matching {module_seq} to {seq}")
     if len(module_seq) != len(seq):
         return False
     for i in range(len(module_seq)):
@@ -51,7 +52,7 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
         reverse=True)
     
     for module in modules:
-        
+        print(f"testing for {module.name}")
         if not module.sequence:
             continue
         for seq_index in range(length):
