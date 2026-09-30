@@ -16,14 +16,15 @@ dependencies = [
 
 
 [project.scripts]
-rope-trace   = "rope.tools.trace:main"
-rope-analyse = "rope.tools.analysis:main"
-rope-build   = "rope.tools.build:main"
-rope-fold    = "rope.tools.batch_revolvr:main"
-rope-dragon  = "rope.tools.continuous_revolvr:main"
-rope-flip    = "rope.tools.flip_trace:main"
-rope-library = "rope.tools.library:main"
-rope-variant = "rope.tools.variant:main"
+rope-trace    = "rope.tools.trace:main"
+rope-analyse  = "rope.tools.analysis:main"
+rope-build    = "rope.tools.build:main"
+rope-fold     = "rope.tools.batch_revolvr:main"
+rope-dragon   = "rope.tools.continuous_revolvr:main"
+rope-flip     = "rope.tools.flip_trace:main"
+rope-library  = "rope.tools.library:main"
+rope-variant  = "rope.tools.variant:main"
+rope-multimer = "rope.tools.multimer:main"
 
 #Helper
 rope = "rope.helper:main"

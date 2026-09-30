@@ -45,10 +45,10 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
             case "!":
                 if match_id not in bracket1 and next_base not in bracket1:
                     bracket1.append(match_id)
-                    base_pair+="{"
+                    base_pair+="("
                 if next_base in bracket1:
                     bracket1.pop()
-                    base_pair+="}"
+                    base_pair+=")"
             case "┊":
                 if match_id not in bracket2 and next_base not in bracket2:
                     bracket2.append(match_id)

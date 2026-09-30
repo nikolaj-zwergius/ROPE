@@ -39,7 +39,7 @@ one_letter_code = {"A":("A"),
 k_table = {"G":"U","U":"G"}
 base_pairs_table = {"A":"U","U":"A","G":"CU","C":"G","N":"N"}
 
-VALID_BASES = set(base_pairs_table.keys())
+VALID_BASES = ("A","C","G","U")
 NUCLEOTIDE_CHARS = set(one_letter_code.keys())
 
 structural_markers = ["^","#","¤","%"]

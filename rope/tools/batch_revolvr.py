@@ -65,7 +65,7 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str|Pat
             raise FileNotFoundError(f"Input file not found: {input_path}")
         for run_index in range(1, runs_per_file + 1):
             tasks.append((str(input_path), run_index, str(root_dir)))
-
+    print(f"Running revolver on {len(files)} files with {runs_per_file} runs each, using {max_workers or 'default'} workers.")
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         for _ in executor.map(_run_revolver_task, tasks):
             pass
@@ -92,7 +92,7 @@ def main():
         file_args.append(args.file)
     print("starting")
     run_revolvers(file_args, runs_per_file=runs, max_workers=max_workers,output_root=out_folder)
-
+    print("done")
     
 if __name__ == "__main__":
     main()

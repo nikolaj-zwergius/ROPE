@@ -6,8 +6,15 @@ import getopt,sys
 import RNA
 import random
 from types import FunctionType
+from collections.abc import Callable
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
+
+KLHandler = Callable[
+[str, str, str, str, list, int],
+tuple[str, str]
+]
+
 
 #random.seed(85639)
 #random.seed(9)
@@ -308,7 +315,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
         mutate_matix[pick] = "-"
     return mutate_matix,ps
 
-def mutator2(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
+def mutator3(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
     seq_list = list(seq)
     ps1 = ps
     predic_fold = struc
@@ -365,11 +372,9 @@ def problem_in_loced(problem_mask:str|list,init_seq:str,control=True)->bool:
         locked_problem = True
     return locked_problem
 
-def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str,float,float,float]:    
+def mutator2(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str]:    
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
-    #print("setup done")
-    struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
     
     
     #print("mutator 1 done") 
@@ -393,20 +398,12 @@ def full_revolver(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[
         problem_in_loced(mask,init_seq)
         if problem_in_loced(mask,init_seq) and runs>=100:
             locked_probelms = True
-        #print(seq)
-        #print(init_seq)
-        #print(mask)
-        #print(RNA.hamming_distance(clean_struc,struc))
-    
 
 
-    #print("mutator 2 done")
-    #print(seq)
-    #print(init_seq)
-    return mini_revolvr(clean_struc,seq,init_seq,init_struc,struc)
+    return seq, struc
 
 
-def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->tuple[str,str,float,float,float]:
+def GC_optimze(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->tuple[str,list,int]:
     rad_level = FAV_RAD_LEVEL
     mask = []
     runs = 0
@@ -418,7 +415,7 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
         mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL,init_seq)
         #print(ps)
         pre_seq = seq
-        struc,seq = mutator2(clean_struc,struc,seq,init_seq,mask,ps)
+        struc,seq = mutator3(clean_struc,struc,seq,init_seq,mask,ps)
         test_mask,test_ps =penalty_score(seq,clean_struc,bp_map)
         #print(test_mask)
         #print(gc_ratio_calculator(seq),set(mask),test_ps)
@@ -433,6 +430,11 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
             pass
         if runs == same and ps == 0 and set(mask) == {"-"} and runs > 5000 and problem_in_loced(test_mask,init_seq) :
             break
+
+    return seq, struc, mask,ps
+
+
+def kl_mutator(clean_struc:str,init_struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
     stack = []
     meta_stack = []
     kl_id = []
@@ -513,21 +515,19 @@ def mini_revolvr(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)-
         x += 1
         if x > 4068:
             raise Exception("tested all kls")
-       #print("Done KL round:",x)
-    mfe,feq,ed =compute_ED(seq)
-    return seq,struc,mfe, feq, ed
+    return seq, RNA.fold(seq)[0]
 
-
-def revolver(file:str):
+def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,float,float,str,str]:
+    
     global bp_map
     global tested_seq
     global FAV_RAD_LEVEL
     global KL_OFF
     global kl_meta
-    name,init_seq,init_struc,seq,clean_struc,kl_meta= initlize_structure(file)
-
+    
+    #print(init_seq)
     FAV_RAD_LEVEL = 15
-    bp_map = tu.map_structure(clean_struc) 
+
     KL_MIN = -7.2
     KL_MAX = -10.8
     KL_OFF = -6.0
@@ -536,21 +536,30 @@ def revolver(file:str):
     tested_seq = {}
     global kls
     kls = []
+
+    with open(f"{parent_dir_path}/data/kl_list","r") as f:
+         for line in f:
+             line_list = line.split(",")
+             line_list[0] = line_list[0]
+             line_list[2] = line_list[2].strip("\n")
+             if float(line_list[0]) >= KL_MAX and float(line_list[0]) <= KL_MIN:
+                 kls.append(line_list)
+
+    name,init_seq,init_struc,seq,clean_struc,kl_meta= initlize_structure(file)
+    bp_map = tu.map_structure(clean_struc) 
+    
     if set(init_seq) == set(rd.VALID_BASES):
         mfe,feq,ed =compute_ED(seq)
         problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
     
-    with open(f"{parent_dir_path}/data/kl_list","r") as f:
-        for line in f:
-            line_list = line.split(",")
-            line_list[0] = line_list[0]
-            line_list[2] = line_list[2].strip("\n")
-            if float(line_list[0]) >= KL_MAX and float(line_list[0]) <= KL_MIN:
-                kls.append(line_list)
-
-    seq,struc,mfe,feq,min_ed = full_revolver(clean_struc,seq,init_seq,init_struc)
+    struc = RNA.fold(seq)[0]
+    struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
+    seq,struc, = mutator2(clean_struc,seq,init_seq,init_struc)
     #print("revolver done")
+    seq,struc,mask,ps = GC_optimze(clean_struc,seq,init_seq,init_struc,struc)
+    seq,struc = kl_handler(clean_struc,init_struc,seq,init_seq,mask,ps)
+    mfe,feq,min_ed =compute_ED(seq)
     problem=dir_mutate_mask_gen(clean_struc,struc,seq)
 
     return seq, struc,mfe,feq,min_ed,problem,init_seq
