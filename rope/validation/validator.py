@@ -270,13 +270,13 @@ def validate_index_state(context:Validationcontext,index:dict):
     sequence = toml.get("module",{}).get("sequence")
     path = str(Path(context.path.parent.stem)/Path(context.path.stem))
     if symbol in index:
-        if path != index[symbol].path:
+        if path != str(Path(index[symbol].path)):
             result.errors.append((error_type,f"Symbol {symbol} already assigned to {index[symbol].path}"))
     for i in index.keys():
-        if name == index[i].name and symbol != index[i] and path != index[i].path:
+        if name == index[i].name and symbol != index[i] and path != str(Path(index[i].path)):
             result.errors.append((error_type,f"Name {name} already assigned to {index[symbol].path}"))
     for i in index.keys():
-        if sequence == index[i].sequence and symbol != index[i] and path != index[i].path:
+        if sequence == index[i].sequence and symbol != index[i] and path != str(Path(index[i].path)):
             result.errors.append((error_type,f"Sequence in {path} is identical to {index[symbol].path}"))
     if len(result.errors) == 0:
         result.status = ValidationStatus.PASS
