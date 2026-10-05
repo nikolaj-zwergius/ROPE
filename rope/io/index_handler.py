@@ -40,7 +40,7 @@ def load_index():
 
 def read_index():
     index_lines = []
-    with open(ROOT/"data"/"index","r") as f:
+    with open(ROOT/"data"/"index","r",encoding="utf-8") as f:
         for line in f:
             index_lines.append(line)
     return index_lines
@@ -81,7 +81,7 @@ def write_index(index_values:list[str],variant_index:list[str]):
     with open(ROOT/"data"/"index","w") as f:
         for line in index_values:
             f.write(line+"\n")
-    with open(ROOT/"data"/"variant_index","w") as f:
+    with open(ROOT/"data"/"variant_index","w",encoding="utf-8") as f:
         for line in variant_index:
             if line:
                 f.write(line+"\n")
