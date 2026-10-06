@@ -254,12 +254,20 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
         elif ps_matix[i] in ["G","U","C","A"]:
             match ps_matix[i]:
                 case "G":
+                    if ps <= rad_level:
+                        mutate_matix[i] = mutate(rd.change_base["G"])
                     mutate_matix[i] = random.choice([mutate(rd.change_base["G"]),"-"])
                 case "U":
+                    if ps <= rad_level:
+                        mutate_matix[i] = mutate(rd.change_base["U"])
                     mutate_matix[i] = random.choice([mutate(rd.change_base["U"]),"-"])
                 case "C":
+                    if ps <= rad_level:
+                        mutate_matix[i] = mutate(rd.change_base["C"])
                     mutate_matix[i] = random.choice([mutate(rd.change_base["C"]),"-"])
                 case "A":
+                    if ps <= rad_level:
+                        mutate_matix[i] = mutate(rd.change_base["A"])
                     mutate_matix[i] = random.choice([mutate(rd.change_base["A"]),"-"])
             try:
                 #print(mutate_matix[i],rd.base_pairs_table[bp_map[i]])
@@ -267,6 +275,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                             mutate_matix[i] = "-"
             except:
                 pass
+
         elif ps_matix[i] == "P":
             mutate_matix[i] = random.choices(["K","-"],(1,14),k=1)[0]
             if mutate_matix[i] == "-":
@@ -277,6 +286,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                 if i in bp_map:
                     if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
                         mutate_matix[i] = "-"
+
         if seq[i] in ["G","U"] and i in bp_map and mutate_matix[i] in "-":
             if i in bp_map:
                 if init_seq[i] in rd.VALID_BASES or init_seq[bp_map[i]] in rd.VALID_BASES:
@@ -291,7 +301,7 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
                 mutate_matix[bp_map[i]] = random.choices(["-","B"],(99,1),k=1)[0]
             elif seq[bp_map[i]] == "C":
                 mutate_matix[bp_map[i]] = random.choices(["-","D"],(99,1),k=1)[0]
-
+        #print(mutate_matix,ps_matix)
         if GC_ration > 55 and seq[i] in ["G","C"] and mutate_matix[i] == "i":
             mutate_matix[i] = random.choices(["-","A","U"],(100-abs(GC_ration-55),abs(55-GC_ration)/2,abs(55-GC_ration)/2))[0]
         elif GC_ration < 55 and seq[i] in ["A","U"] and mutate_matix[i] == "i":
@@ -299,13 +309,14 @@ def mutation_matix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tup
         ##print(GC_ration,"GC_HIGH",100-abs(GC_ration-55),abs(55-GC_ration)/2,abs(55-GC_ration)/2,"GC_LOW",100-(55-GC_ration),(55-GC_ration)//2,(55-GC_ration)//2)
     ids = []
     #print(mutate_matix)
+    
     for i in range(len(seq)):
         if mutate_matix[i] == "-":
             continue
         if mutate_matix[i] == seq[i]:
             mutate_matix[i] = "-"
 
-
+    
     for i in range(len(seq)):
         if mutate_matix[i] != "-":
             ids.append(i)
@@ -320,6 +331,7 @@ def mutator3(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     ps1 = ps
     predic_fold = struc
     di1 = RNA.hamming_distance(clean_struc,predic_fold)
+
     for i in range(len(mask)):
         if mask[i] == "K" and i in bp_map:
             seq_list[i],seq_list[bp_map[i]] = seq_list[bp_map[i]],seq_list[i]
@@ -398,6 +410,11 @@ def mutator2(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,s
         problem_in_loced(mask,init_seq)
         if problem_in_loced(mask,init_seq) and runs>=100:
             locked_probelms = True
+        if runs >= 5000:
+            print("bad start re init")
+            struc = RNA.fold(seq)[0]
+            struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
+            seq,struc, = mutator2(clean_struc,seq,init_seq,init_struc)
 
 
     return seq, struc
@@ -413,6 +430,7 @@ def GC_optimze(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->t
     while set(mask) != {"-"}  or gc_ratio_calculator(seq)>55.1 or ps>0:
         
         mask,ps = mutation_matix_ps(clean_struc,seq,FAV_RAD_LEVEL,init_seq)
+
         #print(ps)
         pre_seq = seq
         struc,seq = mutator3(clean_struc,struc,seq,init_seq,mask,ps)
@@ -425,6 +443,7 @@ def GC_optimze(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->t
         if runs%100 == 0:
             #print("mutator2:\n")
             #print(runs,same,ps,gc_ratio_calculator(seq))
+            #print(test_mask,test_ps)
             #print(seq)
             #print(problem_in_loced(test_mask,init_seq))
             pass
@@ -536,7 +555,7 @@ def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,fl
     tested_seq = {}
     global kls
     kls = []
-
+    #print(f"{parent_dir_path}/data/kl_list")
     with open(f"{parent_dir_path}/data/kl_list","r") as f:
          for line in f:
              line_list = line.split(",")
@@ -546,6 +565,7 @@ def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,fl
                  kls.append(line_list)
 
     name,init_seq,init_struc,seq,clean_struc,kl_meta= initlize_structure(file)
+    print("Setup done")
     bp_map = tu.map_structure(clean_struc) 
     
     if set(init_seq) == set(rd.VALID_BASES):
@@ -554,14 +574,19 @@ def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,fl
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
     
     struc = RNA.fold(seq)[0]
+    print("Starting mutator 1")
     struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
-    seq,struc, = mutator2(clean_struc,seq,init_seq,init_struc)
-    #print("revolver done")
+    print("Starting mutator 2")
+    seq,struc = mutator2(clean_struc,seq,init_seq,init_struc)
+    print("GC optimaztion")
     seq,struc,mask,ps = GC_optimze(clean_struc,seq,init_seq,init_struc,struc)
+    print("starting KL finder")
     seq,struc = kl_handler(clean_struc,init_struc,seq,init_seq,mask,ps)
+    print("compute ED")
     mfe,feq,min_ed =compute_ED(seq)
+    print("Finle check of strcutre")
     problem=dir_mutate_mask_gen(clean_struc,struc,seq)
-
+    print("DONE")
     return seq, struc,mfe,feq,min_ed,problem,init_seq
 
 

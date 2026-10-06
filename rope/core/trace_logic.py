@@ -6,9 +6,9 @@ from pathlib import Path
 
 def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
     up,down,left,rigth = check_round(pattern,tup)
-    if up in ["┊","!","*"]:
+    if up in ["┊","!","*",":"]:
         return (tup[0]-2,tup[1]),up
-    if down in ["┊","!","*"]:
+    if down in ["┊","!","*",":"]:
         return (tup[0]+2,tup[1]),down
     if pattern[tup[0]][tup[1]] in rd.NUCLEOTIDE_CHARS:
         return None,"."
@@ -57,12 +57,12 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
                     bracket2.pop()
                     base_pair+=")"
             case ":":
-                            if match_id not in bracket2 and next_base not in bracket2:
-                                bracket2.append(match_id)
-                                base_pair+="("
-                            if next_base in bracket2:
-                                bracket2.pop()
-                                base_pair+=")"
+                if match_id not in bracket2 and next_base not in bracket2:
+                    bracket2.append(match_id)
+                    base_pair+="("
+                if next_base in bracket2:
+                    bracket2.pop()
+                    base_pair+=")"
             case ".":
                 base_pair+="."
             case "@":
