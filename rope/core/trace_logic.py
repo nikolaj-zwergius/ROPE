@@ -56,6 +56,13 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
                 if next_base in bracket2:
                     bracket2.pop()
                     base_pair+=")"
+            case ":":
+                            if match_id not in bracket2 and next_base not in bracket2:
+                                bracket2.append(match_id)
+                                base_pair+="("
+                            if next_base in bracket2:
+                                bracket2.pop()
+                                base_pair+=")"
             case ".":
                 base_pair+="."
             case "@":
