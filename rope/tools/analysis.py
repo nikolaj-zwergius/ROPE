@@ -6,7 +6,7 @@ from rope.utils.cli_helper import WideFormatter
 
 def analysis_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-    prog="rope-analysis",
+    prog="rope-analyse",
     description="Analysis of ROAD style blueprint",
     formatter_class=WideFormatter
     )

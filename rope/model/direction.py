@@ -52,6 +52,6 @@ class dir_rigth(dirction):
                     "/":dir_up,
                     "╯":dir_up,
                     chr(92):dir_down,}
-        self.replace_list = {"/":"╮",chr(92):"╯","-":"─"}
+        self.replace_list = {"/":"╯",chr(92):"╮","-":"─"}
     def __repr__(self) -> str:
         return "dir_rigth"

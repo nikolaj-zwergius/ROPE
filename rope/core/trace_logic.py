@@ -28,6 +28,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
     n_map = {}
     index = 0
     strand_dir = {}
+    
     while pattern[next_base[0]][next_base[1]] != "3":
         strand_dir[next_base] = dir
         next_base_name = pattern[next_base[0]][next_base[1]]
@@ -63,6 +64,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
                 if next_base in bracket2:
                     bracket2.pop()
                     base_pair+=")"
+            
             case ".":
                 base_pair+="."
             case "@":
