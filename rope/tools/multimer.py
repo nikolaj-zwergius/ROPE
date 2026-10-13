@@ -1,5 +1,6 @@
 
 import argparse
+import concurrent.futures
 from pathlib import Path
 from rope.utils.cli_helper import WideFormatter
 import sys
@@ -40,6 +41,14 @@ def multimer_parser() -> argparse.ArgumentParser:
         default=1,
         metavar="Runs",
         help="Number of runs per input file"
+    )
+
+    parser.add_argument(
+        "-w",
+        nargs="?",
+        const=1,
+        metavar="Workers/threads",
+        help="Number of workers/threads assigned to the job"
     )
 
     return parser
@@ -218,25 +227,8 @@ def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass)
     return multimer_seq, multimer_struc, multimer_mfe, multimer_feq, multimer_ed, multimer_problem, multimer_init_seq
 
 
-def multimer_run_revolver_task(task: tuple[str, int, str,int]) -> None:
-    blueprints = []
-    blueprint_name = []
-    index = -1
-    file = task[0]
-    run_index = task[1]
-    folder = task[2]
-    id = task[3]
-    with open(file) as f:
-        for line in f:
-            if line.startswith(">"):
-                blueprints.append([])
-                blueprint_name.append(line.strip(">").strip())
-                index += 1
-            
-            else:
-                blueprints[index].append(line)
-
-    temp_files = make_temp_files(blueprints, blueprint_name)
+def multimer_run_revolver_task(task: tuple[list[str], int, str, int]) -> None:
+    temp_files, run_index, folder, output_id = task
 
     patterns = []
     for temp_file in temp_files:
@@ -245,12 +237,17 @@ def multimer_run_revolver_task(task: tuple[str, int, str,int]) -> None:
 
             
     multimer_seq, multimer_struc, multimer_mfe, multimer_feq, multimer_ed, multimer_problem, multimer_init_seq = multimer_revolver(temp_files, kl_handler=kl_check_bypass)
+
+    score = 0
+    for i in range(len(multimer_feq)):
+        score += 1/multimer_feq[i]*multimer_ed[i]
+
     for i in range(len(patterns)):
         new_pattern = trace_seq_into_backbone(multimer_seq[i], str(temp_files[i]))
         analysis_values = trace_analysis_out(None, None, out=False, input_grid=new_pattern)
         assert analysis_values is not None
         save_multimer_output(
-            output_dir=Path(f"multimer_output/id_{id}/run_{run_index}"),
+            output_dir=Path(folder) / f"id_{output_id}" / f"score_{score:.2f}_run_{run_index}",
             run_index=run_index,
             input_file=str(temp_files[i]),
             seq=multimer_seq[i],
@@ -260,15 +257,47 @@ def multimer_run_revolver_task(task: tuple[str, int, str,int]) -> None:
             ed=multimer_ed[i],
             problem_mask=multimer_problem[i],
             init_seq=multimer_init_seq[i],
-            analysis_values=analysis_values
+            analysis_values=analysis_values,
         )
-    cleanup_temp_files(temp_files)
+
+
+def run_multimers(
+    file: str,
+    runs: int = 1,
+    output_root: str | Path = "multimer_output",
+    max_workers: int | None = None,
+) -> None:
+    """Run multimer predictions in parallel under a shared per-invocation output ID."""
+    output_id = random.getrandbits(8)
+    blueprints = []
+    blueprint_names = []
+    index = -1
+    with open(file) as input_file:
+        for line in input_file:
+            if line.startswith(">"):
+                blueprints.append([])
+                blueprint_names.append(line.strip(">").strip())
+                index += 1
+            else:
+                blueprints[index].append(line)
+
+    temp_files = make_temp_files(blueprints, blueprint_names, temp_id=str(output_id))
+    tasks = [
+        (temp_files, run_index, str(output_root), output_id)
+        for run_index in range(runs)
+    ]
+    try:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            for _ in executor.map(multimer_run_revolver_task, tasks):
+                pass
+    finally:
+        cleanup_temp_files(temp_files)
+
 
 def main():
     args = multimer_parser().parse_args(sys.argv[1:])
-    id = random.getrandbits(4)
-    for i in range(int(args.r)):
-        multimer_run_revolver_task((args.file, i, "multimer_output",id))
+    max_workers = int(args.w) if args.w else None
+    run_multimers(args.file, runs=int(args.r), max_workers=max_workers)
     
 
 
