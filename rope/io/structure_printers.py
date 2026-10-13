@@ -109,6 +109,30 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path,
             out_file.write("\n")
         structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
 
+def save_multimer_output(output_dir: Path, run_index: int, input_file: str|Path, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list|str,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    ed_str = f"{ed:.2f}"
+    output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
+    grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir = analysis_values
+    with output_path.open("w", encoding="utf-8") as out_file:
+        out_file.write(f"input_file: {input_file}\n")
+        out_file.write(f"run_index: {run_index}\n")
+        out_file.write(f"sequence: {seq}\n")
+        out_file.write(f"structure: {struc}\n")
+        out_file.write(f"mfe: {mfe:.2f}\n")
+        out_file.write(f"feq: {feq:.2f}\n")
+        out_file.write(f"ed: {ed:.2f}\n")
+        gc = revolvr.gc_ratio_calculator(seq)
+        if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
+        else:out_file.write(f"GC: {gc:.2f}\n")
+        out_file.write("\n\n\n")
+        if revolvr.problem_in_loced(problem_mask,init_seq,control=False):
+            out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
+             Sequence design failed for the inputted target structure.\n""")
+            render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)
+            out_file.write("\n")
+        structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
+
 
 def flip_pattern(file:str|Path)->None:
      pattern = generate_np_pattern(file)
