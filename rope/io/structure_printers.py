@@ -18,6 +18,8 @@ def render_pattern(out:TextIOWrapper,message:str,data:list|str,n_map:dict,grid:n
             ch = grid[i][j]
             if ch in NUCLEOTIDE_CHARS:
                 row_chars.append(render_cell(ch, data, n_map, i, j))
+            elif ch == ":":
+                row_chars.append("┊")
             else:
                 row_chars.append(ch)
         out.write("".join(row_chars) + "\n")
@@ -49,11 +51,18 @@ def structure_printer(output:TextIOWrapper, grid:ndarray, seq_output:str, repeat
         output.write("2D diagram with sequence\n")
         for i in range(grid.shape[0]):
             row_chars = [grid[i][j] for j in range(grid.shape[1])]
+            for j in range(len(row_chars)):
+                if row_chars[j] == ":":
+                    row_chars[j] = "┊"
+
             output.write("".join(row_chars) + "\n")
 
         output.write("\n\nStrand Path\n")
         for i in range(grid.shape[0]):
             row_chars = [render_strand_cell(grid[i][j], i, j, strand_dir) for j in range(grid.shape[1])]
+            for j in range(len(row_chars)):
+                if row_chars[j] == ":":
+                    row_chars[j] = "┊"
             output.write("".join(row_chars) + "\n")
 
         if seq_output.count("N") == 0:
@@ -88,7 +97,8 @@ def analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbl
 def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list|str,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
-    output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
+    score =  1/feq*ed
+    output_path = output_dir / f"{score:.2f}_{ed_str}_run_{run_index:03d}.txt"
     grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir = analysis_values
     with output_path.open("w", encoding="utf-8") as out_file:
         out_file.write(f"input_file: {input_file}\n")

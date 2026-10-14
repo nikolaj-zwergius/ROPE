@@ -335,6 +335,8 @@ def mutator3(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     for i in range(len(mask)):
         if mask[i] == "K" and i in bp_map:
             seq_list[i],seq_list[bp_map[i]] = seq_list[bp_map[i]],seq_list[i]
+        elif mask[i] == "K":
+            continue
         elif mask[i] == "B":
             seq_list[i] = "G"
         elif mask[i] == "D":
@@ -572,20 +574,31 @@ def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,fl
         mfe,feq,ed =compute_ED(seq)
         problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
-    
+    if seq.count("K") > 0:
+        raise Exception("setup")
     struc = RNA.fold(seq)[0]
     print("Starting mutator 1")
     struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
+    if seq.count("K") > 0:
+        raise Exception("m1")
     print("Starting mutator 2")
     seq,struc = mutator2(clean_struc,seq,init_seq,init_struc)
+    if seq.count("K") > 0:
+        raise Exception("m2")
     print("GC optimaztion")
     seq,struc,mask,ps = GC_optimze(clean_struc,seq,init_seq,init_struc,struc)
+    if seq.count("K") > 0:
+        raise Exception("GC")
     print("starting KL finder")
     seq,struc = kl_handler(clean_struc,init_struc,seq,init_seq,mask,ps)
+    if seq.count("K") > 0:
+        raise Exception("KL")
     print("compute ED")
     mfe,feq,min_ed =compute_ED(seq)
     print("Finle check of strcutre")
     problem=dir_mutate_mask_gen(clean_struc,struc,seq)
+    if seq.count("K") > 0:
+        raise Exception("fin")
     print("DONE")
     return seq, struc,mfe,feq,min_ed,problem,init_seq
 
