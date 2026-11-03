@@ -152,6 +152,8 @@ class segmented_module(Module):
         self.generate_segment_cords()
         assert len(self.build_cords) == len(self.sequence)
         for i in range(len(self.segment_build_cords)):
+            for mark in structural_markers:
+                self.segments[i] = self.segments[i].replace(mark, "")
             try:
                 assert len(self.segment_build_cords[i])==len(self.segments[i])
             except AssertionError:

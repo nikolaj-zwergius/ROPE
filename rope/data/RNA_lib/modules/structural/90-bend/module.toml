@@ -1,0 +1,17 @@
+[metadata]
+name = "90-bend"
+source = "PDB"
+doi="https://doi.org/10.1093/nar/gkae1218"
+
+[module]
+symbol  = "bN"
+type = "segmented"
+priority = 1
+sequence = "NGAACUACNNUUCGNNGCN"
+segments = ["NGAACUACN","NG£CN"]
+spacer =["NUUCGN"]
+
+[default]
+file = "90-bend.pdb"
+source_pdb ="ROAD"
+name = "90_bend"

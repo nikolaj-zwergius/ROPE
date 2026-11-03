@@ -1,0 +1,15 @@
+[metadata]
+name = "alpah-Kissingloop"
+source = "ROAD"
+
+
+[module]
+symbol = "A"
+type = "module"
+priority = 2
+sequence = "NGGUGNNNNAAAUUCN"
+nonstandard = false
+has_constraints  = false
+
+[default]
+file = "akl.pdb"

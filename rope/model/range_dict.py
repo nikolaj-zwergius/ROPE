@@ -2,7 +2,7 @@ class RangeDict(dict):
 
     def __setitem__(self, key, value):
         if key in self:
-            raise KeyError(f"Key {key} overlaps with existing key(s) in RangeDict.")
+            return
         if not isinstance(key, range):
             super().__setitem__(range(key,key+1), value)
         else:

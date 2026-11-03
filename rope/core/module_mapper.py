@@ -36,7 +36,7 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
     """
     if isinstance(pattern, str):
         pattern = generate_np_pattern(pattern)
-
+        
     seq, clean_struc, _, _ = trace_backbone(pattern,crossover = True,header=False)
     mapping = map_structure(clean_struc)
     length = len(seq)
@@ -66,15 +66,14 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
                 covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol
             elif module.type == segmented_module: #segment detection
                 for segment in module.segments:
+                    if module.has_constrain:
+                        for constrain in module.constrains:
+                            if clean_struc[seq_index:seq_index + len(segment)] == constrain:
+                                print(f"segment match {module.name} {segment} {seq[seq_index:seq_index+len(segment)]}")
                     if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
                            
-    for i in range(length): # filling out missing elements
-        if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
-            covered[i] = helix.symbol
-        elif i not in covered:
-            covered[i] = base.symbol
-    
+
     ###
     #logic for check if both half of a segmented module are present in the strucutre remove any unmatched detections
     ##
@@ -92,16 +91,55 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
             istack.append(covered[key][1:])
             irange_stack.append(key)
     
-    for key in covered:
-        if covered[key][1:] in stack and covered[key][0] != "0":
-            stack.pop(stack.index(covered[key][1:]))
-            range_stack.pop()
-        if covered[key][1:] in istack and covered[key][0] != "1":
-            istack.pop(istack.index(covered[key][1:]))
-            irange_stack.pop()
+    
+    index = 0
+    while index < len(stack):
+        key = stack[index]
+        print(stack,istack,key)
+        if key in istack:
+            index_stack =  stack.index(key)
+            index_istack = istack.index(key)
+            stack.pop(index_stack)
+            istack.pop(index_istack)
+            range_stack.pop(index_stack)
+            irange_stack.pop(index_istack)
+        else:
+            index += 1
+
+    while index < len(istack):
+            key = istack[index]
+            print(stack,istack,key)
+            if key in stack:
+                index_stack =  stack.index(key)
+                index_istack = istack.index(key)
+                stack.pop(index_stack)
+                istack.pop(index_istack)
+                range_stack.pop(index_stack)
+                irange_stack.pop(index_istack)
+            else:
+                index += 1
+    print(stack,istack,key)
+    print(range_stack,irange_stack)
+    print(covered)
+
+
     range_stack.extend(irange_stack)
     for i in range_stack:
-        covered.override(i, base.symbol)
+            covered.override(i, base.symbol)
+    for i in range(length): # filling out missing elements
+            if i > mapping[i] and mapping[i] != -1 and i not in covered and covered[mapping[i]]==base.symbol:
+                covered[i] = helix.symbol
+            elif i not in covered:
+                covered[i] = base.symbol
+    print(range_stack)
+
+
+    
+
+    print()
+    print(covered)
+    print()
+    
     map_list = []
     covered_list = sorted(covered.items(), key=lambda x: x[0].start if isinstance(x[0], range) else x[0])
     for i in covered_list:
@@ -111,22 +149,30 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
             continue
         map_list.append(covered[i[0]])
     map_list[0]="S"
-
+    
+    
+    
     ### Logic for labeling of invereted segments
-    pairs = {}
+    element_stack = {}
     for i,element in enumerate(map_list):
         if element[0] in ["H","S","T","K","X"]:
             continue
-        if element[0].isnumeric():
-            if element[1:] in pairs:
-                if int(element[0]) < int(pairs[element[1:]][0]):
-                    map_list[pairs[element[1:]][1]] = "i"+element
-                    map_list[i] = "i"+pairs[element[1:]][2]
-                else:
-                    pass
+        if element[1:] not in element_stack:
+            element_stack[element[1:]] = ([],[])
+        print(element,element_stack)
+        if element[0] == "0":
+            if element_stack[element[1:]][1] == []:
+                element_stack[element[1:]][0].append(i)
             else:
-                pairs[element[1:]] = (element[0],i,element)
-    
+                pair = element_stack[element[1:]][1].pop()
+                map_list[pair] = "i0" + map_list[pair][1:]
+                map_list[i] = "i1" + map_list[i][1:]
+        elif element[0] == "1":
+            if element_stack[element[1:]][0] == []:
+                element_stack[element[1:]][1].append(i)
+            else:
+                pair = element_stack[element[1:]][0].pop()
+    print("stack",element_stack)
         
     print(map_list)
     return map_list
