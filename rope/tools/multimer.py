@@ -128,16 +128,16 @@ def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass)
         res.pop(i)
 
 
-    init_resualts = []
+    init_results = []
     for j, file in enumerate(temp_files):        
-        init_resualts.append(revolver(file, kl_handler=kl_handler)) ## seq, struc,mfe,feq,min_ed,problem,init_seq
+        init_results.append(revolver(file, kl_handler=kl_handler)) ## seq, struc,mfe,feq,min_ed,problem,init_seq
 
     meta_string = "".join(meta_kl_pattern)
 
 
     seq = []
-    for j in range(len(init_resualts)):
-        seq.append(list(init_resualts[j][0]))
+    for j in range(len(init_results)):
+        seq.append(list(init_results[j][0]))
 
     
     best_score = float("inf")
@@ -203,7 +203,7 @@ def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass)
     multimer_ed = []
     multimer_problem = []
     multimer_init_seq = []
-    for i, resualt in enumerate(init_resualts):
+    for i, result in enumerate(init_results):
         seq_string = "".join(best_seqs[i])
         mfe,feq,ed = compute_ED(seq_string)
         struc, mfe = RNA.fold(seq_string)
@@ -219,7 +219,7 @@ def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass)
         multimer_feq.append(feq)
         multimer_ed.append(ed)
         multimer_problem.append(problem)
-        multimer_init_seq.append(resualt[-1])
+        multimer_init_seq.append(result[-1])
 
     
 

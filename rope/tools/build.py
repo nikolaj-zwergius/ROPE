@@ -35,7 +35,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="?",
         const="module",
         metavar="MODULE",
-        help="Show avaliable ligands for a given module, if none given show module, for all use all"
+        help="Show available ligands for a module. If omitted, show modules; use 'all' to list all variants."
     )
 
 
@@ -89,7 +89,7 @@ def main():
     wd = os.getcwd()
     folder = f"{wd}/RNAbuild"
     index_library = load_index()
-    modulecahce = ModuleCache(index_library)
+    module_cache = ModuleCache(index_library)
     ligand_print(args,index_library)
     ligands = {}
     ligands = ligand_switcher(args)
@@ -103,7 +103,7 @@ def main():
                 continue
             else:
                 try:
-                    RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
+                    RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",module_cache,index_library,ligands)
                 except ValueError as e:
                     print(f"Error building {file}: {e}")
                     raise SystemExit(1)
@@ -111,12 +111,12 @@ def main():
         for file in args.blueprint:
             file = str(file.lstrip(f".{chr(92)}"))
             if not file.endswith(".txt"):
-                print(f"{file} is not a .txt file it is {file.split('.')[:-1]}")
+                print(f"Expected a .txt file, but got: {file}")
                 continue
             if file in os.listdir():
-                RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",modulecahce,index_library,ligands)
+                RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",module_cache,index_library,ligands)
             else:
-                print(f"{file} not found in folder")
+                print(f"File {file} was not found in the current folder.")
 
 if __name__ == "__main__":
     main()

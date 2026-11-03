@@ -6,7 +6,7 @@ from pathlib import Path
 def build_IndexEntry(index_line:str) -> IndexEntry:
     line_list = index_line.strip().split("|")
     segments = line_list[3].split(",")[0::2]
-    sequnce = line_list[3].replace(",","")
+    sequence = line_list[3].replace(",","")
     constrains=line_list[5].split(",")
     has_constrains = False
     if constrains != [""]:
@@ -19,9 +19,9 @@ def build_IndexEntry(index_line:str) -> IndexEntry:
         symbol= line_list[0],
         name=line_list[1],
         path=line_list[2],
-        len=len(sequnce.replace("^","")),
+        len=len(sequence.replace("^","")),
         priority=int(line_list[4]),
-        sequence=sequnce,
+        sequence=sequence,
         segments=segments,
         type=type,
         has_constrain= has_constrains,
@@ -55,12 +55,12 @@ def index_line_maker(toml:dict,path:Path) -> tuple[str,str]:
     index_line.append(str(Path(path.parent.parent.stem)/path.parent.stem))
     if toml.get("module",{}).get("type") == "segmented":
         
-        segmentes = toml.get("module",{}).get("segments")
+        segments = toml.get("module",{}).get("segments")
         spacer = toml.get("module",{}).get("spacer")
-        string = segmentes[0] +","
+        string = segments[0] +","
         for i in range(len(spacer)):
             string += spacer[i] +","
-            string += segmentes[i+1]
+            string += segments[i+1]
         index_line.append(string)
     else:
         index_line.append(toml.get("module",{}).get("sequence",""))
@@ -71,10 +71,10 @@ def index_line_maker(toml:dict,path:Path) -> tuple[str,str]:
     variant_list= []
     variant_line =""
     if variants:
-        defualt_name = toml.get("default",{}).get("name","default")
+        default_name = toml.get("default",{}).get("name","default")
         for variant in variants:
            variant_list.append(variant)
-        variant_line = toml.get("module",{}).get("symbol")+"|"+defualt_name+"|"+",".join(variant_list)
+        variant_line = toml.get("module",{}).get("symbol")+"|"+default_name+"|"+",".join(variant_list)
     return "|".join(index_line), variant_line
 
 def write_index(index_values:list[str],variant_index:list[str]):

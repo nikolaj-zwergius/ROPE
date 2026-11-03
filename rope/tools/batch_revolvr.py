@@ -20,7 +20,7 @@ def batch_parser() -> argparse.ArgumentParser:
         "file",
         nargs="?",
         metavar="input file",
-        help="Input file if none given all valid files in folder will be processed"
+        help="Input file. If none is provided, all valid files in the current folder will be processed."
     )
 
     parser.add_argument(

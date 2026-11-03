@@ -10,7 +10,7 @@ from numpy import ndarray
 
 
 
-def sequnce_matcher(module_seq:str,seq:str):
+def sequence_matcher(module_seq:str,seq:str):
     #print(f"matching {module_seq} to {seq}")
     if len(module_seq) != len(seq):
         return False
@@ -57,7 +57,7 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
             continue
         for seq_index in range(length):
             #print(module.name,module.sequence,seq[seq_index:seq_index+len(module.sequence)])
-            if sequnce_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
+            if sequence_matcher(module.sequence,seq[seq_index:seq_index+len(module.sequence)]) and seq_index not in covered:
                 if module.has_constrain: # tetraloop detection
                     for constrain in module.constrains:
                         if clean_struc[seq_index:seq_index + len(module.sequence)] == constrain:
@@ -70,7 +70,7 @@ def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
                         for constrain in module.constrains:
                             if clean_struc[seq_index:seq_index + len(segment)] == constrain:
                                 print(f"segment match {module.name} {segment} {seq[seq_index:seq_index+len(segment)]}")
-                    if sequnce_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
+                    if sequence_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
                            
 

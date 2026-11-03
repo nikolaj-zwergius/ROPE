@@ -14,7 +14,7 @@ def analysis_parser() -> argparse.ArgumentParser:
         "file",
         nargs="?",
         metavar="input file",
-        help="Input file if none given all valid files in folder will be processed"
+        help="Input file. If none is provided, all valid files in the current folder will be processed."
     )
 
     return parser
@@ -39,13 +39,13 @@ def main():
     else:
         file = str(args.file.lstrip(f".{chr(92)}"))
         if not file.endswith(".txt"):
-            print(f"{file} is not a .txt file it is {file.split('.')[:-1]}")
+            print(f"Expected a .txt file, but got: {file}")
             return
         if file in os.listdir():
             trace_analysis_out(file,outfile=f"{folder}/{file.split('.')[0]}_analysis.txt")
             pass
         else:
-            print(f"{file} not found in folder")
+            print(f"File {file} was not found in the current folder.")
 
 
 if __name__ == "__main__":

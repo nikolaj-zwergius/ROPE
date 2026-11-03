@@ -24,7 +24,7 @@ def continuous_parser() -> argparse.ArgumentParser:
         "file",
         nargs="*",
         metavar="input file",
-        help="Input file if none given all valid files in folder will be processed"
+        help="Input file. If none is provided, all valid files in the current folder will be processed."
     )
 
     parser.add_argument(
@@ -55,7 +55,7 @@ def continuous_parser() -> argparse.ArgumentParser:
         nargs="?",
         const= 0,
         metavar="Time per run",
-        help="Maximum time per run, in the format xd:xh:xm:xs "
+        help="Maximum time per run, in the format xd:xh:xm:xs."
     )
 
 
@@ -130,7 +130,7 @@ def main():
     if max_workers == 1 and runs ==1:
         max_workers = len(args.file)
     if runs*len(args.file) > max_workers:
-        print("Dragon will not work with less tasks then workers")
+        print("The number of tasks must not exceed the number of workers.")
         exit()
     max_time_int = 0
     if args.t:
@@ -146,7 +146,7 @@ def main():
             if elem.lower().endswith("s"):
                 max_time_int += int(elem.strip("s").strip("S"))
             if elem.isnumeric():
-                raise TypeError("values need to be followed be a timescale indicator d(days) h(hours) m(minutes) s(seconds)")
+                raise TypeError("Values must be followed by a timescale indicator: d (days), h (hours), m (minutes), or s (seconds).")
     run_dragons(args.file, runs_per_file=runs, max_workers=max_workers,output_root=out_folder,target_ed=target_ed,timer=max_time_int)
 
 if __name__ == "__main__":

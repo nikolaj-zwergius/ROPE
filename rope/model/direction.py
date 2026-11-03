@@ -1,39 +1,40 @@
-class dirction():
+class direction():
     row = 0
-    colum = 0
+    column = 0
     move_list ={}
     replace_list ={}
     def __int__(self,move_list):
         move_list = self.move_list
+
     def move(self,last_id:tuple[int,int])->tuple[int,int]:
-        return (last_id[0]+self.row,last_id[1]+self.colum)
+        return (last_id[0]+self.row,last_id[1]+self.column)
         
-class dir_up(dirction):
+class dir_up(direction):
     row = -1
     def __init__(self):
         super().__init__()
-        self.move_list = {"╭":dir_rigth,
+        self.move_list = {"╭":dir_right,
                     "╮":dir_left,
-                    "/":dir_rigth,
+                    "/":dir_right,
                     chr(92):dir_left,}
         self.replace_list = {"/":"╭",chr(92):"╮","-":"─"}
         
     def __repr__(self) -> str:
         return "dir_up"
     
-class dir_down(dirction):
+class dir_down(direction):
     row = 1
     def __init__(self):
         super().__init__()
         self.move_list = {
-                    "╯":dir_left,"╰":dir_rigth,
+                    "╯":dir_left,"╰":dir_right,
                     "/":dir_left,
-                    chr(92):dir_rigth,}
+                    chr(92):dir_right,}
         self.replace_list = {"/":"╯",chr(92):"╰","-":"─"}
     def __repr__(self) -> str:
         return "dir_down"
-class dir_left(dirction):
-    colum = -1
+class dir_left(direction):
+    column = -1
     def __init__(self):
         super().__init__()
         self.move_list = {"╭":dir_down,
@@ -43,8 +44,8 @@ class dir_left(dirction):
         self.replace_list = {"/":"╭",chr(92):"╰","-":"─"}
     def __repr__(self) -> str:
         return "dir_left"
-class dir_rigth(dirction):
-    colum = 1
+class dir_right(direction):
+    column = 1
     def __init__(self):
         super().__init__()
         self.move_list = {
@@ -54,4 +55,4 @@ class dir_rigth(dirction):
                     chr(92):dir_down,}
         self.replace_list = {"/":"╯",chr(92):"╮","-":"─"}
     def __repr__(self) -> str:
-        return "dir_rigth"
+        return "dir_right"

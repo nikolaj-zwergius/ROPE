@@ -9,15 +9,15 @@ KL_DELAY = 150
 def generate_np_pattern(file:str|Path) -> np.ndarray:
     with open(file, encoding="utf-8") as input_file:
         rows = 0
-        colum = 0
+        columns = 0
         for line in input_file:
             if  not line.isspace():
                 rows +=1
             line=line.rstrip()
-            if len(line) >= colum:
-                colum = len(line)
+            if len(line) >= columns:
+                columns = len(line)
         rows -=1 
-        pattern = np.full((rows,colum)," ")
+        pattern = np.full((rows,columns)," ")
         input_file.seek(0)
         line_index = 0
         for line in input_file:
@@ -36,17 +36,17 @@ def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
     p5 = (p5[0][0],p5[1][0])
     return p5
 
-def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.dirction]:
+def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.direction]:
     p5 = find_5_prime(pattern)
-    up, down, left, rigth = check_round(pattern, p5)
+    up, down, left, right = check_round(pattern, p5)
     if up.isalpha() or up in rd.direction_markers:
         return p5, (p5[0] - 1, p5[1]), di.dir_up()
     if down.isalpha() or down in rd.direction_markers:
         return p5, (p5[0] + 1, p5[1]), di.dir_down()
     if left.isalpha() or left in rd.direction_markers:
         return p5, (p5[0], p5[1] - 1), di.dir_left()
-    if rigth.isalpha() or rigth in rd.direction_markers:
-        return p5, (p5[0], p5[1] + 1), di.dir_rigth()
+    if right.isalpha() or right in rd.direction_markers:
+        return p5, (p5[0], p5[1] + 1), di.dir_right()
     raise ValueError("No valid first base")
 
 def check(pattern:np.ndarray,id1:int,id2:int):
@@ -59,8 +59,8 @@ def check_round(pattern:np.ndarray,tup:tuple[int,int])->tuple[str,str,str,str]:
     up= check(pattern,tup[0]-1,tup[1])
     down= check(pattern,tup[0]+1,tup[1])
     left = check(pattern,tup[0],tup[1]-1)
-    rigth = check(pattern,tup[0],tup[1]+1)
-    return up,down,left,rigth
+    right = check(pattern,tup[0],tup[1]+1)
+    return up,down,left,right
 
 def reverse(seq:str) -> str:
     rev = ""

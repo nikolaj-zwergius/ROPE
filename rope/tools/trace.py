@@ -26,7 +26,7 @@ def trace_parser() -> argparse.ArgumentParser:
 def main():
     args = trace_parser().parse_args(sys.argv[1:])
     if args.file is None:
-        print("FileNotFoundError: No file given")
+        print("No input file was provided.")
         exit()
     header = parse_header(args.file)
     pattern = generate_np_pattern(args.file)
@@ -35,6 +35,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 

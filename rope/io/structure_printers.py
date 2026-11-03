@@ -27,7 +27,7 @@ def render_pattern(out:TextIOWrapper,message:str,data:list|str,n_map:dict,grid:n
 def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
     if ch == "p" or ch == "!" or ch == "*":
         direction = strand_dir.get((i, j), "right")
-        if direction not in {"rigth", "left"}:
+        if direction not in {"right", "left"}:
             return "┊"
         return "─"
     if ch in NUCLEOTIDE_CHARS:
@@ -112,7 +112,7 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path,
         if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
         else:out_file.write(f"GC: {gc:.2f}\n")
         out_file.write("\n\n\n")
-        if revolvr.problem_in_loced(problem_mask,init_seq,control=False):
+        if revolvr.problem_in_locked(problem_mask,init_seq,control=False):
             out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
              Sequence design failed for the inputted target structure.\n""")
             render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)
@@ -136,7 +136,7 @@ def save_multimer_output(output_dir: Path, run_index: int, input_file: str|Path,
         if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
         else:out_file.write(f"GC: {gc:.2f}\n")
         out_file.write("\n\n\n")
-        if revolvr.problem_in_loced(problem_mask,init_seq,control=False):
+        if revolvr.problem_in_locked(problem_mask,init_seq,control=False):
             out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
              Sequence design failed for the inputted target structure.\n""")
             render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)

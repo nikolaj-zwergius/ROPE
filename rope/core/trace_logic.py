@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
-    up,down,left,rigth = check_round(pattern,tup)
+    up,down,left,right = check_round(pattern,tup)
     if up in ["┊","!","*",":"]:
         return (tup[0]-2,tup[1]),up
     if down in ["┊","!","*",":"]:
@@ -111,5 +111,4 @@ def trace_seq_into_backbone(seq:str,file: str|Path) -> ndarray:
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
     return new_pattern
-
 

@@ -33,13 +33,13 @@ def main():
         "--mode",
         choices=["edit", "normal"],
         default="normal",
-        help="Install mode (default: normal), edit allows for changes the python used without reinstall usefull for dev work",
+        help="Install mode (default: normal). Use 'edit' for an editable installation, which is useful for development.",
     )
 
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Use the --force flag on pip/pipx usefull for pipx install"
+        help="Pass the --force flag to pip or pipx. This is useful when reinstalling with pipx."
     )
 
 

@@ -23,7 +23,7 @@ def flip_parser() -> argparse.ArgumentParser:
 def main():   
     args = flip_parser().parse_args(sys.argv[1:])
     if args.file is None:
-        print("FileNotFoundError: ","no file given")
+        print("No input file was provided.")
         exit()
     
     flip_pattern(args.file)
@@ -31,5 +31,4 @@ def main():
         
 if __name__ == "__main__":
     main()
-
 
