@@ -1,12 +1,25 @@
+from pathlib import Path
+from typing import Any
+
 from rope.io.toml_io import load_toml
 from rope.model.Module import Module, segmented_module
 from rope.definitions.rope_def import ROOT
-def load_module(path,wanted_variant):
+
+
+def load_module(path: str | Path, wanted_variant: str) -> Module | segmented_module:
+    """Load a module definition and its requested variant from the RNA library.
+
+    Relative ``path`` values are resolved under the library's module directory.
+    The TOML's ``module.type`` selects a regular or segmented module. The
+    ``default`` table is used for the requested ``"default"`` variant when no
+    matching entry exists; other missing variants raise ``KeyError``. An
+    unrecognized module type raises ``TypeError``.
+    """
     path =  ROOT/"data/RNA_lib/modules"/path
     toml = load_toml(path/"module.toml")
-    meta:dict = toml.get("metadata",{})
-    module:dict = toml.get("module",{})
-    variant:dict = toml.get("variant",{}).get(wanted_variant,{})
+    meta: dict[str, Any] = toml.get("metadata",{})
+    module: dict[str, Any] = toml.get("module",{})
+    variant: dict[str, Any] = toml.get("variant",{}).get(wanted_variant,{})
     if variant == {}:
         defualt = toml.get("default",{})
         if wanted_variant == "default":

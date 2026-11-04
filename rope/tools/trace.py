@@ -23,7 +23,7 @@ def trace_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
+def main() -> None:
     args = trace_parser().parse_args(sys.argv[1:])
     if args.file is None:
         print("No input file was provided.")
@@ -35,5 +35,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

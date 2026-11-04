@@ -14,56 +14,56 @@ to one larger task.
 - [ ] [Medium] Support modified nucleic acids in the ViennaRNA folding workflow, while preserving standard RNA behavior.
 - [ ] [Medium] Build every state defined for a module.
   - [ ] Define how a states are desribed in the module.toml (look at how ligands are used)
-- [ ] [Medium] Document and type-hint all functions and methods. Check each file below; mark it complete after its functions have useful parameter and return annotations and docstrings, and its non-obvious behavior has been documented where needed.
-  - [ ] `install.py`
-  - [ ] `rope/__init__.py`
-  - [ ] `rope/api.py`
-  - [ ] `rope/core/Build_logic.py`
-  - [ ] `rope/core/__init__.py`
-  - [ ] `rope/core/analysis_logic.py`
-  - [ ] `rope/core/grid_mapping.py`
-  - [ ] `rope/core/module_mapper.py`
-  - [ ] `rope/core/revolvr.py`
-  - [ ] `rope/core/trace_logic.py`
-  - [ ] `rope/core/variant_gen_logic.py`
-  - [ ] `rope/definitions/__init__.py`
-  - [ ] `rope/definitions/nucleotide.py`
-  - [ ] `rope/definitions/rope_def.py`
-  - [ ] `rope/helper.py`
-  - [ ] `rope/io/blueprint_reader.py`
-  - [ ] `rope/io/index_handler.py`
-  - [ ] `rope/io/module_loader.py`
-  - [ ] `rope/io/package_discover.py`
-  - [ ] `rope/io/pdb_file_cleaner.py`
-  - [ ] `rope/io/pdb_io.py`
-  - [ ] `rope/io/structure_printers.py`
-  - [ ] `rope/io/toml_io.py`
-  - [ ] `rope/model/Module.py`
-  - [ ] `rope/model/ModuleCache.py`
-  - [ ] `rope/model/Nucleotide.py`
-  - [ ] `rope/model/StructuralElement.py`
-  - [ ] `rope/model/__init__.py`
-  - [ ] `rope/model/direction.py`
-  - [ ] `rope/model/range_dict.py`
-  - [ ] `rope/model/records.py`
-  - [ ] `rope/tools/analysis.py`
-  - [ ] `rope/tools/batch_revolvr.py`
-  - [ ] `rope/tools/build.py`
-  - [ ] `rope/tools/continuous_revolvr.py`
-  - [ ] `rope/tools/flip_trace.py`
-  - [ ] `rope/tools/library.py`
-  - [ ] `rope/tools/multimer.py`
-  - [ ] `rope/tools/trace.py`
-  - [ ] `rope/tools/variant.py`
-  - [ ] `rope/utils/__init__.py`
-  - [ ] `rope/utils/cli_helper.py`
-  - [ ] `rope/utils/dim3_utils.py`
-  - [ ] `rope/utils/kl_sample_gen.py`
-  - [ ] `rope/utils/temp_files.py`
-  - [ ] `rope/validation/structure_validation.py`
-  - [ ] `rope/validation/validator.py`
-  - [ ] `rope/version.py`
-  - [ ] Run the available syntax, import, and type checks after the file reviews.
+- [x] [Medium] Type-hint all functions and methods; document non-obvious behavior, side effects, assumptions, and errors, and state class contracts and subclass requirements where needed. Keep docstrings concise and omit them when names, signatures, and straightforward code already explain the behavior.
+  - [x] `install.py`
+  - [x] `rope/__init__.py`
+  - [x] `rope/api.py`
+  - [x] `rope/core/Build_logic.py`
+  - [x] `rope/core/__init__.py`
+  - [x] `rope/core/analysis_logic.py`
+  - [x] `rope/core/grid_mapping.py`
+  - [x] `rope/core/module_mapper.py`
+  - [x] `rope/core/revolvr.py`
+  - [x] `rope/core/trace_logic.py`
+  - [x] `rope/core/variant_gen_logic.py`
+  - [x] `rope/definitions/__init__.py`
+  - [x] `rope/definitions/nucleotide.py`
+  - [x] `rope/definitions/rope_def.py`
+  - [x] `rope/helper.py`
+  - [x] `rope/io/blueprint_reader.py`
+  - [x] `rope/io/index_handler.py`
+  - [x] `rope/io/module_loader.py`
+  - [x] `rope/io/package_discover.py`
+  - [x] `rope/io/pdb_file_cleaner.py`
+  - [x] `rope/io/pdb_io.py`
+  - [x] `rope/io/structure_printers.py`
+  - [x] `rope/io/toml_io.py`
+  - [x] `rope/model/Module.py`
+  - [x] `rope/model/ModuleCache.py`
+  - [x] `rope/model/Nucleotide.py`
+  - [x] `rope/model/StructuralElement.py`
+  - [x] `rope/model/__init__.py`
+  - [x] `rope/model/direction.py`
+  - [x] `rope/model/range_dict.py`
+  - [x] `rope/model/records.py`
+  - [x] `rope/tools/analysis.py`
+  - [x] `rope/tools/batch_revolvr.py`
+  - [x] `rope/tools/build.py`
+  - [x] `rope/tools/continuous_revolvr.py`
+  - [x] `rope/tools/flip_trace.py`
+  - [x] `rope/tools/library.py`
+  - [x] `rope/tools/multimer.py`
+  - [x] `rope/tools/trace.py`
+  - [x] `rope/tools/variant.py`
+  - [x] `rope/utils/__init__.py`
+  - [x] `rope/utils/cli_helper.py`
+  - [x] `rope/utils/dim3_utils.py`
+  - [x] `rope/utils/kl_sample_gen.py`
+  - [x] `rope/utils/temp_files.py`
+  - [x] `rope/validation/structure_validation.py`
+  - [x] `rope/validation/validator.py`
+  - [x] `rope/version.py`
+  - [x] Run the available syntax, import, and type checks after the file reviews.
 - [x] [Medium] Review function and variable names for spelling errors. For each file, check callers and public uses before renaming; preserve compatibility or confirm breaking changes with the maintainer.
   - [x] `install.py`
   - [x] `rope/__init__.py`

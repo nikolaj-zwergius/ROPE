@@ -5,9 +5,14 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
 
 
-def make_kl_list(KL_MIN = -7.2,KL_OFF = -6.0,KL_MAX = -10.8):
+def make_kl_list(
+    KL_MIN: float = -7.2, KL_OFF: float = -6.0, KL_MAX: float = -10.8
+) -> list[list[str]]:
+    """Load KL records whose first-column energy is within the requested range.
 
-
+    ``KL_OFF`` is retained for API compatibility; this filtering step does not
+    use it. Returned records are comma-separated rows represented as strings.
+    """
 
     kls=[]
 
@@ -38,7 +43,7 @@ def make_kl_list(KL_MIN = -7.2,KL_OFF = -6.0,KL_MAX = -10.8):
 
 
 
-def pairwise_valid(kl1, kl2, KL_OFF = -6.0):
+def pairwise_valid(kl1: list[str], kl2: list[str], KL_OFF: float = -6.0) -> bool:
     if kl1[1] == kl2[1] or kl1[2] == kl2[2]:
         return False
     engery1 = RNA.duplexfold(kl1[1], kl2[1]).energy
@@ -49,7 +54,7 @@ def pairwise_valid(kl1, kl2, KL_OFF = -6.0):
         return False
     return True
 
-def make_compatibility_file():
+def make_compatibility_file() -> None:
     KL_MIN = -7.2
     KL_OFF = -6.0
     KL_MAX = -10.8
@@ -68,7 +73,7 @@ def make_compatibility_file():
             f.write(f"{kl},{compatibility[i]}\n")
 
 
-def load_compatibility_file():
+def load_compatibility_file() -> tuple[list[int], list[tuple[str, str]]]:
     KL_lookup = []
     with open(f"{parent_dir_path}/data/kl_compatibility", "r") as f:
         compatibility = [0] * 0
@@ -82,7 +87,6 @@ def load_compatibility_file():
 
 
 def is_valid_sample(sample: list[int], compatibility: list[int]) -> bool:
-    """Return True if every pair in sample is compatible."""
     for i, a in enumerate(sample):
         for b in sample[i + 1:]:
             if not compatibility[a] & (1 << b):

@@ -14,7 +14,7 @@ def library_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
+def main() -> None:
     args = library_parser().parse_args(sys.argv[1:])
     validator.validator()
 

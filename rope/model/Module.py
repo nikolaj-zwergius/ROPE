@@ -8,7 +8,25 @@ from rope.model.range_dict import RangeDict
 
 
 class Module(StructuralElement):
-    def __init__(self, name:str, file:str|Path, symbol:str, sequence:str|None = None, priority:int = 0, nonstandard:bool=False, ligand:str|None = None):
+    """PDB-backed module with sequence-checked build coordinates.
+
+    The first PDB residue is the attachment anchor; later residues provide the
+    build coordinates. When a sequence is supplied and the source file exists,
+    its marker-stripped length must match the parsed build-residue count. A
+    missing source file produces length zero. Subclasses that support inversion
+    must override :meth:`inverted`.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        file: str | Path,
+        symbol: str,
+        sequence: str | None = None,
+        priority: int = 0,
+        nonstandard: bool = False,
+        ligand: str | None = None,
+    ) -> None:
         super().__init__(name, file, symbol)
         self.name = name
         self.file = file
@@ -27,10 +45,11 @@ class Module(StructuralElement):
         self.segments = NotImplemented
 
         
-    def inverted(self):
+    def inverted(self) -> Module:
+        """Subclass hook; raise ``NotImplementedError`` until inversion is supported."""
         raise NotImplementedError
 
-    def set_len(self):
+    def set_len(self) -> None:
         if self.sequence is not None:
             for mark in structural_markers:
                 self.sequence = self.sequence.replace(mark, "")
@@ -46,7 +65,32 @@ class Module(StructuralElement):
             raise Exception(f"{self.name}: Length of pdb {len(self.build_cords)} is not the same as Length of Module elements {self.len}")
         
 
-    def _generate_cords(self):
+    def _generate_cords(
+        self,
+    ) -> tuple[
+        np.ndarray,
+        list[np.ndarray],
+        list[list[str]],
+        np.ndarray,
+        list[dict[str, tuple[float, float, float]]],
+        bool,
+    ]:
+        """Read the module PDB into start, residue, and final coordinates.
+
+        The first PDB residue is the attachment point and is not included in
+        the build-residue lists. Coordinates from each later residue are
+        converted to float32 arrays; atom dictionaries and original lines are
+        retained alongside them.
+
+        Returns:
+            Start coordinates, per-residue coordinates and source lines,
+            final-residue coordinates, atom-coordinate dictionaries, and a
+            file-found flag.
+
+        Raises:
+            FileNotFoundError: If the module PDB cannot be opened.
+            ValueError: If residue identifiers or coordinates are invalid.
+        """
         start_res_id = None
         start_res_coord = {}
         other_res_coord = []
@@ -81,7 +125,21 @@ class Module(StructuralElement):
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict,True
 
 
-    def get_ligand_coords(self):
+    def get_ligand_coords(
+        self,
+    ) -> tuple[list[np.ndarray], list[list[str]]]:
+        """Read ligand residues matching ``self.ligand`` from the module PDB.
+
+        Returns:
+            A pair containing float32 coordinate arrays and original PDB lines
+            for each matching ligand residue. No matches produce two empty
+            lists.
+
+        Raises:
+            FileNotFoundError: If the module PDB cannot be opened.
+            ValueError: If a matching residue's identifiers or coordinates
+                are invalid.
+        """
         other_res_coord = []
         other_res_lines = []
         current_res_id = None
@@ -107,30 +165,48 @@ class Module(StructuralElement):
             print(f"File {self.file} not found. Please check the file path.")
             raise
         
-    def _copy_state(self,variant:Module):
-                self.name = variant.name
-                self.file = variant.file
-                self.symbol = variant.symbol
-                self.sequence = variant.sequence
-                if self.ligand is not None:
-                    self.ligand = variant.ligand
-                    self.ligand_coords = variant.ligand_coords
-                    self.ligand_lines = variant.ligand_lines
-                self.len = variant.len
-                self.start_cord = variant.start_cord
-                self.build_cords = variant.build_cords
-                self.build_lines = variant.build_lines
-                self.last_coord = variant.last_coord
-                self.coord_dict = variant.coord_dict
+    def _copy_state(self, variant: Module) -> None:
+        self.name = variant.name
+        self.file = variant.file
+        self.symbol = variant.symbol
+        self.sequence = variant.sequence
+        if self.ligand is not None:
+            self.ligand = variant.ligand
+            self.ligand_coords = variant.ligand_coords
+            self.ligand_lines = variant.ligand_lines
+        self.len = variant.len
+        self.start_cord = variant.start_cord
+        self.build_cords = variant.build_cords
+        self.build_lines = variant.build_lines
+        self.last_coord = variant.last_coord
+        self.coord_dict = variant.coord_dict
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Module: {self.name}"
-    def __repr__(self): 
+
+    def __repr__(self) -> str:
         return f"Module: {self.name}"
 
 
 class segmented_module(Module):
-    def __init__(self, name, file:str|Path, symbol:str, sequence:list[str] ,spacer:list[str],priority:int,ligand:str|None=None):
+    """Module with separately addressable structural segments and spacers.
+
+    The spacer list must contain exactly one fewer entry than the segment
+    sequence, and each segment's sequence length must match its parsed PDB
+    residues. :meth:`change_elements` temporarily exposes one segment through
+    the standard coordinate attributes until :meth:`reset_elements` is called.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        file: str | Path,
+        symbol: str,
+        sequence: list[str],
+        spacer: list[str],
+        priority: int,
+        ligand: str | None = None,
+    ) -> None:
         try:
             assert type(sequence) == list
             assert type(spacer) == list
@@ -167,10 +243,36 @@ class segmented_module(Module):
         self.full_coord_dict =  self.coord_dict
         self.full_sequence = self.sequence
 
-    def generate_segment_cords(self,invers = False) -> None:
+    def generate_segment_cords(self, invers: bool = False) -> None:
         self.segment_start_cord,self.segment_build_cords,self.segment_build_lines,self.segment_last_coord,self.segment_coord_dict = self._generate_segment_cords(invers)
         return
-    def _generate_segment_cords(self,invers:bool)-> tuple[list[np.ndarray],list[list],list[list],list[dict],list[dict]]: 
+
+    def _generate_segment_cords(
+        self, invers: bool
+    ) -> tuple[
+        list[np.ndarray],
+        list[list[np.ndarray]],
+        list[list[list[str]]],
+        list[np.ndarray],
+        list[list[dict[str, tuple[float, float, float]]]],
+    ]:
+        """Parse the PDB into segment-level coordinate groups.
+
+        Residue ranges are derived from segment and spacer lengths. Only ATOM
+        records in those ranges are retained; when ``invers`` is true, the
+        parsed segment groups are reversed before their coordinates are built.
+
+        Args:
+            invers: Whether to reverse the order of the parsed segment groups.
+
+        Returns:
+            Per-segment start sugars, residue coordinate arrays, original
+            residue lines, final sugars, and atom-coordinate dictionaries.
+
+        Raises:
+            FileNotFoundError: If the module PDB cannot be opened.
+            ValueError: If a residue identifier or coordinate is invalid.
+        """
         segment_sugar_coord = []
         segment_other_res_coord = []
         segment_other_res_lines = []
@@ -249,7 +351,7 @@ class segmented_module(Module):
             seq_index += 1
         return segment_sugar_coord, segment_other_res_coord_list, segment_other_res_lines, segment_last_coord,segment_other_res_coord_dict
     
-    def _copy_state_segments_variants(self,variant:segmented_module):
+    def _copy_state_segments_variants(self, variant: segmented_module) -> None:
         self.segments = variant.segments
         self.spacer = variant.spacer
         self.segment_start_cord = variant.segment_start_cord
@@ -260,15 +362,7 @@ class segmented_module(Module):
         self._copy_state(variant)
     
 
-    def change_elements(self,seg_index:int):
-        """
-        Changes which elements that the segmented module shows, from the full to a segment
-
-        Warning: This function should always be followed by the use of the reset_elements function of segmented_module,
-        when processing of the current segment is done to ensure that the module can still use the full length in between.
-        
-        There is no check or enforcement of this
-        """
+    def change_elements(self, seg_index: int) -> None:
         self.start_cord  = self.segment_start_cord[seg_index]
         self.build_cords = self.segment_build_cords[seg_index]
         self.build_lines = self.segment_build_lines[seg_index]
@@ -277,7 +371,7 @@ class segmented_module(Module):
         self.sequence =  self.segments[seg_index]
 
 
-    def reset_elements(self):
+    def reset_elements(self) -> None:
         self.start_cord  = self.full_start_cord 
         self.build_cords = self.full_build_cords
         self.build_lines = self.full_build_lines
@@ -285,7 +379,7 @@ class segmented_module(Module):
         self.coord_dict  = self.full_coord_dict 
         self.sequence = self.full_sequence
     
-    def reset(self):
+    def reset(self) -> None:
         self.reset_elements()
 
 
@@ -296,7 +390,18 @@ class segmented_module(Module):
 
     
 class inv_segmented_module(segmented_module):
-    def __init__(self, name, file, symbol, sequence, spacer, priority=0, ligand = None):
+    """Segmented module whose parsed structural segments are ordered in reverse."""
+
+    def __init__(
+        self,
+        name: str,
+        file: str | Path,
+        symbol: str,
+        sequence: list[str],
+        spacer: list[str],
+        priority: int = 0,
+        ligand: str | None = None,
+    ) -> None:
         super().__init__(name, file, symbol, sequence, spacer, priority, ligand)
         self.generate_segment_cords(True)
         self.segments = sequence[::-1]

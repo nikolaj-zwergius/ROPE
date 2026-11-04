@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from numpy import ndarray, float32
+from numpy import ndarray, floating
 from rope.utils.dim3_utils import umeyama
 from rope.model.Module import get_sugar_cords, Module, segmented_module, inv_segmented_module
 from rope.definitions.nucleotide import nucleotide_library
@@ -8,9 +8,15 @@ from rope.core.grid_mapping import generate_np_pattern, map_structure
 from rope.core.module_mapper import module_mapper
 from rope.io.pdb_io import output_pdb, output_ligand_pdb, get_remarks
 from rope.model.ModuleCache import ModuleCache
-from rope.model.records import BuildState
+from rope.model.records import BuildState, IndexEntry
 
-def align_base_to_backbone(buildstate:BuildState,coord_dict:list[dict[int,ndarray]],res_index:int,alignment_variable:tuple[float32,ndarray,ndarray]) -> None:
+
+def align_base_to_backbone(
+    buildstate: BuildState,
+    coord_dict: list[dict[str, tuple[float, float, float]]],
+    res_index: int,
+    alignment_variable: tuple[floating, ndarray, ndarray],
+) -> None:
     c,R,t=alignment_variable
     sugar_residue = get_sugar_cords(coord_dict[res_index])
     aligned_sugar = sugar_residue.dot(c*R)+t
@@ -23,13 +29,22 @@ def align_base_to_backbone(buildstate:BuildState,coord_dict:list[dict[int,ndarra
     buildstate.build[buildstate.residue_count-1] = aligned_sugar
     buildstate.last_build = aligned_sugar
 
-def ligand_addition(alignment_variable:tuple[float32,ndarray,ndarray],mod:Module,ligand_stack:list) -> list:
+def ligand_addition(
+    alignment_variable: tuple[floating, ndarray, ndarray],
+    mod: Module,
+    ligand_stack: list[tuple[ndarray, list[str]]],
+) -> list[tuple[ndarray, list[str]]]:
     c,R,t = alignment_variable
     aligned_lines =mod.ligand_coords[0].dot(c*R)+t
     ligand_stack.append((aligned_lines,mod.ligand_lines[0]))
     return ligand_stack
 
-def ligand_printer(f:TextIOWrapper,ligand_stack:list,atom_count:int,seq:str) -> None:
+def ligand_printer(
+    f: TextIOWrapper,
+    ligand_stack: list[tuple[ndarray, list[str]]],
+    atom_count: int,
+    seq: str,
+) -> None:
     ligand_index = len(seq)+(100-len(seq)%100)
     for ligand in ligand_stack:
         for index in range(len(ligand[0])):
@@ -37,7 +52,12 @@ def ligand_printer(f:TextIOWrapper,ligand_stack:list,atom_count:int,seq:str) -> 
         ligand_index +=1
     return
 
-def length_test(Structure:list,seq:str,cache:ModuleCache,ligands):
+def length_test(
+    Structure: list[str],
+    seq: str,
+    cache: ModuleCache,
+    ligands: dict[str, str] | None,
+) -> None:
     Structure_len = 1
     try:
         for i in range(1,len(Structure)):
@@ -54,7 +74,7 @@ def length_test(Structure:list,seq:str,cache:ModuleCache,ligands):
         print(f"Length of structure: {Structure_len}, Length of sequence: {len(seq)}")
         exit(1)
 
-def build_start(buildstate:BuildState) -> None:
+def build_start(buildstate: BuildState) -> None:
     current_seq = buildstate.seq[buildstate.seq_index]
     for line in nucleotide_library[current_seq].build_lines[0]:
         buildstate.output.write("".join(line))
@@ -65,14 +85,22 @@ def build_start(buildstate:BuildState) -> None:
     buildstate.seq_index += 1
     buildstate.last_build = last_build
 
-def build_non_seq_module(buildstate:BuildState,mod:Module,align_var:tuple[float32,ndarray,ndarray]) -> None:
+def build_non_seq_module(
+    buildstate: BuildState,
+    mod: Module,
+    align_var: tuple[floating, ndarray, ndarray],
+) -> None:
     for res_index,residue in enumerate(mod.build_cords):
         align_base_to_backbone(buildstate,mod.coord_dict,res_index,align_var)
         #print(seq_index,seq[seq_index],residue_count)
         buildstate.residue_count += 1
         buildstate.seq_index += 1
 
-def build_seq_module(buildstate:BuildState,mod:Module,align_value:tuple[float32,ndarray,ndarray]) -> None:
+def build_seq_module(
+    buildstate: BuildState,
+    mod: Module,
+    align_value: tuple[floating, ndarray, ndarray],
+) -> None:
     c,R,t = align_value
     assert type(mod.sequence) is str
     for res_index,residue in enumerate(mod.build_cords):
@@ -92,7 +120,29 @@ def build_seq_module(buildstate:BuildState,mod:Module,align_value:tuple[float32,
 
 
 
-def RNAbuild(file:str,output:str,cache:ModuleCache,index_library,ligands:dict[str,str]|None=None) -> None:
+def RNAbuild(
+    file: str,
+    output: str,
+    cache: ModuleCache,
+    index_library: dict[str, IndexEntry],
+    ligands: dict[str, str] | None = None,
+) -> None:
+    """Assemble a PDB model from a blueprint, sequence, and module library.
+
+    The blueprint is traced and mapped to library modules; each module is
+    aligned to the preceding built residue (or its paired-residue anchor for
+    helices). The output file is created or overwritten, with optional ligand
+    remarks and ligand atoms included when ``ligands`` is provided.
+
+    Args:
+        file: Input blueprint path.
+        output: Destination PDB path.
+        cache: Module cache used to load structural elements.
+        index_library: Indexed module metadata used by the mapper.
+        ligands: Optional ligand identifiers passed to module lookup.
+    Returns:
+        None. Creates or overwrites ``output``.
+    """
     pattern=generate_np_pattern(file)
     seq,base_pairs,_,_ = trace_backbone(pattern,header=False)
     mapping = map_structure(base_pairs)

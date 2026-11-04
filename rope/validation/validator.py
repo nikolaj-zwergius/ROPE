@@ -1,12 +1,18 @@
 from rope.io.package_discover import find_packages
 from rope.io.index_handler import load_index, write_index, index_line_maker
 from rope.model.records import ValidationStatus,ValidationResult,ValidationReport,Validationcontext
+from rope.model.records import IndexEntry
 from rope.io.toml_io import load_toml
 try:from tomllib import TOMLDecodeError
 except ImportError: from tomli import TOMLDecodeError
 from pathlib import Path
+from typing import Any
 
-def validator():
+def validator() -> None:
+    """Validate discovered module packages and rebuild both library indexes.
+
+    Validation results are printed after index files have been updated.
+    """
     packages,_,_,_ = find_packages()
     index = load_index()
     master_report:list[ValidationReport] = []
@@ -60,7 +66,7 @@ def validator():
     write_index(index_lines,variant_lines)
     validation_reporter(master_report)
 
-def validation_reporter(master_report:list[ValidationReport]):
+def validation_reporter(master_report: list[ValidationReport]) -> None:
     for report in master_report:
         print(report.package, report.validated)
         if report.validated == ValidationStatus.PASS:
@@ -81,7 +87,13 @@ def validation_reporter(master_report:list[ValidationReport]):
                     print("\t\t",error)
 
 
-def validate_toml(context:Validationcontext):
+def validate_toml(context: Validationcontext) -> ValidationResult:
+    """Parse and validate a package TOML file, retaining error-free data.
+
+    TOML parse failures are returned as validation errors. The parsed mapping
+    is stored on ``context`` only when field validation produces no errors;
+    warnings do not prevent a passing result.
+    """
     result = ValidationResult(
         stage="TOML Validation",
         status=ValidationStatus.FAIL,
@@ -108,7 +120,7 @@ def validate_toml(context:Validationcontext):
         result.status = ValidationStatus.PASS
     return result
 
-def _validate_toml_sections(toml,result:ValidationResult):
+def _validate_toml_sections(toml: dict[str, Any], result: ValidationResult) -> None:
     error_type = "Missing Section"
     if "metadata" not in toml:
         result.errors.append((error_type, "No metadata section defined"))
@@ -117,7 +129,14 @@ def _validate_toml_sections(toml,result:ValidationResult):
     if "default" not in toml:
         result.errors.append((error_type, "No default section defined"))
 
-def _validate_toml_fields(toml,result:ValidationResult):
+def _validate_toml_fields(toml: dict[str, Any], result: ValidationResult) -> None:
+    """Record missing required, recommended, or runtime-critical module fields.
+
+    Required fields are reported as errors, absent recommendations as warnings,
+    and absent priority or ``nonstandard`` metadata as functional warnings.
+    Module constraints and ``nonstandard`` reason fields must also agree with
+    their corresponding flags.
+    """
     error_type = "Missing required field"
     fwarning_type = "Missing functional field"
     warning_type = "Missing recommend field"
@@ -155,7 +174,8 @@ def _validate_toml_fields(toml,result:ValidationResult):
        if module.get("constraints"):
            result.errors.append((error_type,"when has_constraints is false no constraints must be given"))
 
-def _validate_toml_types(toml,result:ValidationResult):
+def _validate_toml_types(toml: dict[str, Any], result: ValidationResult) -> None:
+    """Append validation errors when recognized TOML fields have wrong types."""
     error_type = "Wrong field type"
     metadata = toml.get("metadata",{})
     module = toml.get("module",{})
@@ -178,7 +198,12 @@ def _validate_toml_types(toml,result:ValidationResult):
     if "constraints" in module and not type(module.get("constraints")) is list:
         result.errors.append((error_type,"module.constraints not list"))
 
-def validate_files(context:Validationcontext):
+def validate_files(context: Validationcontext) -> ValidationResult:
+    """Check structure-file references and validate package PDB entries.
+
+    Missing files are reported before PDB validation starts; in that case the
+    validation result remains failed and the PDB check is skipped.
+    """
     result = ValidationResult(
         stage="File Validation",
         status=ValidationStatus.FAIL,
@@ -202,7 +227,12 @@ def validate_files(context:Validationcontext):
         result.status =  ValidationStatus.PASS
     return result
 
-def _validate_pdb_files(context:Validationcontext,result:ValidationResult):
+def _validate_pdb_files(context: Validationcontext, result: ValidationResult) -> None:
+    """Check default and variant PDB entries and record their filenames.
+
+    Default-file issues are added to ``errors`` and variant-file issues to
+    ``functional_error``. The current format-checking hook reports no issues.
+    """
     assert context.toml is not None
     error_type = "PDB Format Error"
     pdb_files = []
@@ -225,14 +255,14 @@ def _validate_pdb_files(context:Validationcontext,result:ValidationResult):
     context.pdbs = pdb_files
 
 
-def _pdb_logic(file:Path,error_type:str) -> list[tuple]:
+def _pdb_logic(file: Path, error_type: str) -> list[tuple[str, str]]:
     errors = []
 
 
     return errors
 
 
-def _validate_extra_files_exist(context:Validationcontext,result:ValidationResult):
+def _validate_extra_files_exist(context: Validationcontext, result: ValidationResult) -> None:
     assert context.toml is not None
     assert context.path is not None
     error_type = "File not found"
@@ -250,7 +280,14 @@ def _validate_extra_files_exist(context:Validationcontext,result:ValidationResul
                 result.errors.append((error_type,f"No pdb found for variant {variant}"))
 
 
-def validate_index_state(context:Validationcontext,index:dict):
+def validate_index_state(
+    context: Validationcontext, index: dict[str, IndexEntry]
+) -> ValidationResult:
+    """Reject symbol, name, or sequence conflicts with another indexed package.
+
+    An existing index entry for the same package path is treated as the same
+    package rather than a conflict.
+    """
     assert context.toml is not None
     error_type = "Index Error"
     result = ValidationResult(

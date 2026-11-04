@@ -1,9 +1,18 @@
+from typing import Any, Mapping
+
 from rope.definitions.rope_def import ROOT
 from rope.model.records import IndexEntry
 from rope.model.Module import Module, segmented_module
 from pathlib import Path
 
-def build_IndexEntry(index_line:str) -> IndexEntry:
+
+def build_IndexEntry(index_line: str) -> IndexEntry:
+    """Parse one pipe-delimited module index row into an :class:`IndexEntry`.
+
+    The row's sequence column also encodes alternating segments and spacers;
+    ``^`` markers are excluded from the reported length. Malformed rows or
+    non-integer priorities raise the corresponding parsing exception.
+    """
     line_list = index_line.strip().split("|")
     segments = line_list[3].split(",")[0::2]
     sequence = line_list[3].replace(",","")
@@ -30,7 +39,8 @@ def build_IndexEntry(index_line:str) -> IndexEntry:
     )
     return entry
 
-def load_index():
+
+def load_index() -> dict[str, IndexEntry]:
     indexentry_lib = {}
     index_lines = read_index()
     for line in index_lines:
@@ -38,7 +48,8 @@ def load_index():
         indexentry_lib[entry.symbol] = entry
     return indexentry_lib
 
-def read_index():
+
+def read_index() -> list[str]:
     index_lines = []
     with open(ROOT/"data"/"index","r",encoding="utf-8") as f:
         for line in f:
@@ -46,7 +57,13 @@ def read_index():
     return index_lines
             
 
-def index_line_maker(toml:dict,path:Path) -> tuple[str,str]:
+
+def index_line_maker(toml: Mapping[str, Any], path: Path) -> tuple[str, str]:
+    """Build the index row and optional variant-index row for a module TOML.
+
+    The first result is the module row. The second is empty when there are no
+    variants; otherwise it has the form ``symbol|default|variant,variant``.
+    """
     index_line = []
     
     
@@ -77,7 +94,8 @@ def index_line_maker(toml:dict,path:Path) -> tuple[str,str]:
         variant_line = toml.get("module",{}).get("symbol")+"|"+default_name+"|"+",".join(variant_list)
     return "|".join(index_line), variant_line
 
-def write_index(index_values:list[str],variant_index:list[str]):
+
+def write_index(index_values: list[str], variant_index: list[str]) -> None:
     with open(ROOT/"data"/"index","w") as f:
         for line in index_values:
             f.write(line+"\n")
@@ -86,7 +104,8 @@ def write_index(index_values:list[str],variant_index:list[str]):
             if line:
                 f.write(line+"\n")
 
-def load_variant_index():
+
+def load_variant_index() -> dict[str, list[str]]:
     lines = {}
     with open(ROOT/"data"/"variant_index","r") as f:
         for line in f:

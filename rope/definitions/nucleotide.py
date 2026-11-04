@@ -1,4 +1,10 @@
 
+"""Initialize built-in nucleotides and choose the import-time ``N`` template.
+
+The ambiguous nucleotide entry ``N`` is assigned one random A/C/G/U
+configuration when this module is imported; it is not sampled again per use.
+"""
+
 from rope.model.Nucleotide import Nucleotide
 from rope.definitions.rope_def import NT_FOLDER
 from random import choices

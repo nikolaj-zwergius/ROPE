@@ -1,16 +1,22 @@
 
 from rope.core.grid_mapping import  COMPLEMENT_WINDOW, DUPLICATE_WINDOW,generate_np_pattern
 from rope.definitions.rope_def import VALID_BASES, NUCLEOTIDE_CHARS
-from io import TextIOWrapper
 from numpy import ndarray
 from pathlib import Path
+from typing import Mapping, Sequence, TextIO
 import rope.core.revolvr as revolvr
 import rope.definitions.rope_def as rd
 import numpy as np
 
 
 
-def render_pattern(out:TextIOWrapper,message:str,data:list|str,n_map:dict,grid:ndarray):
+def render_pattern(
+    out: TextIO,
+    message: str,
+    data: Sequence[str] | str,
+    n_map: Mapping[tuple[int, int], int],
+    grid: ndarray,
+) -> None:
     out.write(message)
     for i in range(grid.shape[0]):
         row_chars = []
@@ -24,7 +30,9 @@ def render_pattern(out:TextIOWrapper,message:str,data:list|str,n_map:dict,grid:n
                 row_chars.append(ch)
         out.write("".join(row_chars) + "\n")
 
-def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
+def render_strand_cell(
+    ch: str, i: int, j: int, strand_dir: Mapping[tuple[int, int], str]
+) -> str:
     if ch == "p" or ch == "!" or ch == "*":
         direction = strand_dir.get((i, j), "right")
         if direction not in {"right", "left"}:
@@ -38,7 +46,13 @@ def render_strand_cell(ch:str, i:int, j:int, strand_dir:dict):
     return ch
 
 
-def render_cell(ch:str, type_list:list|str, n_map:dict, i:int, j:int) -> str:
+def render_cell(
+    ch: str,
+    type_list: Sequence[str] | str,
+    n_map: Mapping[tuple[int, int], int],
+    i: int,
+    j: int,
+) -> str:
     if ch in NUCLEOTIDE_CHARS:
         idx = n_map.get((i, j), None)
         if idx is not None and 0 <= idx <= len(type_list):
@@ -46,45 +60,94 @@ def render_cell(ch:str, type_list:list|str, n_map:dict, i:int, j:int) -> str:
     return ch
 
 
-def structure_printer(output:TextIOWrapper, grid:ndarray, seq_output:str, repeat_map:list, wobbles_seq:list, barriers:list,complement_zones:int, duplicate_zones:int, pattern_repeats:int, poly_repeats:int, restriction_sites:int,n_map:dict,strand_dir:dict,problem:list|str|None=None):
-        
-        output.write("2D diagram with sequence\n")
-        for i in range(grid.shape[0]):
-            row_chars = [grid[i][j] for j in range(grid.shape[1])]
-            for j in range(len(row_chars)):
-                if row_chars[j] == ":":
-                    row_chars[j] = "┊"
+def structure_printer(
+    output: TextIO,
+    grid: ndarray,
+    seq_output: str,
+    repeat_map: Sequence[str],
+    wobbles_seq: Sequence[str],
+    barriers: Sequence[str],
+    complement_zones: int,
+    duplicate_zones: int,
+    pattern_repeats: int,
+    poly_repeats: int,
+    restriction_sites: int,
+    n_map: Mapping[tuple[int, int], int],
+    strand_dir: Mapping[tuple[int, int], str],
+    problem: Sequence[str] | str | None = None,
+) -> None:
+    """Write a diagram, strand path, and available sequence annotations.
 
-            output.write("".join(row_chars) + "\n")
+    Repeat and wobble highlights are omitted when the output sequence still
+    contains ambiguous ``N`` bases. ``problem`` remains an accepted optional
+    argument for callers but is not rendered by this function.
+    """
+    output.write("2D diagram with sequence\n")
+    for i in range(grid.shape[0]):
+        row_chars = [grid[i][j] for j in range(grid.shape[1])]
+        for j in range(len(row_chars)):
+            if row_chars[j] == ":":
+                row_chars[j] = "┊"
 
-        output.write("\n\nStrand Path\n")
-        for i in range(grid.shape[0]):
-            row_chars = [render_strand_cell(grid[i][j], i, j, strand_dir) for j in range(grid.shape[1])]
-            for j in range(len(row_chars)):
-                if row_chars[j] == ":":
-                    row_chars[j] = "┊"
-            output.write("".join(row_chars) + "\n")
+        output.write("".join(row_chars) + "\n")
 
-        if seq_output.count("N") == 0:
-            output.write("\n")
-            sequence_array = list(seq_output)
-            sequence_check = all(ch in VALID_BASES for ch in sequence_array)
-            if not sequence_check:
-                message ="\nSequence not suitable for pattern search.  Must only contain A, U C and G. \n"
-            else:
-                message= f"""\n\nHighlighting Repeat Sequences \n
+    output.write("\n\nStrand Path\n")
+    for i in range(grid.shape[0]):
+        row_chars = [render_strand_cell(grid[i][j], i, j, strand_dir) for j in range(grid.shape[1])]
+        for j in range(len(row_chars)):
+            if row_chars[j] == ":":
+                row_chars[j] = "┊"
+        output.write("".join(row_chars) + "\n")
+
+    if seq_output.count("N") == 0:
+        output.write("\n")
+        sequence_array = list(seq_output)
+        sequence_check = all(ch in VALID_BASES for ch in sequence_array)
+        if not sequence_check:
+            message ="\nSequence not suitable for pattern search.  Must only contain A, U C and G. \n"
+        else:
+            message= f"""\n\nHighlighting Repeat Sequences \n
                 WC complement region (P) {COMPLEMENT_WINDOW} or longer: {complement_zones} nts
                 Duplicated region (D) {DUPLICATE_WINDOW} or longer: {duplicate_zones} nts
                 Strong/Weak region (S/W) 8 or longer: {pattern_repeats} nts
                 5 or more in a row of the same nucleotide (A,U,C,G): {poly_repeats} nts
                 Common restriction site (X): {restriction_sites} nts
                 \n"""
-            render_pattern(output,message,repeat_map,n_map,grid)
-            render_pattern(output,"\n\nHighlighting GU Pairs\n",wobbles_seq,n_map,grid)
-        render_pattern(output,"\n\nHighlighting Structural Barriers\n\n",barriers,n_map,grid)
+        render_pattern(output,message,repeat_map,n_map,grid)
+        render_pattern(output,"\n\nHighlighting GU Pairs\n",wobbles_seq,n_map,grid)
+    render_pattern(output,"\n\nHighlighting Structural Barriers\n\n",barriers,n_map,grid)
 
 
-def analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir):
+def analysis_out(
+    outfile: str | Path | None,
+    name: str,
+    structure_map: str,
+    grid: ndarray,
+    seq_output: str,
+    repeat_map: list[str],
+    wobbles_seq: list[str],
+    barriers: list[str],
+    complement_zones: int,
+    duplicate_zones: int,
+    pattern_repeats: int,
+    poly_repeats: int,
+    restriction_sites: int,
+    n_map: dict[tuple[int, int], int],
+    strand_dir: dict[tuple[int, int], str],
+) -> tuple[
+    ndarray,
+    str,
+    list[str],
+    list[str],
+    list[str],
+    int,
+    int,
+    int,
+    int,
+    int,
+    dict[tuple[int, int], int],
+    dict[tuple[int, int], str],
+]:
     with open(f"{outfile}", "w", encoding="utf-8") as output:
             output.write(f"{name}\n")
             output.write(f"{structure_map}\n")
@@ -94,7 +157,38 @@ def analysis_out(outfile,name,structure_map, grid, seq_output, repeat_map, wobbl
             structure_printer(output, grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir)
             return grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir
 
-def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list|str,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
+def save_revolver_output(
+    output_dir: Path,
+    run_index: int,
+    input_file: str | Path,
+    seq: str,
+    struc: str,
+    mfe: float,
+    feq: float,
+    ed: float,
+    problem_mask: Sequence[str] | str,
+    init_seq: str,
+    analysis_values: tuple[
+        ndarray,
+        str,
+        list[str],
+        list[str],
+        list[str],
+        int,
+        int,
+        int,
+        int,
+        int,
+        dict[tuple[int, int], int],
+        dict[tuple[int, int], str],
+    ],
+) -> None:
+    """Write a Revolvr run summary and rendered structural analysis.
+
+    Creates ``output_dir`` if needed. The filename includes the run index,
+    ``ed / feq``, and ``ed`` (rounded to two decimals); a zero ``feq`` raises
+    ``ZeroDivisionError``.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
     score =  1/feq*ed
@@ -119,7 +213,37 @@ def save_revolver_output(output_dir: Path, run_index: int, input_file: str|Path,
             out_file.write("\n")
         structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
 
-def save_multimer_output(output_dir: Path, run_index: int, input_file: str|Path, seq: str, struc: str, mfe: float, feq: float, ed: float,problem_mask:list|str,init_seq:str,analysis_values:tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]) -> None:
+def save_multimer_output(
+    output_dir: Path,
+    run_index: int,
+    input_file: str | Path,
+    seq: str,
+    struc: str,
+    mfe: float,
+    feq: float,
+    ed: float,
+    problem_mask: Sequence[str] | str,
+    init_seq: str,
+    analysis_values: tuple[
+        ndarray,
+        str,
+        list[str],
+        list[str],
+        list[str],
+        int,
+        int,
+        int,
+        int,
+        int,
+        dict[tuple[int, int], int],
+        dict[tuple[int, int], str],
+    ],
+) -> None:
+    """Write a Multimer run summary and rendered structural analysis.
+
+    Creates ``output_dir`` if needed; the output filename uses the energy
+    difference and run index.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     ed_str = f"{ed:.2f}"
     output_path = output_dir / f"{ed_str}_run_{run_index:03d}.txt"
@@ -144,9 +268,14 @@ def save_multimer_output(output_dir: Path, run_index: int, input_file: str|Path,
         structure_printer(out_file,grid, seq_output, repeat_map, wobbles_seq, barriers, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites, n_map, strand_dir,problem_mask)
 
 
-def flip_pattern(file:str|Path)->None:
-     pattern = generate_np_pattern(file)
-     with open("flip.txt","w",encoding="utf-8") as f:
+def flip_pattern(file: str | Path) -> None:
+    """Write the input pattern and configured flips to ``flip.txt``.
+
+    The file is created in the current directory. The input grid is transformed
+    according to each entry in ``rope.definitions.rope_def.flips``.
+    """
+    pattern = generate_np_pattern(file)
+    with open("flip.txt","w",encoding="utf-8") as f:
         f.write("Input file:")
         f.write("\n")
         for row in pattern:
@@ -171,7 +300,7 @@ def flip_pattern(file:str|Path)->None:
             f.write("\n")
             f.write("\n")
 
-def trace_pattern_out(file:str|Path,seq:str,base_pair:str) -> None:
+def trace_pattern_out(file: str | Path, seq: str, base_pair: str) -> None:
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
 

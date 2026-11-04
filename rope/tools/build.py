@@ -3,6 +3,7 @@ import argparse
 from rope.core.Build_logic import RNAbuild
 from rope.utils.cli_helper import WideFormatter
 from rope.model.ModuleCache import ModuleCache
+from rope.model.records import IndexEntry
 from rope.io.index_handler import load_index, load_variant_index
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     return parser
 
-def ligand_switcher(args)-> dict[str,str]:
+def ligand_switcher(args: argparse.Namespace) -> dict[str, str]:
     ligands = {}
     if args.config:
         pass
@@ -54,7 +55,11 @@ def ligand_switcher(args)-> dict[str,str]:
     return ligands
 
 
-def ligand_print(args,index):
+def ligand_print(args: argparse.Namespace, index: dict[str, IndexEntry]) -> None:
+    """Print available ligand variants when requested, then exit list mode.
+
+    ``index`` is the module index loaded for the current package library.
+    """
     variants = load_variant_index()
     if args.list == "all":
         for i in index:
@@ -84,7 +89,7 @@ def ligand_print(args,index):
     if args.list:
         raise SystemExit(0)
 
-def main():
+def main() -> None:
     args = build_parser().parse_args()
     wd = os.getcwd()
     folder = f"{wd}/RNAbuild"

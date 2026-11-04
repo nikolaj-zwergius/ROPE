@@ -55,7 +55,6 @@ def _run_revolver_task(task: tuple[str, int, str]) -> None:
 
 
 def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None) -> None:
-    """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
@@ -70,7 +69,7 @@ def run_revolvers(files: list[str], runs_per_file: int = 1, output_root: str|Pat
         for _ in executor.map(_run_revolver_task, tasks):
             pass
 
-def main():
+def main() -> None:
     wd = os.getcwd()
     out_folder = Path(wd+"/revolver_outputs")
 

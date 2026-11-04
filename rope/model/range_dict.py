@@ -1,6 +1,17 @@
-class RangeDict(dict):
+from typing import Any
 
-    def __setitem__(self, key, value):
+
+class RangeDict(dict):
+    """Map integer positions to values stored under range keys.
+
+    Integer assignments are normalized to one-element ranges. An integer
+    lookup returns the first stored range containing it, while a range lookup
+    requires an exact stored key. Range membership is true when any position
+    in the queried range is covered; consequently, setting an overlapping key
+    is ignored rather than replacing or splitting existing ranges.
+    """
+
+    def __setitem__(self, key: int | range, value: Any) -> None:
         if key in self:
             return
         if not isinstance(key, range):
@@ -8,7 +19,7 @@ class RangeDict(dict):
         else:
             super().__setitem__(key, value)
 
-    def __contains__(self, item):
+    def __contains__(self, item: int | range) -> bool:
         if not isinstance(item, range): # or xrange in Python 2
             for key in self:
                 if item in key:
@@ -20,7 +31,7 @@ class RangeDict(dict):
                     return True
             return False
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int | range) -> Any:
         if not isinstance(item, range): # or xrange in Python 2
             for key in self:
                 if item in key:
@@ -29,7 +40,7 @@ class RangeDict(dict):
         else:
             return super().__getitem__(item)
         
-    def override(self, key, value):
+    def override(self, key: int | range, value: Any) -> None:
         if not isinstance(key,range):
             if not super().__contains__(range(key,key+1)):
                 raise Exception("""override can only be used if a excat key is given, for other use cases remove overlapping element first

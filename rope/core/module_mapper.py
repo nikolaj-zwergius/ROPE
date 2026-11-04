@@ -10,7 +10,7 @@ from numpy import ndarray
 
 
 
-def sequence_matcher(module_seq:str,seq:str):
+def sequence_matcher(module_seq: str, seq: str) -> bool:
     #print(f"matching {module_seq} to {seq}")
     if len(module_seq) != len(seq):
         return False
@@ -27,12 +27,24 @@ def sequence_matcher(module_seq:str,seq:str):
             return False
     return True
 
-def module_mapper(pattern:ndarray,index_library:dict[str,IndexEntry]):
-    """Map a traced RNA sequence to a list of module symbols.
+def module_mapper(
+    pattern: ndarray | str, index_library: dict[str, IndexEntry]
+) -> list[str]:
+    """Map a blueprint grid or path to module symbols in traced order.
 
-    The returned list begins with "S" for the 5' end, then includes module symbols
-    in sequence order. Known module sequences are matched greedily, and any
-    uncovered residue is filled with a unpaired helix module "H1".
+    The result begins with ``"S"`` for the 5′ end. Indexed modules are tried
+    in descending priority/length order and matched against bases and
+    structure; segmented modules are accepted only when their paired
+    segments are present. Uncovered positions fall back to ``H1``, with
+    paired fallback residues represented by ``H2``. Diagnostic messages
+    from segmented-module matching are written to standard output.
+
+    Args:
+        pattern: Blueprint character grid or path string.
+        index_library: Module metadata keyed by module symbol.
+    Returns:
+        One module symbol for each traced sequence position, with the first
+        position labeled ``"S"``.
     """
     if isinstance(pattern, str):
         pattern = generate_np_pattern(pattern)

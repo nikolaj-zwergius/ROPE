@@ -6,7 +6,18 @@ COMPLEMENT_WINDOW = 10
 DUPLICATE_WINDOW = 10
 KL_DELAY = 150
 
-def generate_np_pattern(file:str|Path) -> np.ndarray:
+def generate_np_pattern(file: str | Path) -> np.ndarray:
+    """Read a blueprint file into a padded two-dimensional character grid.
+
+    Header, metadata, blank, and comment rows are excluded from the grid.
+    The returned array is filled with spaces so rows of differing lengths
+    share a rectangular shape.
+
+    Args:
+        file: Blueprint file path.
+    Returns:
+        A two-dimensional NumPy array of single-character strings.
+    """
     with open(file, encoding="utf-8") as input_file:
         rows = 0
         columns = 0
@@ -31,12 +42,12 @@ def generate_np_pattern(file:str|Path) -> np.ndarray:
             line_index += 1
     return pattern
 
-def find_5_prime(pattern:np.ndarray) -> tuple[int,int]:
+def find_5_prime(pattern: np.ndarray) -> tuple[int, int]:
     p5 = np.where(pattern=="5")
     p5 = (p5[0][0],p5[1][0])
     return p5
 
-def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int],di.direction]:
+def get_backbone_start(pattern: np.ndarray) -> tuple[tuple[int, int], tuple[int, int], di.direction]:
     p5 = find_5_prime(pattern)
     up, down, left, right = check_round(pattern, p5)
     if up.isalpha() or up in rd.direction_markers:
@@ -49,13 +60,13 @@ def get_backbone_start(pattern:np.ndarray) -> tuple[tuple[int,int],tuple[int,int
         return p5, (p5[0], p5[1] + 1), di.dir_right()
     raise ValueError("No valid first base")
 
-def check(pattern:np.ndarray,id1:int,id2:int):
+def check(pattern: np.ndarray, id1: int, id2: int) -> str:
     try:
         return pattern[id1][id2]
     except IndexError:
         return ""
 
-def check_round(pattern:np.ndarray,tup:tuple[int,int])->tuple[str,str,str,str]:
+def check_round(pattern: np.ndarray, tup: tuple[int, int]) -> tuple[str, str, str, str]:
     up= check(pattern,tup[0]-1,tup[1])
     down= check(pattern,tup[0]+1,tup[1])
     left = check(pattern,tup[0],tup[1]-1)
@@ -70,7 +81,17 @@ def reverse(seq:str) -> str:
     return rev
 
 
-def map_structure(structure:str):
+def map_structure(structure: str) -> list[int]:
+    """Map each bracketed structure position to its paired index.
+
+    Round, square, and curly brackets use independent stacks, allowing their
+    pairs to cross. Unpaired positions are represented by ``-1``.
+
+    Args:
+        structure: Dot-bracket-like structure string.
+    Returns:
+        An index-aligned list of partner positions or ``-1``.
+    """
     structure.strip(".")
     mapping = [-1]*len(structure)
     stack1 = []
@@ -98,7 +119,29 @@ def map_structure(structure:str):
     return mapping
 
 
-def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_window=DUPLICATE_WINDOW,bpmap:list[int] = []):
+def count_repeats(
+    sequence: str,
+    complement_window: int = COMPLEMENT_WINDOW,
+    duplicate_window: int = DUPLICATE_WINDOW,
+    bpmap: list[int] = [],
+) -> tuple[list[str], int, int, int, int, int]:
+    """Mark sequence repeats and return their per-base labels and counts.
+
+    Complementary and duplicate windows are labeled first; fixed-length
+    composition windows, homopolymers, and restriction motifs are then
+    labeled in turn, so later categories can overwrite earlier labels.
+    ``bpmap`` supplies paired positions used to suppress selected complement
+    matches. The returned counts are complement-covered bases, duplicate-
+    covered bases, composition windows, homopolymer windows, and motif hits.
+
+    Args:
+        sequence: RNA sequence to scan.
+        complement_window: Length of complementary windows to detect.
+        duplicate_window: Length of identical windows to detect.
+        bpmap: Optional index-aligned base-pair map.
+    Returns:
+        Per-position labels followed by the five category counts.
+    """
     strand_length = len(sequence)
     repeat_map = ["-"] * strand_length
     pattern_repeats = 0
@@ -163,7 +206,23 @@ def count_repeats(sequence:str, complement_window=COMPLEMENT_WINDOW, duplicate_w
     return repeat_map, complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites
 
 
-def build_barriers(structure_map:str, map_array:list, sequence_length:int):
+def build_barriers(
+    structure_map: str, map_array: list[int], sequence_length: int
+) -> list[str]:
+    """Build per-base barrier labels from a traced secondary structure.
+
+    Paired parentheses delimit barriers, while long-range pairs are handled
+    using ``KL_DELAY`` to identify kissing-loop-style regions. The result has
+    ``sequence_length`` entries and uses the symbols consumed by analysis
+    output.
+
+    Args:
+        structure_map: Traced dot-bracket structure.
+        map_array: Per-position base-pair indices.
+        sequence_length: Number of sequence positions to label.
+    Returns:
+        One barrier label for each sequence position.
+    """
     barriers = ["·"] * sequence_length
     topo_count = 0
     for i, ch in enumerate(structure_map):

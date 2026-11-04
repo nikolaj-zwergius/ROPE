@@ -5,20 +5,19 @@ import rope.core.grid_mapping as tu
 import getopt,sys
 import RNA
 import random
-from types import FunctionType
 from collections.abc import Callable
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
 
 KLHandler = Callable[
-[str, str, str, str, list, int],
+[str, str, str, str, list[str], int],
 tuple[str, str]
 ]
 
 
 #random.seed(85639)
 #random.seed(9)
-def compute_ED(seq:str) -> tuple[float,float,float]:
+def compute_ED(seq: str) -> tuple[float, str, float]:
     # create fold_compound data structure (required for all subsequently applied  algorithms)
     fc = RNA.fold_compound(seq)
 
@@ -46,11 +45,25 @@ def compute_ED(seq:str) -> tuple[float,float,float]:
     # #print everything like RNAfold -p --MEA
     return mfe, fc.pr_structure(mfe_struct), fc.mean_bp_distance()
 
-def mutate(mutation_rate:tuple[int,int,int,int])->str:
+def mutate(mutation_rate: tuple[int, int, int, int]) -> str:
     new_base = random.choices(["A","C","G","U"],weights=mutation_rate)
     return new_base[0]
 
-def initlize_structure(file:str)->tuple[str,str,str,str,str,str]:
+def initlize_structure(file: str) -> tuple[str, str, str, str, str, str]:
+    """Read blueprint metadata and create a compatible randomized RNA sequence.
+
+    Paired bases are chosen together where possible, using the repository's
+    nucleotide pairing tables. Random choices are made through Python's
+    module-level random generator. Returns name, original sequence,
+    structure, randomized sequence, cleaned structure, and kissing-loop
+    metadata.
+
+    Args:
+        file: Blueprint path with optional name and KL metadata headers.
+    Returns:
+        Name, initial sequence, initial structure, randomized sequence,
+        cleaned structure, and KL metadata, as strings.
+    """
     with open(file, "r") as f:
         name = f.readline().rstrip().lstrip(">")
         kl_meta = f.readline().rstrip().lstrip("@")
@@ -111,7 +124,35 @@ def initlize_structure(file:str)->tuple[str,str,str,str,str,str]:
     clean_struc=init_struc.replace("[",".").replace("{",".").replace("}",".").replace("]",".")
     return name,init_seq,init_struc,seq,clean_struc,kl_meta
 
-def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tuple[int,int,int,int],mask_gen:FunctionType ,rad_level:int|None=None) -> tuple[str,str,int|None]:
+def mutator(
+    clean_struc: str,
+    struc: str,
+    seq: str,
+    init_seq: str,
+    N: int,
+    mutate_weitg: tuple[int, int, int, int],
+    mask_gen: Callable[..., str],
+    rad_level: int | None = None,
+) -> tuple[str, str, int | None]:
+    """Try weighted sequence mutations that do not worsen fold distance.
+
+    ``mask_gen`` selects mutable positions; ``N`` is the number of mutation
+    attempts per iteration. The candidate-fold cache and module-level random
+    generator are used as side effects. Returns the best predicted structure,
+    sequence, and updated radius (or ``None`` when no radius was supplied).
+
+    Args:
+        clean_struc: Target structure used to score candidate folds.
+        struc: Current predicted structure.
+        seq: Current candidate sequence.
+        init_seq: Original sequence, including locked-base markers.
+        N: Number of mutation attempts per iteration.
+        mutate_weitg: A/C/G/U mutation weights.
+        mask_gen: Callable producing a position mask.
+        rad_level: Optional mutable-position radius.
+    Returns:
+        Best predicted structure, sequence, and optional updated radius.
+    """
     new_seq = [" "]*len(clean_struc)
     predic_fold=struc
     mutate_mask = mask_gen(clean_struc,struc,seq,rad_level)
@@ -167,7 +208,23 @@ def mutator(clean_struc:str,struc:str,seq:str,init_seq:str,N:int,mutate_weitg:tu
         return predic_fold,seq,rad_level
     return predic_fold,seq,None
 
-def dir_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int|None = None) -> str:
+def dir_mutate_mask_gen(
+    clean_struc: str, struc: str, seq: str, rad_level: int | None = None
+) -> str:
+    """Mark positions where the predicted fold differs from the target.
+
+    A free-kissing-loop ``@`` matching a predicted dot is treated as
+    acceptable. If ``rad_level`` is set, randomly reduce the mutable set to
+    at most that many positions.
+
+    Args:
+        clean_struc: Target structure.
+        struc: Current predicted structure.
+        seq: Candidate sequence (not used in mask calculation).
+        rad_level: Optional maximum number of mutable positions.
+    Returns:
+        A mask string containing ``X`` for mutable and ``-`` otherwise.
+    """
     mutate_mask = []
     predic_fold = struc
     ##print(len(seq),len(clean_struc),len(RNA.fold(seq)[0]))
@@ -190,7 +247,9 @@ def dir_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int|None = N
         ids.remove(pick)
     return "".join(mutate_mask)
 
-def neu_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int) -> str:
+def neu_mutate_mask_gen(
+    clean_struc: str, struc: str, seq: str, rad_level: int
+) -> str:
     mutate_mask = []
     for i in range(len(clean_struc)-rad_level):
         mutate_mask.append("-")
@@ -199,7 +258,7 @@ def neu_mutate_mask_gen(clean_struc:str,struc:str,seq:str,rad_level:int) -> str:
     random.shuffle(mutate_mask)
     return "".join(mutate_mask)
 
-def base_pair_mapper(clean_struc:str) -> dict:
+def base_pair_mapper(clean_struc: str) -> dict[int, int]:
     stack1 = []
     base_pair_map ={}
     for i in range(len(clean_struc)):
@@ -211,14 +270,15 @@ def base_pair_mapper(clean_struc:str) -> dict:
             base_pair_map[i] = mate
     return base_pair_map
 
-def penalty_score(seq:str,struc:str,bp_map:list[int]) -> tuple[list,int]:
-    
+def penalty_score(
+    seq: str, struc: str, bp_map: list[int]
+) -> tuple[list[str], int]:
     new_seq,complement_zones, duplicate_zones, pattern_repeats, poly_repeats, restriction_sites = tu.count_repeats(seq,bpmap=bp_map)
     PS = complement_zones+duplicate_zones+pattern_repeats+poly_repeats+restriction_sites
     ##print(new_seq)
     return new_seq, PS
 
-def gc_ratio_calculator(seq:str) -> float:
+def gc_ratio_calculator(seq: str) -> float:
     GC = 0
     AU = 0
     GC_ratio = 0
@@ -230,7 +290,23 @@ def gc_ratio_calculator(seq:str) -> float:
     GC_ratio = GC/(AU+GC)*100
     return GC_ratio
 
-def mutation_matrix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tuple[list,int]:
+def mutation_matrix_ps(
+    clean_struc: str, seq: str, rad_level: int, init_seq: str
+) -> tuple[list[str], int]:
+    """Generate a penalty-aware mutation mask and the current repeat score.
+
+    Candidate bases respect locked positions and pairing constraints where
+    possible; the module-level radius caps the number of proposed changes.
+    Random choices use Python's global random generator.
+
+    Args:
+        clean_struc: Target structure.
+        seq: Current candidate sequence.
+        rad_level: Penalty sensitivity passed through to mutation choices.
+        init_seq: Original sequence and locked-base constraints.
+    Returns:
+        Mutation mask and current repeat penalty score.
+    """
     ps_matrix, ps = penalty_score(seq,clean_struc,bp_map)
 
     n_switch = False
@@ -326,7 +402,26 @@ def mutation_matrix_ps(clean_struc:str,seq:str,rad_level:int,init_seq:str) -> tu
         mutate_matrix[pick] = "-"
     return mutate_matrix,ps
 
-def mutator3(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
+def mutator3(
+    clean_struc: str,
+    struc: str,
+    seq: str,
+    init_seq: str,
+    mask: list[str],
+    ps: int,
+) -> tuple[str, str]:
+    """Apply one penalty-aware mutation mask if fold and score constraints hold.
+
+    Args:
+        clean_struc: Target structure.
+        struc: Current predicted fold.
+        seq: Current sequence.
+        init_seq: Original sequence and locked-base constraints.
+        mask: Per-base mutation operations.
+        ps: Current repeat penalty score.
+    Returns:
+        Accepted folded structure and sequence, or the unchanged inputs.
+    """
     seq_list = list(seq)
     ps1 = ps
     predic_fold = struc
@@ -368,7 +463,9 @@ def mutator3(clean_struc:str,struc:str,seq:str,init_seq:str,mask:list,ps:int) ->
     #print(seq)
     return struc,seq
 
-def problem_in_locked(problem_mask:str|list,init_seq:str,control=True)->bool:
+def problem_in_locked(
+    problem_mask: str | list[str], init_seq: str, control: bool = True
+) -> bool:
     locked_problem = False
     problems = 0
     locked_problems = 0
@@ -386,7 +483,23 @@ def problem_in_locked(problem_mask:str|list,init_seq:str,control=True)->bool:
         locked_problem = True
     return locked_problem
 
-def mutator2(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,str]:    
+def mutator2(
+    clean_struc: str, seq: str, init_seq: str, init_struc: str
+) -> tuple[str, str]:
+    """Iteratively mutate sequence until its predicted fold approaches target.
+
+    Uses directional and randomized-radius masks and stops if all remaining
+    mismatches are locked. The initialized structure is used for recovery
+    after repeated unsuccessful rounds.
+
+    Args:
+        clean_struc: Target structure.
+        seq: Initial candidate sequence.
+        init_seq: Original sequence and locked-base constraints.
+        init_struc: Initial structure used during recovery.
+    Returns:
+        The resulting candidate sequence and predicted structure.
+    """
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     
@@ -422,7 +535,25 @@ def mutator2(clean_struc:str,seq:str,init_seq:str,init_struc:str) -> tuple[str,s
     return seq, struc
 
 
-def GC_optimize(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->tuple[str,list,int]:
+def GC_optimize(
+    clean_struc: str, seq: str, init_seq: str, init_struc: str, struc: str
+) -> tuple[str, str, list[str], int]:
+    """Optimize sequence penalties and GC ratio while retaining fold quality.
+
+    Iteratively applies mutation masks until the repeat penalty is zero and
+    the GC ratio is at most 55.1%, or the existing locked-problem escape
+    condition is reached. The mutable mask and final penalty score are also
+    returned.
+
+    Args:
+        clean_struc: Target structure.
+        seq: Candidate sequence to optimize.
+        init_seq: Original sequence and locked-base constraints.
+        init_struc: Original structure used by the legacy workflow.
+        struc: Current predicted fold.
+    Returns:
+        Optimized sequence, fold, last mutation mask, and repeat penalty.
+    """
     rad_level = FAV_RAD_LEVEL
     mask = []
     runs = 0
@@ -454,7 +585,31 @@ def GC_optimize(clean_struc:str,seq:str,init_seq:str,init_struc:str,struc:str)->
 
     return seq, struc, mask,ps
     return seq, struc, mask,ps
-def kl_mutator(clean_struc:str,init_struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
+def kl_mutator(
+    clean_struc: str,
+    init_struc: str,
+    seq: str,
+    init_seq: str,
+    mask: list[str],
+    ps: int,
+) -> tuple[str, str]:
+    """Try kissing-loop sequence replacements from the loaded KL library.
+
+    Kissing-loop regions are identified from bracket/metadata spans and
+    candidate loops are rejected when adjacent duplex energies exceed
+    ``KL_OFF``. Uses module-level loop data, metadata, fold cache, and random
+    state; returns the selected sequence and its ViennaRNA fold.
+
+    Args:
+        clean_struc: Target structure for penalty evaluation.
+        init_struc: Original structure locating KL spans.
+        seq: Sequence whose KL segments are being replaced.
+        init_seq: Original sequence (retained for the handler interface).
+        mask: Mutation mask (retained for the handler interface).
+        ps: Current penalty score (retained for the handler interface).
+    Returns:
+        Candidate sequence and its predicted structure.
+    """
     stack = []
     meta_stack = []
     kl_id = []
@@ -537,7 +692,25 @@ def kl_mutator(clean_struc:str,init_struc:str,seq:str,init_seq:str,mask:list,ps:
             raise Exception("tested all kls")
     return seq, RNA.fold(seq)[0]
 
-def revolver(file:str,kl_handler:KLHandler=kl_mutator) -> tuple[str,str,float,float,float,str,str]:
+def revolver(
+    file: str, kl_handler: KLHandler = kl_mutator
+) -> tuple[str, str, float, str, float, str, str]:
+    """Design a sequence for the blueprint and report folding/quality metrics.
+
+    Initializes module-level caches and tuning state, then runs sequence
+    initialization, fold repair, GC/penalty optimization, and the supplied
+    kissing-loop handler. Returns sequence, predicted structure, MFE,
+    formatted MFE structure, ensemble diversity, problem mask, and original
+    sequence. Random mutation and diagnostic output are observable side
+    effects.
+
+    Args:
+        file: Blueprint path to design against.
+        kl_handler: Final KL-sequence optimization callback.
+    Returns:
+        Designed sequence, predicted structure, MFE, formatted MFE structure,
+        ensemble diversity, problem mask, and original sequence.
+    """
     
     global bp_map
     global tested_seq

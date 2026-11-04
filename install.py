@@ -2,14 +2,15 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 
-def fail(msg: str):
+def fail(msg: str) -> NoReturn:
     print(f"\n❌ Error: {msg}")
     sys.exit(1)
 
 
-def run(cmd):
+def run(cmd: list[str]) -> None:
     print(">", " ".join(cmd))
     try:
         subprocess.check_call(cmd)
@@ -17,7 +18,7 @@ def run(cmd):
         fail(f"Command failed: {' '.join(cmd)}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Install ROPE."
     )

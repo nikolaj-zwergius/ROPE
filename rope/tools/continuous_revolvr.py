@@ -61,7 +61,12 @@ def continuous_parser() -> argparse.ArgumentParser:
 
     return parser        
 
-def _run_dragon_task(task: tuple[str, int, str,int,int]) -> None:
+def _run_dragon_task(task: tuple[str, int, str, float, float]) -> None:
+    """Search for a target-diversity prediction for one blueprint and run.
+
+    The task contains the input path, run index, output root, target ensemble
+    diversity, and maximum run duration in seconds (zero means no time limit).
+    """
     file_path, run_index, output_root,target_ed,timer = task
     input_path = Path(file_path)
     output_dir = Path(output_root) / input_path.stem / Path(f"run_{run_index}")
@@ -89,8 +94,14 @@ def _run_dragon_task(task: tuple[str, int, str,int,int]) -> None:
         
 
 
-def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path = "revolver_outputs", max_workers: int|None = None,target_ed=0,timer=0) -> None:
-    """Run revolver on each input file multiple times in parallel and save outputs in per-file folders."""
+def run_dragons(
+    files: list[str],
+    runs_per_file: int = 1,
+    output_root: str | Path = "revolver_outputs",
+    max_workers: int | None = None,
+    target_ed: float = 0,
+    timer: float = 0,
+) -> None:
     root_dir = Path(output_root)
     root_dir.mkdir(parents=True, exist_ok=True)
     tasks = []
@@ -105,7 +116,7 @@ def run_dragons(files: list[str], runs_per_file: int = 1, output_root: str|Path 
         for _ in executor.map(_run_dragon_task, tasks):
             pass
 
-def main():
+def main() -> None:
     wd = os.getcwd()
     out_folder = Path(wd+"/dragon_outputs")
 

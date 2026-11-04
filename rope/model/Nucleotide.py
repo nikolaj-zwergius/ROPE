@@ -6,11 +6,40 @@ from rope.utils.dim3_utils import get_sugar_cords
 
 
 class Nucleotide(StructuralElement):
-    def __init__(self,name:str, file:str|Path, symbol:str):
+    """Structural element parsed from the ``ATOM`` records in its PDB.
+
+    Records are grouped by residue. The first parsed residue supplies the start
+    sugar coordinates and is also retained in the per-residue build data.
+    """
+
+    def __init__(self, name: str, file: str | Path, symbol: str) -> None:
         super().__init__(name, file, symbol)
         self.generate_cords()
 
-    def _generate_cords(self):
+    def _generate_cords(
+        self,
+    ) -> tuple[
+        np.ndarray,
+        list[np.ndarray],
+        list[list[str]],
+        np.ndarray,
+        list[dict[str, tuple[float, float, float]]],
+        bool,
+    ]:
+        """Read all ``ATOM`` residues and collect their coordinates and source lines.
+
+        The first residue's atom dictionary supplies the start sugar
+        coordinates, while every residue (including the first) is retained in
+        the build-coordinate, source-line, and atom-dictionary lists. The final
+        residue's sugar atoms become ``last_coord``.
+
+        Returns:
+            The coordinate data consumed by :meth:`generate_cords`.
+
+        Raises:
+            FileNotFoundError: If the configured PDB file cannot be opened.
+            ValueError: If a PDB residue identifier or coordinate is invalid.
+        """
         start_res_id = None
         start_res_coord:dict[str,tuple[float,float,float]] = {}
         other_res_coord = []
@@ -41,4 +70,3 @@ class Nucleotide(StructuralElement):
             raise
             return None, None, None,None,None,False
         return sugar_coord, other_res_coord, other_res_lines, last_coord,other_res_coord_dict,True
-

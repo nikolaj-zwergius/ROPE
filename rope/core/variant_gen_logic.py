@@ -1,2 +1,2 @@
-def variant_gen():
+def variant_gen() -> None:
     pass

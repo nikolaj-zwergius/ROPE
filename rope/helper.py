@@ -14,8 +14,7 @@ parsers = [batch_parser,continuous_parser,build_parser,flip_parser,analysis_pars
 
 sep_len = (shutil.get_terminal_size().columns)//10*8
 
-def main():
-
+def main() -> None:
     print(f"""ROPE {get_version()}
 =========================
 ROPE Available Tools

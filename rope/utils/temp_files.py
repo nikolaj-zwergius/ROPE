@@ -1,6 +1,6 @@
 import os
 
-def cleanup_temp_files(temp_files:list[str]):
+def cleanup_temp_files(temp_files: list[str]) -> None:
     for temp_file in temp_files:
         try:
             os.remove(temp_file)

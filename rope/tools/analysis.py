@@ -20,7 +20,8 @@ def analysis_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
+def main() -> None:
+    """Analyze the selected blueprint(s) and write reports under Trace_analysis."""
     wd = os.getcwd()
     args = analysis_parser().parse_args(sys.argv[1:])
     print(args)

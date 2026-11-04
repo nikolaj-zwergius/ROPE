@@ -1,9 +1,10 @@
 import numpy as np
-from numpy import ndarray,float32
+from numpy import ndarray
 from rope.definitions.rope_def import SUGAR_ATOMS
+from typing import Mapping
 
 
-def umeyama(P:ndarray, Q:ndarray) -> tuple[float32,ndarray,ndarray]:
+def umeyama(P: ndarray, Q: ndarray) -> tuple[np.floating, ndarray, ndarray]:
     assert P.shape == Q.shape
     n, dim = P.shape
 
@@ -29,7 +30,9 @@ def umeyama(P:ndarray, Q:ndarray) -> tuple[float32,ndarray,ndarray]:
     return c, R, t
 
 
-def get_sugar_cords(coords:dict) -> np.ndarray:
+def get_sugar_cords(
+    coords: Mapping[str, tuple[float, float, float] | ndarray],
+) -> np.ndarray:
     sugar_coord = {}
     sugar_coord_list=[]
     for atom in coords.keys():

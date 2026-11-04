@@ -35,7 +35,6 @@ def _normalize_atom_name(atom_name: str) -> str:
 
 
 def _format_pdb_atom_name(atom_name: str) -> str:
-    """Format an atom name into the 4-character PDB atom name field."""
     normalized = _normalize_atom_name(atom_name).replace('*', "'")
     if len(normalized) >= 4:
         return normalized[:4]
@@ -48,7 +47,16 @@ def _slice_field(line: str, start: int, end: int) -> str:
     return line[start:end] if len(line) >= end else line[start:].ljust(end - start)
 
 
-def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> tuple[str,int,int]:
+def _format_pdb_atom_line(
+    line: str, current_res: int, res_index: int
+) -> tuple[str, int, int]:
+    """Normalize one atom record and renumber residues consecutively.
+
+    The output chain is set to ``A``. A new output residue number is assigned
+    whenever the source residue number changes. The returned tuple contains
+    the reformatted line, current source residue number, and output residue
+    number; the source residue field must contain an integer.
+    """
     record_name = _slice_field(line, 0, 6).strip()
     serial = _slice_field(line, 6, 11).strip()
     atom_name = _slice_field(line, 12, 16)
@@ -88,7 +96,6 @@ def _format_pdb_atom_line(line: str,current_res:int,res_index:int) -> tuple[str,
 
 
 def clean_pdb_file(file_path: Path) -> None:
-    """Clean a single PDB file in place."""
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as reader:
         original_lines = reader.readlines()
     current_res = 0
@@ -106,7 +113,6 @@ def clean_pdb_file(file_path: Path) -> None:
 
 
 def clean_rna_lib_pdb_files(root_dir: Path | None = None) -> None:
-    """Recursively clean all PDB files under the RNA_lib directory."""
     if root_dir is None:
         root_dir = ROOT/"data/RNA_lib/modules"
     dirs = os.listdir(root_dir)  

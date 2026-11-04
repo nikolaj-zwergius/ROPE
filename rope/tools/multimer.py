@@ -54,11 +54,24 @@ def multimer_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def kl_check_bypass (clean_struc:str,init_struc:str,seq:str,init_seq:str,mask:list,ps:int) -> tuple[str,str]:
+def kl_check_bypass(
+    clean_struc: str,
+    init_struc: str,
+    seq: str,
+    init_seq: str,
+    mask: str,
+    ps: int,
+) -> tuple[str, str]:
     return seq, RNA.fold(seq)[0]
 
-def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass) -> tuple[str,str,float,float,float,str,str]:
-    """Run revolver on a multimer blueprint file with a specified KL handler."""
+def multimer_revolver(
+    temp_files: list[str], kl_handler: KLHandler = kl_check_bypass
+) -> tuple[list[str], list[str], list[float], list[float], list[float], list[str], list[str]]:
+    """Design mutually compatible sequences for the supplied temporary blueprints.
+
+    Returns parallel per-blueprint lists of sequences, structures, energies,
+    frequencies, ensemble diversities, problem masks, and initial sequences.
+    """
     meta_kl_pattern = []
     
     
@@ -228,6 +241,7 @@ def multimer_revolver(temp_files:list[str],kl_handler:KLHandler=kl_check_bypass)
 
 
 def multimer_run_revolver_task(task: tuple[list[str], int, str, int]) -> None:
+    """Run and save one multimer prediction task in a worker process."""
     temp_files, run_index, folder, output_id = task
 
     patterns = []
@@ -267,7 +281,11 @@ def run_multimers(
     output_root: str | Path = "multimer_output",
     max_workers: int | None = None,
 ) -> None:
-    """Run multimer predictions in parallel under a shared per-invocation output ID."""
+    """Run multimer predictions in parallel under a shared output identifier.
+
+    The input is a multi-blueprint text file with each blueprint introduced by
+    a ``>`` header. Temporary blueprint files are removed even if a worker fails.
+    """
     output_id = random.getrandbits(8)
     blueprints = []
     blueprint_names = []
@@ -294,7 +312,7 @@ def run_multimers(
         cleanup_temp_files(temp_files)
 
 
-def main():
+def main() -> None:
     args = multimer_parser().parse_args(sys.argv[1:])
     max_workers = int(args.w) if args.w else None
     run_multimers(args.file, runs=int(args.r), max_workers=max_workers)

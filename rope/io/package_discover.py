@@ -1,7 +1,15 @@
 from os import listdir
 from pathlib import Path
 
-def find_packages() -> tuple[list[Path],list[Path],list[Path],list[Path]]:
+
+def find_packages() -> tuple[list[Path], list[Path], list[Path], list[Path]]:
+    """Discover module TOML files and unexpected files in the RNA library.
+
+    Returns ``(packages, root_files, type_files, missing_toml)``. Package and
+    missing-TOML paths point to ``module.toml`` locations; the other lists
+    contain files directly under the library root or a module-type directory.
+    Directory traversal follows filesystem order rather than sorting entries.
+    """
     found = []
     missing_toml = []
     root_files = []

@@ -1,4 +1,7 @@
-def read_sequence_file(path):
+from pathlib import Path
+
+
+def read_sequence_file(path: str | Path) -> str:
     lines = []
     with open(path, encoding="utf-8") as f:
         for line in f:
@@ -7,7 +10,8 @@ def read_sequence_file(path):
             lines.append(line)
     return "".join(line.strip() for line in lines).upper()
 
-def parse_header(file_path):
+
+def parse_header(file_path: str | Path) -> tuple[str, str]:
     name = "Untitled"
     kl_pattern = ""
     with open(file_path, encoding="utf-8") as handle:

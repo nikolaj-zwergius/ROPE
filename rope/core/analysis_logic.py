@@ -1,5 +1,6 @@
 from numpy import ndarray
 import rope.core.trace_logic as tp
+import rope.model.direction as di
 from rope.core.grid_mapping import (
     map_structure,
     count_repeats,
@@ -12,7 +13,49 @@ from rope.core.trace_logic import trace_backbone
 from rope.io.structure_printers import analysis_out
 
 
-def trace_analysis_out(pattern_file:str|None, sequence_file:str|None=None,out:bool=True,input_grid:ndarray|None=None,outfile:str|None=None) -> tuple[ndarray,str,list[str],list[str],list[str],int,int,int,int,int,dict,dict]:
+def trace_analysis_out(
+    pattern_file: str | None,
+    sequence_file: str | None = None,
+    out: bool = True,
+    input_grid: ndarray | None = None,
+    outfile: str | None = None,
+) -> tuple[
+    ndarray,
+    str,
+    list[str],
+    list[str],
+    list[str],
+    int,
+    int,
+    int,
+    int,
+    int,
+    dict[tuple[int, int], int],
+    dict[tuple[int, int], di.direction],
+]:
+    """Trace and summarize an RNA blueprint or an already-loaded grid.
+
+    With ``out=True``, ``pattern_file`` is read and an optional FASTA-like
+    ``sequence_file`` supplies the displayed sequence. With ``out=False``,
+    ``input_grid`` is traced directly. In either mode, the returned sequence
+    normalizes T to U and X to N; the remaining values are the input grid,
+    repeat labels/counts, wobble labels, barrier labels, nucleotide-coordinate
+    indices, and backbone directions.
+
+    When ``out`` is true, writes the formatted analysis report to ``outfile``
+    (as handled by :func:`analysis_out`). Invalid trace starts are also
+    reported to standard output by the existing diagnostic path.
+
+    Args:
+        pattern_file: Blueprint path when reading a file; otherwise unused.
+        sequence_file: Optional sequence path overriding displayed sequence.
+        out: Select file/report mode when true or grid mode when false.
+        input_grid: Preloaded blueprint grid required in grid mode.
+        outfile: Destination for the formatted report in file mode.
+    Returns:
+        Grid, normalized sequence, repeat map, wobble map, barriers, five
+        repeat counts, nucleotide-coordinate indices, and strand directions.
+    """
     primary_sequence = None
     name=""
     if out:

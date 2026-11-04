@@ -1,10 +1,13 @@
 import rope.definitions.rope_def as rd
+import rope.model.direction as di
 from rope.core.grid_mapping import get_backbone_start, generate_np_pattern, check_round
 from numpy import ndarray
 from pathlib import Path
 
 
-def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|str]:
+def base_pair_id(
+    pattern: ndarray, tup: tuple[int, int]
+) -> tuple[tuple[int, int] | None, str | None]:
     up,down,left,right = check_round(pattern,tup)
     if up in ["┊","!","*",":"]:
         return (tup[0]-2,tup[1]),up
@@ -16,7 +19,32 @@ def base_pair_id(pattern:ndarray,tup:tuple[int,int]) -> tuple[None|tuple,None|st
         return None,"@"
     return None,None
 
-def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[str,str,dict,dict]:
+def trace_backbone(
+    pattern: ndarray,
+    crossover: bool = False,
+    header: tuple[str, str] | str | bool | None = None,
+) -> tuple[
+    str,
+    str,
+    dict[tuple[int, int], int],
+    dict[tuple[int, int], di.direction],
+]:
+    """Follow blueprint directions to the 3′ end and extract sequence data.
+
+    Returns the traced sequence, its bracket/dot structure, a mapping from
+    nucleotide grid coordinates to sequence indices, and the direction at
+    each visited backbone coordinate. ``crossover`` includes structural
+    markers in the sequence/structure output; ``header`` must be present
+    when a free kissing-loop marker is encountered.
+
+    Args:
+        pattern: Blueprint character grid.
+        crossover: Include crossover/structural markers in the output.
+        header: Header metadata or any non-``None`` marker enabling free KLs.
+    Returns:
+        Sequence, structure string, coordinate-to-sequence map, and
+        coordinate-to-direction map.
+    """
     _, first, dir = get_backbone_start(pattern)
     #print(header)
     seq = ""
@@ -95,7 +123,7 @@ def trace_backbone(pattern:ndarray,crossover:bool = False,header=None) -> tuple[
 
 
 
-def trace_seq_into_backbone(seq:str,file: str|Path) -> ndarray:
+def trace_seq_into_backbone(seq: str, file: str | Path) -> ndarray:
     new_pattern = generate_np_pattern(file)
     _, first, dir = get_backbone_start(new_pattern)
     index = 0
@@ -111,4 +139,3 @@ def trace_seq_into_backbone(seq:str,file: str|Path) -> ndarray:
             dir=dir.move_list[next_base_name]()
         next_base = dir.move(next_base)
     return new_pattern
-
