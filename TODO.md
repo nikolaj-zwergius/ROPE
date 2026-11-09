@@ -3,6 +3,9 @@
 Tasks are ordered by priority. Related steps are nested only when they belong
 to one larger task.
 
+- [ ] [High] Validate that the sequence and ligands fit within the PDB length.
+- [ ] [High] Validate that every listed ligand is present in the PDB.
+- [ ] [High] Support ions as either ligands to copy over or as their own class.
 - [ ] [High] Add a 120-degree kissing-loop module to the RNA library.
 - [ ] [High] Support AKL and 120-degree kissing loops in Revolvr and Multimer `@` labels.
   - [ ] Add the kissing-loop lists needed for both loop types.
@@ -27,3 +30,6 @@ to one larger task.
 
 - [x] [Medium] Type-hint all functions and methods; document non-obvious behavior, side effects, assumptions, and errors, and state class contracts and subclass requirements where needed. Keep docstrings concise and omit them when names, signatures, and straightforward code already explain the behavior.
 - [x] [Medium] Review function and variable names for spelling errors. For each file, check callers and public uses before renaming; preserve compatibility or confirm breaking changes with the maintainer.
+
+
+# unformated

@@ -1,0 +1,24 @@
+[metadata]
+name = "Spinach"
+source = "PDB"
+doi="https://doi.org/10.1038/nsmb.2865"
+
+[module]
+symbol  = "sP"
+type = "segmented"
+priority = 2
+sequence = "GAAUGAAAUGGUGAAGGACGGGUCCGUUGAGUAGAGUGUGAGCUCCGUAACU"
+segments = ["GAAUGAAAUGGUGAAGGACGGGUCC","GUUGAGUAGAGUGUGAGCUCCGUAACU"]
+spacer =["U"]
+
+nonstandard = false
+has_constraints  = false
+
+[default]
+name = "HBC620"
+source_pdb ="4TS2"
+file = "4TS2.pdb"
+ligand = "38E"
+
+
+

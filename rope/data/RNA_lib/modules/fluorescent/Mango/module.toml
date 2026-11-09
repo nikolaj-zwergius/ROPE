@@ -1,0 +1,18 @@
+[metadata]
+name = "Mango"
+source = "PDB"
+doi="https://doi.org/10.1038/nchembio.2392"
+
+[module]
+symbol  = "M"
+type = "module"
+priority = 2
+sequence = "CGAAGGGACGGUGCGGAGAGGAGAG"
+nonstandard = false
+has_constraints  = false
+
+[default]
+name = "TO1-Biotin"
+source_pdb = "5V3F.pdb"
+ligand = "74G"
+file = "5V3F.pdb"

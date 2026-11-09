@@ -1,0 +1,21 @@
+[metadata]
+name = "SAM-III"
+source = "PDB"
+doi="https://doi.org/10.1038/nsmb.1494"
+
+[module]
+symbol  = "S3"
+type = "segmented"
+priority = 2
+sequence = "CGAAAGGAUGGCGGAAACGCCAGAUGCCUUGUAACCGAAAGGG"
+segments = ["CGAAAGGA","GAUGCCUUGUAACCGAAAGGG"]
+spacer =["UGGCGGAAACGCCA"]
+nonstandard = false
+has_constraints  = false
+
+[default]
+name = "SAM"
+source_pdb = "3E5C"
+ligand = "SAM"
+file = "3e5c.pdb"
+

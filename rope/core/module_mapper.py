@@ -107,7 +107,7 @@ def module_mapper(
     index = 0
     while index < len(stack):
         key = stack[index]
-        print(stack,istack,key)
+        #print(stack,istack,key)
         if key in istack:
             index_stack =  stack.index(key)
             index_istack = istack.index(key)
@@ -120,7 +120,7 @@ def module_mapper(
 
     while index < len(istack):
             key = istack[index]
-            print(stack,istack,key)
+            #print(stack,istack,key)
             if key in stack:
                 index_stack =  stack.index(key)
                 index_istack = istack.index(key)
@@ -130,9 +130,9 @@ def module_mapper(
                 irange_stack.pop(index_istack)
             else:
                 index += 1
-    print(stack,istack,key)
-    print(range_stack,irange_stack)
-    print(covered)
+    #print(stack,istack,key)
+    #print(range_stack,irange_stack)
+    #print(covered)
 
 
     range_stack.extend(irange_stack)
@@ -143,14 +143,14 @@ def module_mapper(
                 covered[i] = helix.symbol
             elif i not in covered:
                 covered[i] = base.symbol
-    print(range_stack)
+    #print(range_stack)
 
 
     
 
-    print()
-    print(covered)
-    print()
+    #print()
+    #print(covered)
+    #print()
     
     map_list = []
     covered_list = sorted(covered.items(), key=lambda x: x[0].start if isinstance(x[0], range) else x[0])
@@ -171,7 +171,7 @@ def module_mapper(
             continue
         if element[1:] not in element_stack:
             element_stack[element[1:]] = ([],[])
-        print(element,element_stack)
+        #print(element,element_stack)
         if element[0] == "0":
             if element_stack[element[1:]][1] == []:
                 element_stack[element[1:]][0].append(i)
@@ -184,7 +184,7 @@ def module_mapper(
                 element_stack[element[1:]][1].append(i)
             else:
                 pair = element_stack[element[1:]][0].pop()
-    print("stack",element_stack)
+    ##print("stack",element_stack)
         
     print(map_list)
     return map_list
