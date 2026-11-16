@@ -206,7 +206,7 @@ def save_revolver_output(
         if gc > 51: out_file.write(f"GC: {gc:.2f} WARNING: GC content above the maximum of 51 from ROAD \n")
         else:out_file.write(f"GC: {gc:.2f}\n")
         out_file.write("\n\n\n")
-        if revolvr.problem_in_locked(problem_mask,init_seq,control=False):
+        if problem_mask != []:
             out_file.write("""\tWARNING: Misfolding within the locked-sequence required altering the target structure 
              Sequence design failed for the inputted target structure.\n""")
             render_pattern(out_file,"\n\nHighlighting changed structural regions\n",problem_mask,n_map,grid)

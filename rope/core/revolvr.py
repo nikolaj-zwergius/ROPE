@@ -208,7 +208,7 @@ def mutator(
         return predic_fold,seq,rad_level
     return predic_fold,seq,None
 
-def dir_mutate_mask_gen(
+def dir_mutate_mask_gen_old(
     clean_struc: str, struc: str, seq: str, rad_level: int | None = None
 ) -> str:
     """Mark positions where the predicted fold differs from the target.
@@ -245,6 +245,37 @@ def dir_mutate_mask_gen(
         pick = random.choice(ids)
         mutate_mask[pick] = "-"
         ids.remove(pick)
+    return "".join(mutate_mask)
+
+def dir_mutate_mask_gen(
+    clean_struc: str, struc: str, seq: str, rad_level: int | None = None
+) -> str:
+    """Mark positions where the predicted fold differs from the target.
+
+    A free-kissing-loop ``@`` matching a predicted dot is treated as
+    acceptable. If ``rad_level`` is set, randomly reduce the mutable set to
+    at most that many positions.
+
+    Args:
+        clean_struc: Target structure.
+        struc: Current predicted structure.
+        seq: Candidate sequence (not used in mask calculation).
+        rad_level: Optional maximum number of mutable positions.
+    Returns:
+        A mask string containing ``X`` for mutable and ``-`` otherwise.
+    """
+    mutate_mask = []
+    predic_fold = struc
+
+    control_mapped_bp = base_pair_mapper(clean_struc)
+    test_mapped_bp = base_pair_mapper(predic_fold)
+    mutate_mask = []
+    for i in range(len(clean_struc)):
+        if control_mapped_bp.get(i) != test_mapped_bp.get(i):
+            mutate_mask.append("X")
+        else:
+            mutate_mask.append("-")
+    
     return "".join(mutate_mask)
 
 def neu_mutate_mask_gen(
@@ -308,7 +339,7 @@ def mutation_matrix_ps(
         Mutation mask and current repeat penalty score.
     """
     ps_matrix, ps = penalty_score(seq,clean_struc,bp_map)
-
+    ##print(init_seq)
     n_switch = False
     n_id = 0
     mutate_matrix = ["-"]*len(seq)
@@ -475,7 +506,7 @@ def problem_in_locked(
         if problem_mask[i] != "-":
             problems += 1
     #print(problem_mask)
-    #print(init_seq)
+    ##print(init_seq)
     #print(locked_problems,problems)
     if problems == 0 and not control:
         return False
@@ -503,8 +534,6 @@ def mutator2(
     rad_level = FAV_RAD_LEVEL
     struc = RNA.fold(seq)[0]
     
-    
-    #print("mutator 1 done") 
 
     num=0
     mask = dir_mutate_mask_gen(clean_struc,struc,seq)
@@ -514,6 +543,7 @@ def mutator2(
     locked_problems = False
     while RNA.hamming_distance(clean_struc,struc) != 0 and not locked_problems:
         off = 0
+        old_seq = seq
         for i in range(len(mask)):
             if init_seq[i] in ["C","A","U","G"] and mask[i] == "X":
                 off += 1
@@ -525,6 +555,16 @@ def mutator2(
         problem_in_locked(mask,init_seq)
         if problem_in_locked(mask,init_seq) and runs>=100:
             locked_problems = True
+
+        #print(RNA.hamming_distance(clean_struc,struc))
+        #print(dir_mutate_mask_gen(clean_struc,struc,seq))
+        #print(struc)
+        if seq == old_seq:
+            same += 1
+        else:
+            same = 0
+        if same >= 50 and runs >= 100:
+            return seq, struc
         if runs >= 5000:
             print("bad start re init")
             struc = RNA.fold(seq)[0]
@@ -534,6 +574,22 @@ def mutator2(
 
     return seq, struc
 
+def inverse_fold(init_seq: str, struc: str) -> tuple[str, str]:
+
+    # dont knwo why inverse_fold mutatest the initial sequence, so makeing a list and then joining it back to a string to avoid this problem, deepcopying the initial sequence also does not work, so making a list and then joining it back to a string is the only way to avoid this problem
+    seq_list = list(init_seq)
+    seq = "".join(seq_list)
+    seq,dist = RNA.inverse_fold(seq,struc)
+    #print(seq,seq.count("N"))
+    #exit()
+    if seq.count("N") > 0:
+        seq_list = list(seq)
+        for i in range(len(seq_list)):
+            if seq_list[i] == "N":
+                seq_list[i] = mutate((25,25,25,25))
+        seq = "".join(seq_list)
+    
+    return seq, RNA.fold(seq)[0]
 
 def GC_optimize(
     clean_struc: str, seq: str, init_seq: str, init_struc: str, struc: str
@@ -563,7 +619,6 @@ def GC_optimize(
     while set(mask) != {"-"}  or gc_ratio_calculator(seq)>55.1 or ps>0:
         
         mask,ps = mutation_matrix_ps(clean_struc,seq,FAV_RAD_LEVEL,init_seq)
-
         #print(ps)
         pre_seq = seq
         struc,seq = mutator3(clean_struc,struc,seq,init_seq,mask,ps)
@@ -718,13 +773,13 @@ def revolver(
     global KL_OFF
     global kl_meta
     
-    #print(init_seq)
+    ##print(init_seq)
     FAV_RAD_LEVEL = 15
 
     KL_MIN = -7.2
     KL_MAX = -10.8
     KL_OFF = -6.0
-    
+    inverse_folding = False ## setting this to false will use the old mutator to generate a sequence instead of inverse folding
     global tested_seq
     tested_seq = {}
     global kls
@@ -741,38 +796,46 @@ def revolver(
     name,init_seq,init_struc,seq,clean_struc,kl_meta= initlize_structure(file)
     print("Setup done")
     bp_map = tu.map_structure(clean_struc) 
-    
+    #print(init_seq)
     if set(init_seq) == set(rd.VALID_BASES):
         mfe,feq,ed =compute_ED(seq)
         problem=dir_mutate_mask_gen(clean_struc,clean_struc,seq)
         return seq, clean_struc,mfe,feq,ed,problem,init_seq
-    if seq.count("K") > 0:
-        raise Exception("setup")
-    struc = RNA.fold(seq)[0]
-    print("Starting mutator 1")
-    struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
-    if seq.count("K") > 0:
-        raise Exception("m1")
+
+    if inverse_folding == True:
+        print("starting inverse folding")
+        #print(init_seq)
+        seq, struc = inverse_fold(init_seq,clean_struc)
+        
+    else:
+        struc = RNA.fold(seq)[0]
+        print("Starting mutator 1")
+        #print(init_seq)
+        struc,seq,_ = mutator(clean_struc,struc,seq,init_seq,5,(0,50,50,0),dir_mutate_mask_gen)
+
     print("Starting mutator 2")
+    #print(init_seq)
     seq,struc = mutator2(clean_struc,seq,init_seq,init_struc)
-    if seq.count("K") > 0:
-        raise Exception("m2")
+
     print("GC optimization")
     seq,struc,mask,ps = GC_optimize(clean_struc,seq,init_seq,init_struc,struc)
     if seq.count("K") > 0:
         raise Exception("GC")
     print("starting KL finder")
     seq,struc = kl_handler(clean_struc,init_struc,seq,init_seq,mask,ps)
-    if seq.count("K") > 0:
-        raise Exception("KL")
+
     print("compute ED")
     mfe,feq,min_ed =compute_ED(seq)
     print("Final check of structure")
     problem=dir_mutate_mask_gen(clean_struc,struc,seq)
-    if seq.count("K") > 0:
-        raise Exception("fin")
+
     print("DONE")
     return seq, struc,mfe,feq,min_ed,problem,init_seq
+
+
+import cProfile
+import pstats
+profiler = cProfile.Profile()
 
 
 if __name__ == "__main__":
@@ -784,5 +847,6 @@ if __name__ == "__main__":
             sys.exit()
     try:
         revolver(opts[1])
+
     except IndexError:
         print("No input file was provided.")
