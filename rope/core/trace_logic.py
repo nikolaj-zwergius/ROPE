@@ -61,7 +61,7 @@ def trace_backbone(
         strand_dir[next_base] = dir
         next_base_name = pattern[next_base[0]][next_base[1]]
         if next_base_name == " ":
-            raise Exception
+            raise Exception("Break found but no 3p found")
         match_id,match_type = base_pair_id(pattern,next_base)
         match match_type:
             case "*":

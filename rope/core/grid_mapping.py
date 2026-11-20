@@ -38,6 +38,8 @@ def generate_np_pattern(file: str | Path) -> np.ndarray:
                 continue
             line = line.rstrip()
             for char_index,char in enumerate(line):
+                if char in ["↑","↓"]:
+                    char = "^"
                 pattern[line_index][char_index]=char
             line_index += 1
     return pattern
@@ -50,6 +52,7 @@ def find_5_prime(pattern: np.ndarray) -> tuple[int, int]:
 def get_backbone_start(pattern: np.ndarray) -> tuple[tuple[int, int], tuple[int, int], di.direction]:
     p5 = find_5_prime(pattern)
     up, down, left, right = check_round(pattern, p5)
+
     if up.isalpha() or up in rd.direction_markers:
         return p5, (p5[0] - 1, p5[1]), di.dir_up()
     if down.isalpha() or down in rd.direction_markers:
@@ -61,6 +64,10 @@ def get_backbone_start(pattern: np.ndarray) -> tuple[tuple[int, int], tuple[int,
     raise ValueError("No valid first base")
 
 def check(pattern: np.ndarray, id1: int, id2: int) -> str:
+    if id1 < 0:
+        return ""
+    if id2 < 0:
+        return ""
     try:
         return pattern[id1][id2]
     except IndexError:
