@@ -19,7 +19,9 @@ nucleotide_library:dict[str,Nucleotide] = {
                     C.symbol:C,
                     G.symbol:G,
                     U.symbol:U,
-                    "N":choices([A,C,G,U],k=1)[0]}
+                    "N":choices([A,C,G,U],k=1)[0],
+                    "W":choices([A,U],k=1)[0],
+                    "S":choices([C,G],k=1)[0]}
 
 for nt in nucleotide_library.values():
     nt.generate_cords()

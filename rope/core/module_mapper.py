@@ -21,9 +21,11 @@ def sequence_matcher(module_seq: str, seq: str) -> bool:
             continue
         elif seq[i] not in structural_markers and module_seq[i] in structural_markers:
             return False
-        elif seq[i] in one_letter_code[module_seq[i]]:
+        elif seq[i] in structural_markers and module_seq[i] not in structural_markers:
+            return False
+        elif one_letter_code[module_seq[i]].issuperset(one_letter_code[seq[i]]):
             continue
-        elif module_seq[i] != seq[i]:
+        else:
             return False
     return True
 
@@ -53,7 +55,6 @@ def module_mapper(
     mapping = map_structure(clean_struc)
     length = len(seq)
     covered = RangeDict()
-    
     base = index_library["H1"]
     helix = index_library["H2"]
 
