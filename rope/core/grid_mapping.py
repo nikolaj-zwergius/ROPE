@@ -1,6 +1,7 @@
 import rope.definitions.rope_def as rd
 import rope.model.direction as di
 import numpy as np
+from numpy import ndarray
 from pathlib import Path
 COMPLEMENT_WINDOW = 10
 DUPLICATE_WINDOW = 10
@@ -42,6 +43,42 @@ def generate_np_pattern(file: str | Path) -> np.ndarray:
                     char = "^"
                 pattern[line_index][char_index]=char
             line_index += 1
+    pattern = insert_placeholder_kl(pattern)
+    return pattern
+
+def insert_placeholder_kl(
+    pattern: ndarray,
+    placeholder: str = "*",
+    mask_nucleotides: bool = False,
+) -> ndarray:
+    KL_TOP = "╭───────╮"
+    NUCLEOTIDES = set("AUGCN")
+    pattern = pattern.copy()
+
+    if mask_nucleotides:
+        pattern[np.isin(pattern, list("AUGC"))] = "N"
+
+    n_rows, n_cols = pattern.shape
+    kl_len = len(KL_TOP)
+    kl_top = np.array(list(KL_TOP))
+
+    def char(r: int, c: int) -> str:
+        if 0 <= r < n_rows and 0 <= c < n_cols:
+            return pattern[r, c]
+        return " "
+
+    for r in range(n_rows):
+        for c0 in range(n_cols - kl_len + 1):
+            # find the KL top line
+            if not np.array_equal(pattern[r, c0:c0 + kl_len], kl_top):
+                continue
+            # check the pairing row two lines below, column by column
+            for c in range(c0, c0 + kl_len):
+                if (char(r + 2, c) == "┊"
+                        and char(r + 1, c) in NUCLEOTIDES
+                        and char(r + 3, c) in NUCLEOTIDES):
+                    pattern[r + 2, c] = placeholder
+
     return pattern
 
 def find_5_prime(pattern: np.ndarray) -> tuple[int, int]:
