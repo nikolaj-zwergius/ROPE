@@ -1,0 +1,24 @@
+[metadata]
+name = "iSpinach"
+source = "PDB"
+doi=""
+
+[module]
+symbol  = "spI"
+type = "segmented"
+priority = 2
+sequence = "GGUGAGGGUCGGGUCCAGUAGGUACGCCUACUGUUGAGUAGAGUGUGGGCUCC"
+segments = ["GGUGAGGGUCGGGUCCAG","CUGUUGAGUAGAGUGUGGGCUCC"]
+spacer =["UAGGUACGCCUA"]
+
+nonstandard = false
+has_constraints  = false
+
+[default]
+name = "1TU"
+source_pdb ="5OB3"
+file = "5OB3.pdb"
+ligand = "1TU"
+
+
+
