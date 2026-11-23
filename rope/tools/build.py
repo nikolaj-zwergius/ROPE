@@ -107,6 +107,8 @@ def main() -> None:
             if not file.endswith(".txt"):
                 continue
             else:
+                if file == "flip.txt" or file == "target.txt":
+                    continue
                 try:
                     RNAbuild(file,f"{folder}/{file.split('.')[0]}.pdb",module_cache,index_library,ligands)
                 except ValueError as e:
