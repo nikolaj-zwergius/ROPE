@@ -1,5 +1,6 @@
 A|alpha-Kissingloop|structural/alpha-kissingloop|NGGUGNNNNAAAUUCN|2|
 pX|Paranemic|structural/paranemic|N#N|0|
+bK|Branched kissing loop|structural/Branched-kissingloop|N£NN,N,NN%NNNNNNAN|0|
 bN|90-bend|structural/90-bend|NGAACUACN,NUUCGN,NG£CN|1|
 K|Kissingloop|structural/kissingloop|NNAANNNNNNANN|2|((.........)),((..[[[[[[.)),((..]]]]]].)),((..@@@@@@.))
 psX|Paranemic_start|structural/paranemic_start|NN¤NN|0|
@@ -8,8 +9,12 @@ H2|Helix|structural/helix_paired||0|
 X|Crossover|structural/crossover|NNN^NNNN|0|
 pssX|Paranemic_2|structural/paranemic_2|N%NN|0|
 T|Tetraloop|structural/tetraloop|NUUCGN|2|(....)
+S3|SAM-III|riboswitch/SAM-III|CGAAAGGA,UGGCGGAAACGCCA,GAUGCCUUGUAACCGAAAGGG|2|
+sP|Spinach|fluorescent/Spinach|GAAUGAAAUGGUGAAGGACGGGUCC,U,GUUGAGUAGAGUGUGAGCUCCGUAACU|2|
+spI|iSpinach|fluorescent/iSpinach|GGUGAGGGUCGGGUCCAG,UAGGUACGCCUA,CUGUUGAGUAGAGUGUGGGCUCC|2|
 B|broccoli|fluorescent/broccoli|GACGGUCGGGUCCAN,CUUCG,NGUCGAGUAGAGUGUGGGC|2|
 C|cilivia|fluorescent/cilivia|GAAGAUUGUAAACAUGC,CGAAAG,GCAGACACUUC|2|
 P|pepper|fluorescent/pepper|NNNACUGGCGCCNNN,CCUUCGGG,NNNCAAUCGUGGCGUGUCGNNN|2|
 bR|beetroot|fluorescent/beetroot|GCGCCGGUUAGGCAGAGGUGGGUGGUGUGGAGGAGUAUCUGUCCGGCGC|2|
 sQ|Squash|fluorescent/squash|AUACAAGGUGAGCCCAAUAAUAUGGUUUGGGUUAGGAUAGGAAGUAGAGCCUUAAACUCUCUAAGCGGUAU|3|
+M|Mango|fluorescent/Mango|CGAAGGGACGGUGCGGAGAGGAGAG|2|

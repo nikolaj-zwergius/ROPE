@@ -233,8 +233,8 @@ class segmented_module(Module):
             try:
                 assert len(self.segment_build_cords[i])==len(self.segments[i])
             except AssertionError:
-                print(f"Length of segment sequence {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
-                raise
+                raise AssertionError(f"Length of segment sequence {i} of module {self.name} is  {len(self.segments[i])}, but only {len(self.segment_build_cords[i])} residues were found")
+                
 
         self.full_start_cord = self.start_cord
         self.full_build_cords = self.build_cords
@@ -289,7 +289,8 @@ class segmented_module(Module):
             current =1
         
         for seg in self.segments:
-            
+            for mark in structural_markers:
+                seg = seg.replace(mark,"")
             segment_range[range(current,current+len(seg)+1)] = element
             if element >= len(self.spacer):
                 break
@@ -410,5 +411,5 @@ class inv_segmented_module(segmented_module):
             for i in range(len(sequence)):
                 assert len(self.segment_build_cords[i]) == len(self.segments[i])
         except AssertionError:
-            print(self.name,f"segment = {i}",len(self.build_cords[i]),len(self.segments[i]))
+            raise AssertionError(self.name,f"segment = {i}",len(self.build_cords[i]),len(self.segments[i]))
             raise

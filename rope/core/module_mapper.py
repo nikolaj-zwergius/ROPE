@@ -6,7 +6,7 @@ from rope.model.Module import segmented_module
 from rope.model.range_dict import RangeDict
 from rope.model.records import IndexEntry
 from numpy import ndarray
-
+from copy import deepcopy
 
 
 
@@ -78,14 +78,16 @@ def module_mapper(
                     continue
                 covered[range(seq_index, seq_index + len(module.sequence))] = module.symbol
             elif module.type == segmented_module: #segment detection
-                for segment in module.segments:
+                segment_copy = deepcopy(module.segments)
+                segment_copy.sort()
+                
+                for segment in segment_copy:
                     if module.has_constrain:
                         for constrain in module.constrains:
                             if clean_struc[seq_index:seq_index + len(segment)] == constrain:
                                 print(f"segment match {module.name} {segment} {seq[seq_index:seq_index+len(segment)]}")
                     if sequence_matcher(segment, seq[seq_index:seq_index+len(segment)]) and seq_index not in covered:
                         covered[range(seq_index, seq_index + len(segment))] = f"{module.segments.index(segment)}{module.symbol}"
-                           
 
     ###
     #logic for check if both half of a segmented module are present in the strucutre remove any unmatched detections

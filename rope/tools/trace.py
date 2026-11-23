@@ -18,6 +18,13 @@ def trace_parser() -> argparse.ArgumentParser:
         metavar="input file",
         help="Input blueprint file"
     )
+    parser.add_argument(
+        "-m",
+        nargs="?",
+        default=False,
+        metavar="Runs",
+        help="Number of runs per input file"
+    )
 
 
     return parser
@@ -30,7 +37,10 @@ def main() -> None:
         exit()
     header = parse_header(args.file)
     pattern = generate_np_pattern(args.file)
-    seq,base_pair,_,_= trace_backbone(pattern,header=header)
+    markers = False
+    if args.m is None:
+        markers = True
+    seq,base_pair,_,_= trace_backbone(pattern,header=header,crossover=markers)
     trace_pattern_out(args.file,seq,base_pair)
 
 if __name__ == "__main__":
